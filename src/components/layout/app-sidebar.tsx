@@ -19,6 +19,7 @@ import {
   KeyRound,
   FileSpreadsheet,
   Boxes,
+  Lock,
 } from 'lucide-react';
 
 interface NavItem {
@@ -54,8 +55,9 @@ const NAV_GROUPS: NavGroup[] = [
   {
     group: 'Cơ sở vật chất',
     items: [
-      { title: 'Danh mục tài sản', href: '/facilities/assets', icon: Boxes, perm: 'facility.view' },
       { title: 'Phiếu sự cố / sửa chữa', href: '/facilities/work-orders', icon: Wrench, perm: 'wo.view' },
+      { title: 'Khóa phòng ngừng bán', href: '/facilities/room-blocks', icon: Lock, perm: 'stay.view' },
+      { title: 'Danh mục tài sản', href: '/facilities/assets', icon: Boxes, perm: 'facility.view' },
       { title: 'Bảo trì & Kiểm tra', href: '/facilities/maintenance', icon: ClipboardList, perm: 'pm.view' },
       { title: 'Cảnh báo hết hạn', href: '/facilities/alerts', icon: AlertTriangle, perm: 'facility.view' },
     ],
