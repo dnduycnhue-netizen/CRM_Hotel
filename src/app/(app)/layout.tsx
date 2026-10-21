@@ -4,6 +4,8 @@ import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AppHeader } from '@/components/layout/app-header';
 import { getActiveBranches } from '@/features/admin/data/branches';
 
+import { NetworkStatusBanner } from '@/components/pwa/network-status-banner';
+
 export default async function AppLayout({
   children,
 }: {
@@ -18,6 +20,7 @@ export default async function AppLayout({
 
   return (
     <AccessProvider value={{ access, branchId: currentBranchId }}>
+      <NetworkStatusBanner />
       <div className="flex min-h-screen bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
