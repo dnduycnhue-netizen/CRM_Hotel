@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/shared/ui';
 import { GuestListItem, SalesUser } from '../types';
+import { exportGuestsAction } from '../actions';
+import { FileSpreadsheet, Download, Loader2 } from 'lucide-react';
 
 interface GuestListTableProps {
   initialGuests: GuestListItem[];
@@ -27,6 +29,42 @@ export function GuestListTable({ initialGuests, salesUsers }: GuestListTableProp
   const [filterOwner, setFilterOwner] = useState<string>('all');
   const [filterTier, setFilterTier] = useState<string>('all');
   const [searchFilter, setSearchFilter] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportExcel = async () => {
+    try {
+      setIsExporting(true);
+      const res = await exportGuestsAction();
+      if (!res.ok) {
+        alert(`Không thể xuất Excel: ${res.error.code}`);
+        return;
+      }
+
+      // Convert base64 to blob and trigger browser download
+      const byteCharacters = atob(res.data.base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = res.data.filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      alert('Đã xảy ra lỗi khi tạo tệp Excel');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const filtered = initialGuests.filter((g) => {
     if (filterOwner !== 'all') {
@@ -62,12 +100,29 @@ export function GuestListTable({ initialGuests, salesUsers }: GuestListTableProp
           </p>
         </div>
 
-        <Link href="/guests/new">
-          <Button className="rounded-xl font-medium bg-indigo-600 hover:bg-indigo-700 text-white">
-            <Plus className="w-4 h-4 mr-1.5" />
-            Thêm khách tiềm năng
+        <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isExporting}
+            onClick={handleExportExcel}
+            className="rounded-xl font-medium border-slate-700 hover:bg-slate-800 text-slate-200"
+          >
+            {isExporting ? (
+              <Loader2 className="w-4 h-4 mr-1.5 animate-spin text-slate-400" />
+            ) : (
+              <FileSpreadsheet className="w-4 h-4 mr-1.5 text-emerald-400" />
+            )}
+            {isExporting ? 'Đang xuất...' : 'Xuất Excel'}
           </Button>
-        </Link>
+
+          <Link href="/guests/new">
+            <Button className="rounded-xl font-medium bg-indigo-600 hover:bg-indigo-700 text-white">
+              <Plus className="w-4 h-4 mr-1.5" />
+              Thêm khách tiềm năng
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Filter toolbar */}
