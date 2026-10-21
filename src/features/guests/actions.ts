@@ -371,3 +371,33 @@ export async function exportGuestsAction(): Promise<
     return fail('UNKNOWN');
   }
 }
+
+export async function proposeGuestFlagAction(input: {
+  guest_id: string;
+  branch_id: string;
+  flag_type: 'blacklist' | 'attention';
+  reason: string;
+  evidence_paths?: string[];
+}): Promise<ActionResult<{ flag_id: string }>> {
+  try {
+    const hasPerm = await requirePermission('blacklist.propose', input.branch_id);
+    if (!hasPerm) return fail('FORBIDDEN');
+
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc('propose_flag', {
+      p_guest_id: input.guest_id,
+      p_branch_id: input.branch_id,
+      p_type: input.flag_type,
+      p_reason: input.reason,
+      p_evidence: input.evidence_paths || [],
+    });
+
+    if (error) return fail(error.code);
+
+    revalidatePath('/approvals');
+    revalidatePath(`/guests/${input.guest_id}`);
+    return ok({ flag_id: data as string });
+  } catch (err: unknown) {
+    return fail('UNKNOWN');
+  }
+}

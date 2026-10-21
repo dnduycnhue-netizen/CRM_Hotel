@@ -37,6 +37,7 @@ import {
   setGuestTagsAction,
   assignSalesOwnerAction,
   setGuestConsentAction,
+  proposeGuestFlagAction,
 } from '../actions';
 
 interface GuestProfileViewProps {
@@ -54,6 +55,13 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
   const [noteBranch, setNoteBranch] = useState<string>('');
   const [noteBody, setNoteBody] = useState('');
   const [noteSuccess, setNoteSuccess] = useState(false);
+
+  // Propose flag state
+  const [showProposeFlag, setShowProposeFlag] = useState(false);
+  const [flagType, setFlagType] = useState<'blacklist' | 'attention'>('blacklist');
+  const [flagBranch, setFlagBranch] = useState<string>(branches[0]?.id || '');
+  const [flagReason, setFlagReason] = useState('');
+  const [flagMsg, setFlagMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Tags state
   const [tagInput, setTagInput] = useState('');
@@ -654,6 +662,135 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
       {/* Tab 4: Flags & Warnings */}
       {activeTab === 'flags' && (
         <div className="space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                Danh sách cờ cảnh báo & Blacklist
+              </h3>
+              <p className="text-xs text-slate-400">
+                Cờ đã duyệt sẽ cảnh báo đỏ tại quầy lễ tân toàn chuỗi khi check-in
+              </p>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowProposeFlag(!showProposeFlag);
+                setFlagMsg(null);
+              }}
+              className="text-xs rounded-xl border-rose-500/30 text-rose-500 hover:bg-rose-500/10"
+            >
+              <ShieldAlert className="w-4 h-4 mr-1.5" />
+              {showProposeFlag ? 'Đóng đề xuất' : 'Đề xuất gắn cờ'}
+            </Button>
+          </div>
+
+          {flagMsg && (
+            <div
+              className={`p-3 rounded-xl text-xs font-medium ${
+                flagMsg.type === 'success'
+                  ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                  : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+              }`}
+            >
+              {flagMsg.text}
+            </div>
+          )}
+
+          {showProposeFlag && (
+            <div className="p-4 rounded-2xl border border-rose-500/20 bg-rose-500/5 space-y-3">
+              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                Phiếu đề xuất cảnh báo khách hàng (Chờ quản lý duyệt)
+              </h4>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-slate-400 block mb-1">Loại cờ:</label>
+                  <select
+                    value={flagType}
+                    onChange={(e) => setFlagType(e.target.value as any)}
+                    className="w-full text-xs p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-200 outline-none"
+                  >
+                    <option value="blacklist">Blacklist toàn chuỗi (Nghiêm trọng)</option>
+                    <option value="attention">Cần chú ý đặc biệt (Attention)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-slate-400 block mb-1">Cơ sở ghi nhận:</label>
+                  <select
+                    value={flagBranch}
+                    onChange={(e) => setFlagBranch(e.target.value)}
+                    className="w-full text-xs p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-200 outline-none"
+                  >
+                    {branches.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-slate-400 block mb-1">
+                  Lý do đề xuất (tối thiểu 10 ký tự):
+                </label>
+                <textarea
+                  value={flagReason}
+                  onChange={(e) => setFlagReason(e.target.value)}
+                  rows={2}
+                  placeholder="Ví dụ: Gây rối trật tự lúc 23h ngày 20/10, làm hỏng tivi phòng 302..."
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-200 outline-none focus:ring-1 focus:ring-rose-500"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setShowProposeFlag(false)}
+                  className="text-xs rounded-xl"
+                >
+                  Hủy
+                </Button>
+                <Button
+                  type="button"
+                  disabled={isPending || flagReason.trim().length < 10}
+                  onClick={() => {
+                    setFlagMsg(null);
+                    startTransition(async () => {
+                      const res = await proposeGuestFlagAction({
+                        guest_id: guest.id,
+                        branch_id: flagBranch,
+                        flag_type: flagType,
+                        reason: flagReason.trim(),
+                      });
+                      if (res.ok) {
+                        setFlagMsg({
+                          type: 'success',
+                          text: 'Đã gửi đề xuất gắn cờ tới Giám đốc/Quản lý phê duyệt thành công!',
+                        });
+                        setFlagReason('');
+                        setShowProposeFlag(false);
+                      } else {
+                        setFlagMsg({
+                          type: 'error',
+                          text: `Lỗi đề xuất: ${res.error.code}`,
+                        });
+                      }
+                    });
+                  }}
+                  className="text-xs rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold disabled:opacity-50"
+                >
+                  {isPending ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : null}
+                  Gửi đề xuất duyệt cờ
+                </Button>
+              </div>
+            </div>
+          )}
+
           {flags.length === 0 ? (
             <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400">
               Hồ sơ sạch, không có cờ cảnh báo hay blacklist nào.

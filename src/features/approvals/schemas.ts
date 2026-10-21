@@ -37,9 +37,9 @@ export const removeFlagSchema = z.object({
   reason: z.string().min(5, 'Lý do gỡ cờ tối thiểu 5 ký tự').max(500),
 });
 
-export type ProposeMergeInput = z.infer<typeof proposeMergeSchema>;
-export type ApproveMergeInput = z.infer<typeof approveMergeSchema>;
-export type RejectMergeInput = z.infer<typeof rejectMergeSchema>;
-export type ProposeFlagInput = z.infer<typeof proposeFlagSchema>;
-export type DecideFlagInput = z.infer<typeof decideFlagSchema>;
-export type RemoveFlagInput = z.infer<typeof removeFlagSchema>;
+export type ProposeMergeInput = z.input<typeof proposeMergeSchema>;
+export type ApproveMergeInput = z.input<typeof approveMergeSchema>;
+export type RejectMergeInput = z.input<typeof rejectMergeSchema>;
+export type ProposeFlagInput = z.input<typeof proposeFlagSchema>;
+export type DecideFlagInput = z.input<typeof decideFlagSchema>;
+export type RemoveFlagInput = z.input<typeof removeFlagSchema>;
