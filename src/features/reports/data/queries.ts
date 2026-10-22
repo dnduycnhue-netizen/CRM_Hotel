@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { getVnDateRange } from '@/shared/utils/date';
 import {
   ReportKpisResponse,
   ReportSeriesPoint,
@@ -14,15 +15,10 @@ export async function getReportKpis(options?: {
 }): Promise<ReportKpisResponse | null> {
   const supabase = await createClient();
 
-  // Mặc định 30 ngày gần nhất
-  const today = new Date();
-  const defaultTo = today.toISOString().slice(0, 10);
-  const past30 = new Date(today);
-  past30.setDate(past30.getDate() - 29);
-  const defaultFrom = past30.toISOString().slice(0, 10);
-
-  const p_from = options?.from || defaultFrom;
-  const p_to = options?.to || defaultTo;
+  // Mặc định 30 ngày gần nhất theo giờ Việt Nam
+  const defaultRange = getVnDateRange('30days');
+  const p_from = options?.from || defaultRange.from;
+  const p_to = options?.to || defaultRange.to;
   const p_compare = options?.compareMode || 'same_period_ly';
   const p_branch_ids = options?.branchIds && options.branchIds.length > 0 ? options.branchIds : null;
 
@@ -53,14 +49,9 @@ export async function getReportSeries(options?: {
 }): Promise<ReportSeriesPoint[]> {
   const supabase = await createClient();
 
-  const today = new Date();
-  const defaultTo = today.toISOString().slice(0, 10);
-  const past30 = new Date(today);
-  past30.setDate(past30.getDate() - 29);
-  const defaultFrom = past30.toISOString().slice(0, 10);
-
-  const p_from = options?.from || defaultFrom;
-  const p_to = options?.to || defaultTo;
+  const defaultRange = getVnDateRange('30days');
+  const p_from = options?.from || defaultRange.from;
+  const p_to = options?.to || defaultRange.to;
   const p_grain = options?.grain || 'day';
   const p_compare = options?.compareMode || 'same_period_ly';
   const p_branch_ids = options?.branchIds && options.branchIds.length > 0 ? options.branchIds : null;
@@ -109,14 +100,9 @@ export async function getFacilityReport(options?: {
 }): Promise<FacilityReportResponse | null> {
   const supabase = await createClient();
 
-  const today = new Date();
-  const defaultTo = today.toISOString().slice(0, 10);
-  const past30 = new Date(today);
-  past30.setDate(past30.getDate() - 29);
-  const defaultFrom = past30.toISOString().slice(0, 10);
-
-  const p_from = options?.from || defaultFrom;
-  const p_to = options?.to || defaultTo;
+  const defaultRange = getVnDateRange('30days');
+  const p_from = options?.from || defaultRange.from;
+  const p_to = options?.to || defaultRange.to;
   const p_compare = options?.compareMode || 'same_period_ly';
   const p_branch_ids = options?.branchIds && options.branchIds.length > 0 ? options.branchIds : null;
 

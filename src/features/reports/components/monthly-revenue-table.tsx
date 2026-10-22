@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   FileSpreadsheet,
   Building2,
@@ -8,6 +9,7 @@ import {
   TrendingUp,
   Calendar,
   Layers,
+  Loader2,
 } from 'lucide-react';
 import { MonthlyReportRow } from '../types';
 
@@ -15,14 +17,26 @@ interface MonthlyRevenueTableProps {
   initialRows: MonthlyReportRow[];
   year: number;
   branches: Array<{ id: string; name: string; code: string }>;
+  initialBranchId?: string;
 }
 
 export function MonthlyRevenueTable({
   initialRows,
   year,
   branches,
+  initialBranchId = 'all',
 }: MonthlyRevenueTableProps) {
-  const [selectedBranch, setSelectedBranch] = useState<string>('all');
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const handleBranchChange = (bId: string) => {
+    startTransition(() => {
+      const params = new URLSearchParams();
+      if (bId !== 'all') params.set('branchId', bId);
+      params.set('year', year.toString());
+      router.push(`/reports/monthly?${params.toString()}`);
+    });
+  };
 
   const formatVnd = (val?: number | null) => {
     if (val === null || val === undefined) return '—';
@@ -44,11 +58,13 @@ export function MonthlyRevenueTable({
         </div>
 
         <div className="flex items-center gap-2">
+          {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-600" />}
           <span className="text-xs text-slate-400 font-medium">Cơ sở:</span>
           <select
-            value={selectedBranch}
-            onChange={(e) => setSelectedBranch(e.target.value)}
-            className="text-xs py-1.5 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-semibold text-slate-800 dark:text-slate-200 outline-none"
+            value={initialBranchId}
+            onChange={(e) => handleBranchChange(e.target.value)}
+            disabled={isPending}
+            className="text-xs py-1.5 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-semibold text-slate-800 dark:text-slate-200 outline-none cursor-pointer"
           >
             <option value="all">Toàn bộ 8 cơ sở</option>
             {branches.map((b) => (

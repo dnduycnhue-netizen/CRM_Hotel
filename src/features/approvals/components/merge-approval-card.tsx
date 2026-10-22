@@ -39,14 +39,14 @@ export function MergeApprovalCard({ request }: Props) {
       if (res.ok) {
         setStatusMsg({ type: 'success', text: 'Đã hợp nhất hồ sơ thành công!' });
       } else {
-        setStatusMsg({ type: 'error', text: `Không thể duyệt: ${res.error.code}` });
+        setStatusMsg({ type: 'error', text: `Không thể duyệt: ${res.error.message || res.error.code}` });
       }
     });
   };
 
   const handleReject = () => {
     if (!rejectReason.trim()) {
-      alert('Vui lòng nhập lý do từ chối');
+      setStatusMsg({ type: 'error', text: 'Vui lòng nhập lý do từ chối hợp nhất hồ sơ' });
       return;
     }
     setStatusMsg(null);
@@ -59,7 +59,7 @@ export function MergeApprovalCard({ request }: Props) {
         setStatusMsg({ type: 'success', text: 'Đã từ chối yêu cầu gộp hồ sơ.' });
         setShowRejectForm(false);
       } else {
-        setStatusMsg({ type: 'error', text: `Lỗi: ${res.error.code}` });
+        setStatusMsg({ type: 'error', text: `Lỗi: ${res.error.message || res.error.code}` });
       }
     });
   };

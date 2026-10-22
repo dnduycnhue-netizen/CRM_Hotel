@@ -130,6 +130,20 @@ vercel --prod --yes
   - Loại bỏ hoàn toàn `window.confirm` và `window.prompt` trong `in-house-table.tsx`.
   - Thay bằng `Dialog` shadcn cho trả phòng và hủy phòng, có ô nhập lý do hủy bắt buộc (>= 5 ký tự) phục vụ kiểm toán.
 
+### Phase P2: Báo cáo Thống kê & Hoàn thiện Trải nghiệm (Nhánh `phase/p2-features`) - ĐÃ HOÀN THÀNH
+- **P2.1 (Chuẩn hóa Báo cáo & Ngày kinh doanh)**:
+  - Bổ sung `getVnDateString()`, `getVnDateRange()` vào `src/shared/utils/date.ts` đảm bảo tính toán ngày bắt đầu/kết thúc báo cáo cố định theo múi giờ Việt Nam (+07:00).
+  - Tích hợp chuẩn hóa ngày giờ vào toàn bộ các queries báo cáo (`report_kpis`, `report_series`, `report_facilities`).
+- **P2.2 (Bộ lọc Cơ sở & Khoảng ngày Báo cáo)**:
+  - Thiết kế thanh **Filter Toolbar** trực quan trên Dashboard Báo cáo (`dashboard-overview.tsx`): hỗ trợ chọn nhanh 7 ngày qua, 30 ngày qua, Tháng này và chọn cơ sở (Toàn chuỗi hoặc từng khách sạn cụ thể).
+  - Kết nối tham số `searchParams` (`branchId`, `from`, `to`, `preset`) với URL trên cả 2 trang `/reports` và `/reports/monthly`, dữ liệu tải lại tức thì kèm hiệu ứng loading mượt mà.
+- **P2.3 (Quản trị Sales Phụ trách & Phân quyền)**:
+  - Bổ sung toast feedback và xử lý trạng thái cho việc phân công/gỡ bỏ Sales phụ trách khách hàng trong `guest-profile-view.tsx`.
+- **P2.4 (Tối ưu UI/UX & Loại bỏ hoàn toàn alert/confirm)**:
+  - Thay thế toàn bộ hàm `alert(...)` và `confirm(...)` cũ khi xuất Excel (`guest-list-table.tsx`), thao tác ghi chú (`guest-profile-view.tsx`), và duyệt gộp hồ sơ (`merge-approval-card.tsx`).
+- **P2.5 (Phê duyệt & Gỡ cờ Blacklist)**:
+  - Khắc phục lỗi in `[object Object]` khi gỡ cờ Blacklist thất bại trong `active-flags-table.tsx` và `flags-approval-table.tsx`, ánh xạ `res.error.message` rõ ràng.
+
 ---
 
 ## 6. Lưu ý cho người bảo trì tiếp theo (Caveats & Best Practices)

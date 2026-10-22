@@ -44,7 +44,7 @@ export function ActiveFlagsTable({ flags }: Props) {
         setRemoveReason('');
         router.refresh();
       } else {
-        toast.error(`Thao tác thất bại: ${res.error}`);
+        toast.error(res.error.message || 'Thao tác gỡ cờ thất bại');
       }
     });
   };

@@ -8,15 +8,26 @@ export const metadata: Metadata = {
   title: 'Báo cáo Doanh thu & Cùng kỳ YoY | CRM Khách Sạn',
 };
 
-export default async function MonthlyRevenuePage() {
+interface MonthlyRevenuePageProps {
+  searchParams: Promise<{
+    branchId?: string;
+    year?: string;
+  }>;
+}
+
+export default async function MonthlyRevenuePage(props: MonthlyRevenuePageProps) {
   const hasPerm = await requirePermission('revenue.view');
   if (!hasPerm.ok) {
     redirect('/reports');
   }
 
-  const currentYear = new Date().getFullYear();
+  const searchParams = await props.searchParams;
+  const currentYear = searchParams.year ? parseInt(searchParams.year, 10) : new Date().getFullYear();
+  const branchId = searchParams.branchId;
+  const branchIds = branchId && branchId !== 'all' ? [branchId] : undefined;
+
   const [rows, branches] = await Promise.all([
-    getMonthlyReport(currentYear),
+    getMonthlyReport(currentYear, branchIds),
     getActiveBranches(),
   ]);
 
@@ -25,6 +36,7 @@ export default async function MonthlyRevenuePage() {
       initialRows={rows}
       year={currentYear}
       branches={branches}
+      initialBranchId={branchId || 'all'}
     />
   );
 }

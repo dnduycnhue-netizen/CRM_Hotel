@@ -33,7 +33,7 @@ export function FlagsApprovalTable({ flags }: Props) {
         setSelectedFlagId(null);
         setRejectNote('');
       } else {
-        setStatusMsg({ type: 'error', text: `Thao tác thất bại: ${res.error.code}` });
+        setStatusMsg({ type: 'error', text: `Thao tác thất bại: ${res.error.message || res.error.code}` });
       }
     });
   };

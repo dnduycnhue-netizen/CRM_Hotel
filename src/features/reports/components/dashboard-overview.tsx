@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   BarChart3,
   TrendingUp,
@@ -16,17 +17,57 @@ import {
   ArrowUpRight,
   Sparkles,
   CheckCircle2,
+  Filter,
+  Loader2,
 } from 'lucide-react';
 import { ReportKpisResponse, ReportSeriesPoint } from '../types';
+import { getVnDateRange, formatDateVN } from '@/shared/utils/date';
 
 interface DashboardOverviewProps {
   data: ReportKpisResponse | null;
   series: ReportSeriesPoint[];
   branches: Array<{ id: string; name: string; code: string }>;
+  initialBranchId?: string;
+  initialPreset?: string;
+  initialFrom?: string;
+  initialTo?: string;
 }
 
-export function DashboardOverview({ data, series, branches }: DashboardOverviewProps) {
+export function DashboardOverview({
+  data,
+  series,
+  branches,
+  initialBranchId = 'all',
+  initialPreset = '30days',
+  initialFrom,
+  initialTo,
+}: DashboardOverviewProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [activeView, setActiveView] = useState<'chain' | 'branches' | 'channels'>('chain');
+
+  const handlePresetChange = (preset: '7days' | '30days' | 'thisMonth') => {
+    const r = getVnDateRange(preset);
+    startTransition(() => {
+      const params = new URLSearchParams();
+      if (initialBranchId && initialBranchId !== 'all') params.set('branchId', initialBranchId);
+      params.set('preset', preset);
+      params.set('from', r.from);
+      params.set('to', r.to);
+      router.push(`/reports?${params.toString()}`);
+    });
+  };
+
+  const handleBranchChange = (bId: string) => {
+    startTransition(() => {
+      const params = new URLSearchParams();
+      if (bId !== 'all') params.set('branchId', bId);
+      if (initialPreset) params.set('preset', initialPreset);
+      if (initialFrom) params.set('from', initialFrom);
+      if (initialTo) params.set('to', initialTo);
+      router.push(`/reports?${params.toString()}`);
+    });
+  };
 
   if (!data) {
     return (
@@ -63,7 +104,10 @@ export function DashboardOverview({ data, series, branches }: DashboardOverviewP
             Báo cáo điều hành & Công suất chuỗi 8 khách sạn
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Phân tích 240 phòng toàn chuỗi ({new Date(range.from).toLocaleDateString('vi-VN')} – {new Date(range.to).toLocaleDateString('vi-VN')})
+            {initialBranchId === 'all'
+              ? 'Phân tích 240 phòng toàn chuỗi'
+              : `Phân tích cơ sở: ${branches.find((b) => b.id === initialBranchId)?.name || initialBranchId}`}
+            {' '}({formatDateVN(range.from)} – {formatDateVN(range.to)})
             {compare_range && (
               <span className="text-indigo-600 dark:text-indigo-400 font-medium ml-1">
                 · So sánh cùng kỳ năm trước (YoY)
@@ -104,6 +148,82 @@ export function DashboardOverview({ data, series, branches }: DashboardOverviewP
           >
             Kênh & Quốc tịch
           </button>
+        </div>
+      </div>
+
+      {/* Filter Toolbar (Cơ sở & Khoảng ngày) */}
+      <div className="p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md flex flex-wrap items-center justify-between gap-3 text-xs shadow-xs">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Chọn cơ sở */}
+          <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl">
+            <Building2 className="w-3.5 h-3.5 text-slate-500" />
+            <span className="font-semibold text-slate-600 dark:text-slate-300">Cơ sở:</span>
+            <select
+              value={initialBranchId}
+              onChange={(e) => handleBranchChange(e.target.value)}
+              disabled={isPending}
+              className="bg-transparent font-bold text-slate-900 dark:text-slate-100 focus:outline-none cursor-pointer"
+            >
+              <option value="all">Toàn bộ 8 khách sạn</option>
+              {branches.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Chọn mốc thời gian */}
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+            <button
+              onClick={() => handlePresetChange('7days')}
+              disabled={isPending}
+              className={`px-2.5 py-1 rounded-lg font-semibold transition ${
+                initialPreset === '7days'
+                  ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              7 ngày qua
+            </button>
+            <button
+              onClick={() => handlePresetChange('30days')}
+              disabled={isPending}
+              className={`px-2.5 py-1 rounded-lg font-semibold transition ${
+                initialPreset === '30days'
+                  ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              30 ngày qua
+            </button>
+            <button
+              onClick={() => handlePresetChange('thisMonth')}
+              disabled={isPending}
+              className={`px-2.5 py-1 rounded-lg font-semibold transition ${
+                initialPreset === 'thisMonth'
+                  ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              Tháng này
+            </button>
+          </div>
+        </div>
+
+        {/* Trạng thái tải & ngày hiển thị */}
+        <div className="flex items-center gap-2 text-muted-foreground font-mono">
+          {isPending ? (
+            <span className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 font-semibold animate-pulse">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              Đang tải số liệu...
+            </span>
+          ) : (
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 text-slate-400" />
+              {formatDateVN(range.from)} – {formatDateVN(range.to)}
+            </span>
+          )}
         </div>
       </div>
 

@@ -28,6 +28,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { Button } from '@/shared/ui';
+import { toast } from 'sonner';
 import {
   GuestProfile,
   SalesUser,
@@ -85,15 +86,22 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
       if (res.ok) {
         setNoteBody('');
         setNoteSuccess(true);
+        toast.success('Đã lưu ghi chú khách hàng thành công');
         setTimeout(() => setNoteSuccess(false), 2000);
+      } else {
+        toast.error(res.error.message);
       }
     });
   };
 
   const handleDeleteNote = (noteId: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa ghi chú này?')) return;
     startTransition(async () => {
-      await deleteGuestNoteAction(noteId, guest.id);
+      const res = await deleteGuestNoteAction(noteId, guest.id);
+      if (res.ok) {
+        toast.success('Đã xóa ghi chú');
+      } else {
+        toast.error(res.error.message);
+      }
     });
   };
 
@@ -108,7 +116,12 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
     }
     const newTags = [...currentTags, trimmed];
     startTransition(async () => {
-      await setGuestTagsAction(guest.id, newTags);
+      const res = await setGuestTagsAction(guest.id, newTags);
+      if (res.ok) {
+        toast.success(`Đã thêm tag "${trimmed}"`);
+      } else {
+        toast.error(res.error.message);
+      }
       setTagInput('');
       setIsAddingTag(false);
     });
@@ -118,19 +131,34 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
     const currentTags = guest.tags || [];
     const newTags = currentTags.filter((t) => t !== tagToRemove);
     startTransition(async () => {
-      await setGuestTagsAction(guest.id, newTags);
+      const res = await setGuestTagsAction(guest.id, newTags);
+      if (res.ok) {
+        toast.success(`Đã gỡ tag "${tagToRemove}"`);
+      } else {
+        toast.error(res.error.message);
+      }
     });
   };
 
   const handleAssignSales = (userId: string) => {
     startTransition(async () => {
-      await assignSalesOwnerAction(guest.id, userId === 'none' ? null : userId);
+      const res = await assignSalesOwnerAction(guest.id, userId === 'none' ? null : userId);
+      if (res.ok) {
+        toast.success(userId === 'none' ? 'Đã hủy phân công Sales' : 'Đã phân công Sales phụ trách');
+      } else {
+        toast.error(res.error.message);
+      }
     });
   };
 
   const handleToggleConsent = (channel: string, currentVal: boolean) => {
     startTransition(async () => {
-      await setGuestConsentAction(guest.id, channel, !currentVal);
+      const res = await setGuestConsentAction(guest.id, channel, !currentVal);
+      if (res.ok) {
+        toast.success(`Đã cập nhật đồng ý liên hệ kênh ${channel}`);
+      } else {
+        toast.error(res.error.message);
+      }
     });
   };
 

@@ -20,6 +20,8 @@ import { GuestListItem, SalesUser } from '../types';
 import { exportGuestsAction } from '../actions';
 import { FileSpreadsheet, Download, Loader2 } from 'lucide-react';
 
+import { toast } from 'sonner';
+
 interface GuestListTableProps {
   initialGuests: GuestListItem[];
   salesUsers: SalesUser[];
@@ -37,7 +39,7 @@ export function GuestListTable({ initialGuests, salesUsers, canExport = false }:
       setIsExporting(true);
       const res = await exportGuestsAction();
       if (!res.ok) {
-        alert(`Không thể xuất Excel: ${res.error.code}`);
+        toast.error(`Không thể xuất Excel: ${res.error.message || res.error.code}`);
         return;
       }
 
@@ -60,8 +62,9 @@ export function GuestListTable({ initialGuests, salesUsers, canExport = false }:
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      toast.success('Xuất file Excel thành công!');
     } catch (err) {
-      alert('Đã xảy ra lỗi khi tạo tệp Excel');
+      toast.error('Đã xảy ra lỗi khi tạo tệp Excel');
     } finally {
       setIsExporting(false);
     }

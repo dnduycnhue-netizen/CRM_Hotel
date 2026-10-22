@@ -8,15 +8,30 @@ export const metadata: Metadata = {
   title: 'Báo cáo công suất & Lưu trú | CRM Khách Sạn',
 };
 
-export default async function ReportsPage() {
+interface ReportsPageProps {
+  searchParams: Promise<{
+    branchId?: string;
+    from?: string;
+    to?: string;
+    preset?: string;
+  }>;
+}
+
+export default async function ReportsPage(props: ReportsPageProps) {
   const hasPerm = await requirePermission('report.view_branch');
   if (!hasPerm.ok) {
     redirect('/');
   }
 
+  const searchParams = await props.searchParams;
+  const branchId = searchParams.branchId;
+  const branchIds = branchId && branchId !== 'all' ? [branchId] : undefined;
+  const from = searchParams.from;
+  const to = searchParams.to;
+
   const [kpis, series, branches] = await Promise.all([
-    getReportKpis(),
-    getReportSeries({ grain: 'day' }),
+    getReportKpis({ from, to, branchIds }),
+    getReportSeries({ from, to, branchIds, grain: 'day' }),
     getActiveBranches(),
   ]);
 
@@ -25,6 +40,10 @@ export default async function ReportsPage() {
       data={kpis}
       series={series}
       branches={branches}
+      initialBranchId={branchId || 'all'}
+      initialPreset={searchParams.preset || '30days'}
+      initialFrom={from}
+      initialTo={to}
     />
   );
 }

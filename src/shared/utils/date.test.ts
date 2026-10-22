@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatDateTimeVN, formatDateVN, toVnTimestamptz } from './date';
+import { formatDateTimeVN, formatDateVN, toVnTimestamptz, getVnDateString, getVnDateRange } from './date';
 
 describe('formatDateTimeVN', () => {
   it('định dạng đúng ngày giờ theo múi giờ Việt Nam (UTC+7)', () => {
@@ -45,5 +45,26 @@ describe('toVnTimestamptz', () => {
     expect(toVnTimestamptz(null)).toBeUndefined();
     expect(toVnTimestamptz('')).toBeUndefined();
     expect(toVnTimestamptz(undefined)).toBeUndefined();
+  });
+});
+
+describe('getVnDateString & getVnDateRange', () => {
+  it('trả về chuỗi ngày YYYY-MM-DD chuẩn múi giờ Việt Nam', () => {
+    // 2026-10-22 17:30 UTC = 2026-10-23 00:30 VN
+    const d = new Date('2026-10-22T17:30:00Z');
+    expect(getVnDateString(d)).toBe('2026-10-23');
+  });
+
+  it('tạo đúng khoảng ngày cho 7days, 30days và thisMonth', () => {
+    const range7 = getVnDateRange('7days');
+    expect(range7.from).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(range7.to).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(range7.from <= range7.to).toBe(true);
+
+    const range30 = getVnDateRange('30days');
+    expect(range30.from <= range30.to).toBe(true);
+
+    const rangeMonth = getVnDateRange('thisMonth');
+    expect(rangeMonth.from.endsWith('-01')).toBe(true);
   });
 });
