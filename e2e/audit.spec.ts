@@ -1,28 +1,25 @@
 import { test, expect } from '@playwright/test';
 
+const E2E_OWNER_EMAIL = process.env.E2E_OWNER_EMAIL;
+const E2E_OWNER_PASSWORD = process.env.E2E_OWNER_PASSWORD;
+const E2E_RECEPTION_EMAIL = process.env.E2E_RECEPTION_EMAIL;
+const E2E_RECEPTION_PASSWORD = process.env.E2E_RECEPTION_PASSWORD;
+
 test.describe('CRM Hotel End-to-End System & Security Audit', () => {
 
-  test('TC-01: Login Form validation and quick-fill buttons', async ({ page }) => {
+  test('TC-01: Login Form validation and error state handling', async ({ page }) => {
     await page.goto('/login');
     await expect(page).toHaveTitle(/CRM|Đăng nhập/i);
 
-    // Verify presence of quick fill buttons
-    const adminBtn = page.getByRole('button', { name: /Chủ chuỗi/i });
-    await expect(adminBtn).toBeVisible();
-
-    // Click quick fill for Chủ chuỗi
-    await adminBtn.click();
-    await expect(page.locator('input#email')).toHaveValue('dnduycnhue@gmail.com');
-    await expect(page.locator('input#password')).toHaveValue('Cy3ZcjXWBf-Qem.');
-
-    // Click quick fill for Lễ tân
-    const letanBtn = page.getByRole('button', { name: /Lễ tân/i });
-    await letanBtn.click();
-    await expect(page.locator('input#email')).toHaveValue('letan.boutique@khachsan.vn');
-    await expect(page.locator('input#password')).toHaveValue('Hotel@2026!');
+    // Verify input fields exist
+    const emailInput = page.locator('input#email');
+    const passwordInput = page.locator('input#password');
+    await expect(emailInput).toBeVisible();
+    await expect(passwordInput).toBeVisible();
 
     // Test invalid credentials
-    await page.locator('input#password').fill('WrongPassword123');
+    await emailInput.fill('invalid_user_test@example.com');
+    await passwordInput.fill('WrongPassword123');
     await page.getByRole('button', { name: /Đăng Nhập Hệ Thống/i }).click();
 
     // Verify error message is rendered
@@ -30,6 +27,8 @@ test.describe('CRM Hotel End-to-End System & Security Audit', () => {
   });
 
   test('TC-02: Chủ chuỗi (Admin) full access & route rendering', async ({ page }) => {
+    test.skip(!E2E_OWNER_EMAIL || !E2E_OWNER_PASSWORD, 'Bỏ qua vì chưa cấu hình E2E_OWNER_EMAIL/E2E_OWNER_PASSWORD');
+
     // Collect console errors to detect any runtime exceptions
     const consoleErrors: string[] = [];
     page.on('console', (msg) => {
@@ -40,7 +39,8 @@ test.describe('CRM Hotel End-to-End System & Security Audit', () => {
 
     // Login as Admin
     await page.goto('/login');
-    await page.getByRole('button', { name: /Chủ chuỗi/i }).click();
+    await page.locator('input#email').fill(E2E_OWNER_EMAIL!);
+    await page.locator('input#password').fill(E2E_OWNER_PASSWORD!);
     await page.getByRole('button', { name: /Đăng Nhập Hệ Thống/i }).click();
 
     // Wait for redirect after login
@@ -94,8 +94,11 @@ test.describe('CRM Hotel End-to-End System & Security Audit', () => {
   });
 
   test('TC-03: Lễ tân (Receptionist) security boundaries & RLS verification', async ({ page }) => {
+    test.skip(!E2E_RECEPTION_EMAIL || !E2E_RECEPTION_PASSWORD, 'Bỏ qua vì chưa cấu hình E2E_RECEPTION_EMAIL/E2E_RECEPTION_PASSWORD');
+
     await page.goto('/login');
-    await page.getByRole('button', { name: /Lễ tân/i }).click();
+    await page.locator('input#email').fill(E2E_RECEPTION_EMAIL!);
+    await page.locator('input#password').fill(E2E_RECEPTION_PASSWORD!);
     await page.getByRole('button', { name: /Đăng Nhập Hệ Thống/i }).click();
 
     await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 15000 });
@@ -123,9 +126,12 @@ test.describe('CRM Hotel End-to-End System & Security Audit', () => {
   });
 
   test('TC-04: Guest creation & search workflow', async ({ page }) => {
+    test.skip(!E2E_OWNER_EMAIL || !E2E_OWNER_PASSWORD, 'Bỏ qua vì chưa cấu hình E2E_OWNER_EMAIL/E2E_OWNER_PASSWORD');
+
     // Login as Admin
     await page.goto('/login');
-    await page.getByRole('button', { name: /Chủ chuỗi/i }).click();
+    await page.locator('input#email').fill(E2E_OWNER_EMAIL!);
+    await page.locator('input#password').fill(E2E_OWNER_PASSWORD!);
     await page.getByRole('button', { name: /Đăng Nhập Hệ Thống/i }).click();
     await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 15000 });
 
