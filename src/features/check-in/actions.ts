@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/shared/auth/server';
 import { fail, ok, toFieldErrors, type ActionResult } from '@/shared/errors';
+import { toVnTimestamptz } from '@/shared/utils/date';
 import { checkInSchema, type CheckInInput } from './schemas';
 
 export interface GuestLookupResult {
@@ -120,12 +121,18 @@ export async function checkInGuestAction(
       }
     }
 
+    // Chỉ gửi document khi số giấy tờ hợp lệ và không chứa ký tự che mặt nạ (*)
+    const hasCleanDoc =
+      data.documentNumber &&
+      !data.documentNumber.includes('*') &&
+      data.documentNumber.trim().length >= 6;
+
     const payload = {
       branch_id: data.branchId,
       room_id: data.roomId,
-      check_in_at: data.isBackdated ? data.actualCheckInAt || null : undefined,
-      expected_check_out_at: data.expectedCheckOutAt,
-      checked_out_at: data.isBackdated ? data.actualCheckOutAt || null : undefined,
+      check_in_at: data.isBackdated ? toVnTimestamptz(data.actualCheckInAt) || null : undefined,
+      expected_check_out_at: toVnTimestamptz(data.expectedCheckOutAt) || data.expectedCheckOutAt,
+      checked_out_at: data.isBackdated ? toVnTimestamptz(data.actualCheckOutAt) || null : undefined,
       source_channel_id: channelId,
       partner_id: data.partnerId || null,
       blacklist_ack: data.blacklistAck,
@@ -138,10 +145,10 @@ export async function checkInGuestAction(
         nationality: (data.nationality || 'VN').slice(0, 2).toUpperCase(),
         phone: data.phone || null,
         email: data.email || null,
-        document: data.documentNumber
+        document: hasCleanDoc
           ? {
               type: data.documentType,
-              number: data.documentNumber,
+              number: data.documentNumber!.trim().toUpperCase(),
               country: (data.nationality || 'VN').slice(0, 2).toUpperCase(),
             }
           : null,

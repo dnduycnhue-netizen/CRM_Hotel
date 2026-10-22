@@ -102,8 +102,40 @@ vercel --prod --yes
 
 ---
 
-## 5. Lưu ý cho người bảo trì tiếp theo (Caveats & Best Practices)
+## 5. Nhật ký thực thi các Phase nâng cấp lớn (2026)
+
+### Phase P0: Bảo mật toàn diện (Nhánh `phase/p0-security`) - ĐÃ HOÀN THÀNH
+- **P0.1**: Loại bỏ toàn bộ tài khoản/mật khẩu thật khỏi file test E2E (`e2e/audit.spec.ts`), thiết lập `.env.e2e.example` và `docs/HUMAN_TODO.md`.
+- **P0.2**: Loại bỏ email thật khỏi JS client bundle; tách `dev-account-picker.tsx` chỉ tải động trong `process.env.NODE_ENV === 'development'`.
+- **P0.3**: Viết lại `src/proxy.ts` kiểm tra quyền theo `my_access()`, chặn truy cập theo whitelist route (deny by default).
+- **P0.4**: Migration `20261101000023_secure_exports_and_admin_rpc.sql` (thu hồi quyền export của Lễ tân, tạo RPC `export_guests`, `save_branch`, chặn sửa Owner và ma trận vai trò, chuyển Server Actions qua RPC).
+- **P0.5**: Migration `20261101000024_restrict_pii_direct_rls.sql` & `20261101000025_guests_list_rpc.sql` (thu hồi SELECT trực tiếp trên `guest_documents`, tạo view `guest_masked_documents` và RPC `get_guests_list` che mặt nạ PII).
+
+### Phase P1: Sửa lỗi Nghiệp vụ & Trải nghiệm (Nhánh `phase/p1-fixes`) - ĐÃ HOÀN THÀNH
+- **P1.1 (Check-in khách cũ)**: Xử lý triệt để lỗi "Dữ liệu không hợp lệ" do submit số CCCD masked (`*`). 
+  - Giao diện `check-in-form.tsx` hiển thị badge "Đã lưu hồ sơ (bảo mật)" và chỉ submit số mới khi người dùng chủ động sửa.
+  - `actions.ts` và `schemas.ts` tự động bỏ qua chuỗi mask để giữ nguyên dữ liệu gốc trong Postgres.
+- **P1.2 (Trả phòng & Hủy phòng)**: 
+  - Migration `20261101000026_checkout_stay_rpc.sql` tạo RPC `checkout_stay` với kiểm tra phân quyền hai lớp, tự động giải phóng phòng và ghi nhật ký kiểm toán `stay.checkout`.
+  - Cập nhật `stays/actions.ts` ánh xạ mã lỗi chi tiết tiếng Việt (đã trả phòng, đã hủy phòng, không tìm thấy).
+- **P1.3 (Chuẩn hóa Múi giờ Việt Nam)**:
+  - Tạo module `src/shared/utils/date.ts` với các hàm `formatDateTimeVN`, `formatDateVN`, `toVnTimestamptz`. Đã có bộ test Vitest 100% bao quát khoảnh khắc giao thoa nửa đêm (23:59 và 00:01).
+  - Áp dụng vào `in-house-table.tsx`, `audit-table.tsx`, `check-in/actions.ts`.
+- **P1.4 (Chặn ngập Audit Log)**:
+  - Đặt `prefetch={false}` cho các `<Link href={"/guests/[id]"}>` trong bảng danh sách khách hàng (`guest-list-table.tsx`). Chỉ kích hoạt RPC `get_guest_profile` và ghi audit `guest.view_full` khi người dùng chủ động bấm xem chi tiết.
+- **P1.5 (PWA Icons & Service Worker)**:
+  - Tự động sinh bộ icon PNG chuẩn PWA trong `public/icons/`: `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`.
+  - Nâng cấp `public/sw.js` sử dụng `Promise.allSettled`, loại bỏ nguy cơ crash cài đặt Service Worker.
+- **P1.6 (Thay thế Dialog chuẩn shadcn)**:
+  - Loại bỏ hoàn toàn `window.confirm` và `window.prompt` trong `in-house-table.tsx`.
+  - Thay bằng `Dialog` shadcn cho trả phòng và hủy phòng, có ô nhập lý do hủy bắt buộc (>= 5 ký tự) phục vụ kiểm toán.
+
+---
+
+## 6. Lưu ý cho người bảo trì tiếp theo (Caveats & Best Practices)
 
 1. **Next.js 16 Proxy Convention:** Trong phiên bản này, Next.js sử dụng `src/proxy.ts` (thay thế cho `middleware.ts`). Không tạo đồng thời hai file này để tránh lỗi xung đột build Turbopack.
 2. **PostgREST Query Typing:** Khi thực hiện `.insert()` hoặc `.update()` trên các bảng chưa sinh đủ type quan hệ hai chiều, hãy cast `(supabase.from('table_name') as any)` để tránh lỗi `SelectQueryError<"Invalid Relationships...">`.
-3. **Audit Log:** Mọi hành vi xuất dữ liệu khách (`guest.export_excel`), gỡ cờ Blacklist (`flag.resolve`), thay đổi quyền quản trị đều phải ghi nhận log vào bảng `audit_events` thông qua RPC `log_event`.
+3. **Audit Log:** Mọi hành vi xuất dữ liệu khách (`guest.export_excel`), gỡ cờ Blacklist (`flag.resolve`), trả phòng (`stay.checkout`), thay đổi quyền quản trị đều phải ghi nhận log vào bảng `audit_logs` thông qua RPC `log_event`.
+4. **Múi giờ:** Mọi chuỗi ngày giờ từ client gửi lên DB phải chuẩn hóa qua `toVnTimestamptz()` để luôn mang múi giờ `+07:00`. Khi hiển thị luôn dùng `formatDateTimeVN()`.
+

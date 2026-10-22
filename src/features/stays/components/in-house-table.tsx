@@ -14,6 +14,7 @@ import {
 import { Badge } from '@/shared/ui';
 import { Button } from '@/shared/ui';
 import { Input } from '@/shared/ui';
+import { Label } from '@/shared/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui';
 import { checkoutStayAction, cancelStayAction } from '../actions';
 import {
@@ -33,6 +34,17 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@/shared/ui';
+import { formatDateTimeVN } from '@/shared/utils/date';
+
 interface InHouseTableProps {
   stays: InHouseStay[];
   currentBranchId: string;
@@ -48,6 +60,20 @@ export function InHouseTable({
   const [activeStayList, setActiveStayList] = useState(stays);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Dialog state cho Trả phòng
+  const [checkoutTarget, setCheckoutTarget] = useState<{
+    stayId: string;
+    roomNumber: string;
+    guestName: string;
+  } | null>(null);
+
+  // Dialog state cho Hủy phòng
+  const [cancelTarget, setCancelTarget] = useState<{
+    stayId: string;
+    roomNumber: string;
+  } | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
+
   const filteredStays = useMemo(() => {
     if (!searchTerm.trim()) return activeStayList;
     const q = searchTerm.toLowerCase();
@@ -59,36 +85,37 @@ export function InHouseTable({
     );
   }, [activeStayList, searchTerm]);
 
-  const handleCheckout = (stayId: string, roomNumber: string, guestName: string) => {
-    if (!confirm(`Xác nhận hoàn tất thủ tục trả phòng ${roomNumber} cho khách ${guestName}?`)) {
-      return;
-    }
+  const confirmCheckout = () => {
+    if (!checkoutTarget) return;
+    const { stayId, roomNumber } = checkoutTarget;
 
     startTransition(async () => {
       const res = await checkoutStayAction(stayId, currentBranchId);
       if (res.ok) {
         toast.success(`Đã hoàn tất trả phòng ${roomNumber}! Phòng chuyển sang trạng thái dọn dẹp.`);
         setActiveStayList((prev) => prev.filter((s) => s.id !== stayId));
+        setCheckoutTarget(null);
       } else {
         toast.error(res.error.message);
       }
     });
   };
 
-  const handleCancel = (stayId: string, roomNumber: string) => {
-    const reason = prompt(`Nhập lý do hủy lượt ở phòng ${roomNumber} (tối thiểu 5 ký tự):`);
-    if (!reason) return;
-
-    if (reason.trim().length < 5) {
+  const confirmCancel = () => {
+    if (!cancelTarget) return;
+    if (cancelReason.trim().length < 5) {
       toast.error('Lý do hủy phải có tối thiểu 5 ký tự!');
       return;
     }
 
+    const { stayId, roomNumber } = cancelTarget;
     startTransition(async () => {
-      const res = await cancelStayAction(stayId, currentBranchId, reason);
+      const res = await cancelStayAction(stayId, currentBranchId, cancelReason);
       if (res.ok) {
         toast.success(`Đã hủy lượt ở phòng ${roomNumber}!`);
         setActiveStayList((prev) => prev.filter((s) => s.id !== stayId));
+        setCancelTarget(null);
+        setCancelReason('');
       } else {
         toast.error(res.error.message);
       }
@@ -302,14 +329,14 @@ export function InHouseTable({
                       {s.guestCount} người
                     </TableCell>
 
-                    <TableCell className="text-muted-foreground font-mono">
-                      {s.checkInAt.replace('T', ' ').slice(0, 16)}
+                    <TableCell className="text-muted-foreground font-mono text-xs">
+                      {formatDateTimeVN(s.checkInAt)}
                     </TableCell>
 
-                    <TableCell className="font-mono">
+                    <TableCell className="font-mono text-xs">
                       <span className={s.isOverdue ? 'text-rose-600 font-bold flex items-center gap-1' : 'text-foreground'}>
                         {s.isOverdue && <AlertCircle className="h-3 w-3 text-rose-600 shrink-0" />}
-                        {s.expectedCheckOutAt.replace('T', ' ').slice(0, 16)}
+                        {formatDateTimeVN(s.expectedCheckOutAt)}
                       </span>
                     </TableCell>
 
@@ -336,7 +363,7 @@ export function InHouseTable({
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleCheckout(s.id, s.roomNumber, s.primaryGuestName)}
+                          onClick={() => setCheckoutTarget({ stayId: s.id, roomNumber: s.roomNumber, guestName: s.primaryGuestName })}
                           disabled={isPending}
                           className="h-8 text-xs font-bold px-3 text-emerald-700 dark:text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/10 hover:border-emerald-500 transition-all rounded-lg"
                         >
@@ -346,7 +373,10 @@ export function InHouseTable({
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleCancel(s.id, s.roomNumber)}
+                          onClick={() => {
+                            setCancelTarget({ stayId: s.id, roomNumber: s.roomNumber });
+                            setCancelReason('');
+                          }}
                           disabled={isPending}
                           className="h-8 w-8 p-0 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 rounded-lg"
                           title="Hủy lượt ở (trong 6h)"
@@ -362,6 +392,93 @@ export function InHouseTable({
           </Table>
         </div>
       </Card>
+
+      {/* Dialog Xác nhận Trả phòng */}
+      <Dialog open={!!checkoutTarget} onOpenChange={(open) => !open && setCheckoutTarget(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-emerald-600">
+              <LogOut className="h-5 w-5" />
+              <span>Xác nhận trả phòng {checkoutTarget?.roomNumber}</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground pt-1">
+              Hoàn tất thủ tục check-out cho khách <strong className="text-foreground">{checkoutTarget?.guestName}</strong>.
+              Phòng sẽ được chuyển sang trạng thái dọn dẹp để sẵn sàng đón khách tiếp theo.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="mt-4 gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCheckoutTarget(null)}
+              disabled={isPending}
+            >
+              Hủy bỏ
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={confirmCheckout}
+              disabled={isPending}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+            >
+              {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}
+              Xác nhận trả phòng
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Xác nhận Hủy lượt ở */}
+      <Dialog open={!!cancelTarget} onOpenChange={(open) => !open && setCancelTarget(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-rose-600">
+              <Ban className="h-5 w-5" />
+              <span>Hủy lượt ở phòng {cancelTarget?.roomNumber}</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground pt-1">
+              Thao tác này chỉ áp dụng trong vòng 6 giờ từ khi tạo. Vui lòng nhập lý do hủy bắt buộc để lưu nhật ký kiểm toán.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2 py-2">
+            <Label htmlFor="cancelReason" className="text-xs font-bold text-foreground">
+              Lý do hủy (tối thiểu 5 ký tự) *
+            </Label>
+            <Input
+              id="cancelReason"
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              placeholder="VD: Khách đổi ý không nhận phòng, nhầm phòng..."
+              className="text-xs rounded-xl"
+              autoFocus
+            />
+          </div>
+
+          <DialogFooter className="mt-2 gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCancelTarget(null)}
+              disabled={isPending}
+            >
+              Đóng
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={confirmCancel}
+              disabled={isPending || cancelReason.trim().length < 5}
+              className="font-bold"
+            >
+              {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}
+              Xác nhận hủy lượt ở
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

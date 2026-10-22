@@ -158,7 +158,7 @@ export function CheckInForm({
         dob: dob || undefined,
         phone: phone ? normalizeVnPhone(phone) : undefined,
         documentType: detectedKind === 'passport' ? 'passport' : 'cccd',
-        documentNumber: docNumber || undefined,
+        documentNumber: docNumber && !docNumber.includes('*') ? docNumber : undefined,
         sourceChannelCode: sourceChannel,
         expectedCheckOutAt: expectedCheckOut,
         isBackdated,
@@ -349,9 +349,16 @@ export function CheckInForm({
                     />
                   </div>
                   <div className="sm:col-span-6 space-y-1.5">
-                    <Label htmlFor="docNumber" className="text-xs font-bold text-foreground">
-                      Số CCCD / Hộ chiếu
-                    </Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="docNumber" className="text-xs font-bold text-foreground">
+                        Số CCCD / Hộ chiếu
+                      </Label>
+                      {guestId && docNumber.includes('*') && (
+                        <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                          Đã lưu hồ sơ
+                        </span>
+                      )}
+                    </div>
                     <Input
                       id="docNumber"
                       value={docNumber}
@@ -359,6 +366,11 @@ export function CheckInForm({
                       placeholder="12 số CCCD hoặc mã Passport"
                       className="h-9.5 text-xs font-mono font-semibold rounded-xl"
                     />
+                    {guestId && docNumber.includes('*') && (
+                      <p className="text-[11px] text-muted-foreground">
+                        Hồ sơ đã lưu CCCD (bảo mật). Nhập số mới chỉ khi khách đổi giấy tờ.
+                      </p>
+                    )}
                   </div>
                 </div>
 

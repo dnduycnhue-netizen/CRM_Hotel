@@ -210,6 +210,7 @@ export function GuestListTable({ initialGuests, salesUsers, canExport = false }:
                           <div className="flex items-center gap-2">
                             <Link
                               href={`/guests/${g.id}`}
+                              prefetch={false}
                               className="font-semibold text-slate-900 dark:text-slate-100 hover:text-indigo-600 transition"
                             >
                               {g.full_name}
@@ -284,7 +285,7 @@ export function GuestListTable({ initialGuests, salesUsers, canExport = false }:
                     </td>
 
                     <td className="py-3.5 px-4 text-right">
-                      <Link href={`/guests/${g.id}`}>
+                      <Link href={`/guests/${g.id}`} prefetch={false}>
                         <Button
                           variant="ghost"
                           size="sm"

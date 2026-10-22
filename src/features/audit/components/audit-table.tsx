@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { AuditLogItem } from '../types';
 import { AuditDiffViewer } from './audit-diff-viewer';
+import { formatDateTimeVN } from '@/shared/utils/date';
 import {
   ClipboardList,
   ChevronDown,
@@ -213,8 +214,8 @@ export function AuditTable({ initialLogs, branches }: Props) {
                             )
                           ) : null}
                         </td>
-                        <td className="py-3 px-4 text-xs text-slate-300 whitespace-nowrap">
-                          {new Date(log.occurred_at).toLocaleString('vi-VN')}
+                        <td className="py-3 px-4 text-xs text-slate-300 whitespace-nowrap font-mono">
+                          {formatDateTimeVN(log.occurred_at, 'full')}
                         </td>
                         <td className="py-3 px-4 text-xs font-medium text-slate-200">
                           {log.actor_name || (log.actor_id ? log.actor_id.substring(0, 8) + '...' : 'Hệ thống (Cron)')}

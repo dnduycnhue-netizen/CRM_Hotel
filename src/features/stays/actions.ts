@@ -20,6 +20,15 @@ export async function checkoutStayAction(
     });
 
     if (error) {
+      if (error.message?.includes('already checked out')) {
+        return fail('CONFLICT', undefined, 'Lượt ở này đã được trả phòng trước đó');
+      }
+      if (error.message?.includes('stay was cancelled')) {
+        return fail('CONFLICT', undefined, 'Lượt ở này đã bị hủy');
+      }
+      if (error.message?.includes('not found')) {
+        return fail('NOT_FOUND', undefined, 'Không tìm thấy thông tin lượt ở');
+      }
       return fail(error.code);
     }
 
@@ -36,7 +45,7 @@ export async function cancelStayAction(
   reason: string
 ): Promise<ActionResult<{ success: boolean }>> {
   if (!reason || reason.trim().length < 5) {
-    return fail('VALIDATION');
+    return fail('VALIDATION', undefined, 'Lý do hủy phải có ít nhất 5 ký tự');
   }
 
   const auth = await requirePermission('stay.cancel', branchId);
@@ -50,6 +59,12 @@ export async function cancelStayAction(
     });
 
     if (error) {
+      if (error.message?.includes('already cancelled')) {
+        return fail('CONFLICT', undefined, 'Lượt ở này đã bị hủy trước đó');
+      }
+      if (error.message?.includes('not found')) {
+        return fail('NOT_FOUND', undefined, 'Không tìm thấy thông tin lượt ở');
+      }
       return fail(error.code);
     }
 
