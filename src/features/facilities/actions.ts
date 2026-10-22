@@ -23,14 +23,14 @@ export async function createWorkOrderAction(
     }
 
     const hasPerm = await requirePermission('wo.create', parsed.data.branch_id);
-    if (!hasPerm) {
-      return fail('FORBIDDEN');
+    if (!hasPerm.ok) {
+      return hasPerm;
     }
 
     if (parsed.data.blocks_room) {
       const canBlock = await requirePermission('room.block', parsed.data.branch_id);
-      if (!canBlock) {
-        return fail('FORBIDDEN');
+      if (!canBlock.ok) {
+        return canBlock;
       }
     }
 
@@ -104,6 +104,9 @@ export async function setRoomBlockAction(
       return fail('VALIDATION', toFieldErrors(parsed.error));
     }
 
+    const hasPerm = await requirePermission('room.block');
+    if (!hasPerm.ok) return hasPerm;
+
     const supabase = await createClient();
     const { data, error } = await supabase.rpc('set_room_block', {
       p_room_id: parsed.data.room_id,
@@ -127,6 +130,9 @@ export async function releaseRoomBlockAction(
   blockId: string
 ): Promise<ActionResult<void>> {
   try {
+    const hasPerm = await requirePermission('room.block');
+    if (!hasPerm.ok) return hasPerm;
+
     const supabase = await createClient();
     const { error } = await supabase.rpc('release_room_block', {
       p_block_id: blockId,

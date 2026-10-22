@@ -1,4 +1,6 @@
 import { getSystemRoles, RoleMatrixTable } from '@/features/admin';
+import { requirePermission } from '@/shared/auth/server';
+import { redirect } from 'next/navigation';
 
 export const metadata = {
   title: 'Ma trận vai trò & quyền | CRM Chuỗi Khách Sạn',
@@ -6,6 +8,11 @@ export const metadata = {
 };
 
 export default async function SettingsRolesPage() {
+  const hasPerm = await requirePermission('settings.roles');
+  if (!hasPerm.ok) {
+    redirect('/');
+  }
+
   const { roles, permissions } = await getSystemRoles();
 
   return (

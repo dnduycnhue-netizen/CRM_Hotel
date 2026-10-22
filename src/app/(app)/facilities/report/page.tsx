@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default async function ReportIssuePage() {
   const hasPerm = await requirePermission('wo.create');
-  if (!hasPerm) {
+  if (!hasPerm.ok) {
     redirect('/');
   }
 

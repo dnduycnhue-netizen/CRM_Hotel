@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default async function MonthlyRevenuePage() {
   const hasPerm = await requirePermission('revenue.view');
-  if (!hasPerm) {
+  if (!hasPerm.ok) {
     redirect('/reports');
   }
 

@@ -17,7 +17,7 @@ export default async function ApprovalsPage() {
     requirePermission('blacklist.approve'),
   ]);
 
-  if (!hasMergePerm && !hasFlagPerm) {
+  if (!hasMergePerm.ok && !hasFlagPerm.ok) {
     redirect('/');
   }
 

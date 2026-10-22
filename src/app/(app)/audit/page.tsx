@@ -14,7 +14,7 @@ export default async function AuditPage() {
     requirePermission('audit.view_branch'),
   ]);
 
-  if (!hasAllPerm && !hasBranchPerm) {
+  if (!hasAllPerm.ok && !hasBranchPerm.ok) {
     redirect('/');
   }
 

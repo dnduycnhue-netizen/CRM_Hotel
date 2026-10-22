@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default async function UsersPage() {
   const hasPerm = await requirePermission('settings.users');
-  if (!hasPerm) {
+  if (!hasPerm.ok) {
     redirect('/');
   }
 

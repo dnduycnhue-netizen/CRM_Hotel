@@ -21,7 +21,13 @@ export async function loginAction(
   });
 
   if (error) {
-    return fail('UNAUTHENTICATED');
+    return {
+      ok: false,
+      error: {
+        code: 'UNAUTHENTICATED',
+        message: 'Email hoặc mật khẩu không chính xác, vui lòng kiểm tra lại.',
+      },
+    };
   }
 
   redirect('/check-in');

@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function GuestDetailPage({ params }: PageProps) {
   const hasPerm = await requirePermission('guest.view_summary');
-  if (!hasPerm) {
+  if (!hasPerm.ok) {
     redirect('/');
   }
 

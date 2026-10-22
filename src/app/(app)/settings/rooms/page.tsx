@@ -1,4 +1,6 @@
 import { getRooms, getActiveBranches, RoomsTable } from '@/features/admin';
+import { requirePermission } from '@/shared/auth/server';
+import { redirect } from 'next/navigation';
 
 export const metadata = {
   title: 'Cài đặt phòng | CRM Chuỗi Khách Sạn',
@@ -6,6 +8,11 @@ export const metadata = {
 };
 
 export default async function SettingsRoomsPage() {
+  const hasPerm = await requirePermission('settings.rooms');
+  if (!hasPerm.ok) {
+    redirect('/');
+  }
+
   const [rooms, branches] = await Promise.all([
     getRooms(),
     getActiveBranches(),

@@ -23,8 +23,8 @@ export async function createGuestAction(
     }
 
     const hasPerm = await requirePermission('guest.create');
-    if (!hasPerm) {
-      return fail('FORBIDDEN');
+    if (!hasPerm.ok) {
+      return hasPerm;
     }
 
     const supabase = await createClient();
@@ -72,8 +72,8 @@ export async function updateGuestAction(
     }
 
     const hasPerm = await requirePermission('guest.update');
-    if (!hasPerm) {
-      return fail('FORBIDDEN');
+    if (!hasPerm.ok) {
+      return hasPerm;
     }
 
     const supabase = await createClient();
@@ -105,8 +105,8 @@ export async function addGuestNoteAction(
     }
 
     const hasPerm = await requirePermission('guest.note_create');
-    if (!hasPerm) {
-      return fail('FORBIDDEN');
+    if (!hasPerm.ok) {
+      return hasPerm;
     }
 
     const supabase = await createClient();
@@ -155,8 +155,8 @@ export async function setGuestTagsAction(
 ): Promise<ActionResult<void>> {
   try {
     const hasPerm = await requirePermission('guest.tag_manage');
-    if (!hasPerm) {
-      return fail('FORBIDDEN');
+    if (!hasPerm.ok) {
+      return hasPerm;
     }
 
     const supabase = await createClient();
@@ -182,8 +182,8 @@ export async function assignSalesOwnerAction(
 ): Promise<ActionResult<void>> {
   try {
     const hasPerm = await requirePermission('guest.assign_owner');
-    if (!hasPerm) {
-      return fail('FORBIDDEN');
+    if (!hasPerm.ok) {
+      return hasPerm;
     }
 
     const supabase = await createClient();
@@ -211,8 +211,8 @@ export async function setGuestConsentAction(
 ): Promise<ActionResult<void>> {
   try {
     const hasPerm = await requirePermission('consent.manage');
-    if (!hasPerm) {
-      return fail('FORBIDDEN');
+    if (!hasPerm.ok) {
+      return hasPerm;
     }
 
     const supabase = await createClient();
@@ -239,13 +239,13 @@ export async function exportGuestsAction(): Promise<
 > {
   try {
     const hasExportPerm = await requirePermission('guest.export');
-    if (!hasExportPerm) {
-      return fail('FORBIDDEN');
+    if (!hasExportPerm.ok) {
+      return hasExportPerm;
     }
 
     const hasExportFullPerm = await requirePermission('guest.export_full');
     const hasViewFullPerm = await requirePermission('guest.view_full');
-    const allowFull = hasExportFullPerm || hasViewFullPerm;
+    const allowFull = hasExportFullPerm.ok || hasViewFullPerm.ok;
 
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -381,7 +381,7 @@ export async function proposeGuestFlagAction(input: {
 }): Promise<ActionResult<{ flag_id: string }>> {
   try {
     const hasPerm = await requirePermission('blacklist.propose', input.branch_id);
-    if (!hasPerm) return fail('FORBIDDEN');
+    if (!hasPerm.ok) return hasPerm;
 
     const supabase = await createClient();
     const { data, error } = await supabase.rpc('propose_flag', {

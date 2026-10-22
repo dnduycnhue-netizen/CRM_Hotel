@@ -1,4 +1,6 @@
 import { getSystemModules, getActiveBranches, ModuleMatrixTable } from '@/features/admin';
+import { requirePermission } from '@/shared/auth/server';
+import { redirect } from 'next/navigation';
 
 export const metadata = {
   title: 'Bật/tắt Module tính năng | CRM Chuỗi Khách Sạn',
@@ -6,6 +8,11 @@ export const metadata = {
 };
 
 export default async function SettingsModulesPage() {
+  const hasPerm = await requirePermission('settings.modules');
+  if (!hasPerm.ok) {
+    redirect('/');
+  }
+
   const [modules, branches] = await Promise.all([
     getSystemModules(),
     getActiveBranches(),

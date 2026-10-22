@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default async function AssetsPage() {
   const hasPerm = await requirePermission('facility.view');
-  if (!hasPerm) {
+  if (!hasPerm.ok) {
     redirect('/');
   }
 

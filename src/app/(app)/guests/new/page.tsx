@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default async function NewGuestPage() {
   const hasPerm = await requirePermission('guest.create');
-  if (!hasPerm) {
+  if (!hasPerm.ok) {
     redirect('/guests');
   }
 

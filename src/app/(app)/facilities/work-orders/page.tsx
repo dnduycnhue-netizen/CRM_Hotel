@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default async function WorkOrdersPage() {
   const hasPerm = await requirePermission('wo.view');
-  if (!hasPerm) {
+  if (!hasPerm.ok) {
     redirect('/');
   }
 

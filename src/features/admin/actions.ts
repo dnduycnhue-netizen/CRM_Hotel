@@ -22,8 +22,8 @@ export async function createUserAction(
   formData: FormData
 ): Promise<ActionResult<{ id: string; fullName: string }>> {
   const hasPerm = await requirePermission('settings.users');
-  if (!hasPerm) {
-    return fail('FORBIDDEN');
+  if (!hasPerm.ok) {
+    return hasPerm;
   }
 
   const email = (formData.get('email') as string)?.trim().toLowerCase();
@@ -92,8 +92,8 @@ export async function updateUserAction(
   formData: FormData
 ): Promise<ActionResult<{ success: boolean }>> {
   const hasPerm = await requirePermission('settings.users');
-  if (!hasPerm) {
-    return fail('FORBIDDEN');
+  if (!hasPerm.ok) {
+    return hasPerm;
   }
 
   const userId = formData.get('userId') as string;
@@ -147,8 +147,8 @@ export async function updateRolePermissionsAction(
   permissionKeys: string[]
 ): Promise<ActionResult<{ count: number }>> {
   const hasPerm = await requirePermission('settings.roles');
-  if (!hasPerm) {
-    return fail('FORBIDDEN');
+  if (!hasPerm.ok) {
+    return hasPerm;
   }
 
   const adminClient = supabaseAdmin();

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default async function SourcesPage() {
   const hasPerm = await requirePermission('settings.sources');
-  if (!hasPerm) {
+  if (!hasPerm.ok) {
     redirect('/');
   }
 

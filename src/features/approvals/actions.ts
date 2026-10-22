@@ -29,7 +29,7 @@ export async function proposeMergeAction(
     }
 
     const hasPerm = await requirePermission('merge.propose');
-    if (!hasPerm) return fail('FORBIDDEN');
+    if (!hasPerm.ok) return hasPerm;
 
     const supabase = await createClient();
     const { data, error } = await supabase.rpc('propose_merge', {
@@ -57,7 +57,7 @@ export async function approveMergeAction(
     }
 
     const hasPerm = await requirePermission('merge.approve');
-    if (!hasPerm) return fail('FORBIDDEN');
+    if (!hasPerm.ok) return hasPerm;
 
     const supabase = await createClient();
     const { error } = await supabase.rpc('approve_merge', {
@@ -85,7 +85,7 @@ export async function rejectMergeAction(
     }
 
     const hasPerm = await requirePermission('merge.approve');
-    if (!hasPerm) return fail('FORBIDDEN');
+    if (!hasPerm.ok) return hasPerm;
 
     const supabase = await createClient();
     const { error } = await supabase.rpc('reject_merge', {
@@ -112,7 +112,7 @@ export async function proposeFlagAction(
     }
 
     const hasPerm = await requirePermission('blacklist.propose', parsed.data.branch_id);
-    if (!hasPerm) return fail('FORBIDDEN');
+    if (!hasPerm.ok) return hasPerm;
 
     const supabase = await createClient();
     const { data, error } = await supabase.rpc('propose_flag', {
@@ -142,6 +142,9 @@ export async function decideFlagAction(
       return fail('VALIDATION', toFieldErrors(parsed.error));
     }
 
+    const hasPerm = await requirePermission('blacklist.approve');
+    if (!hasPerm.ok) return hasPerm;
+
     const supabase = await createClient();
     const { error } = await supabase.rpc('decide_flag', {
       p_id: parsed.data.id,
@@ -169,7 +172,7 @@ export async function removeFlagAction(
     }
 
     const hasPerm = await requirePermission('blacklist.remove');
-    if (!hasPerm) return fail('FORBIDDEN');
+    if (!hasPerm.ok) return hasPerm;
 
     const supabase = await createClient();
     const { error } = await supabase.rpc('remove_flag', {

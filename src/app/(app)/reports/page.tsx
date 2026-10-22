@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default async function ReportsPage() {
   const hasPerm = await requirePermission('report.view_branch');
-  if (!hasPerm) {
+  if (!hasPerm.ok) {
     redirect('/');
   }
 

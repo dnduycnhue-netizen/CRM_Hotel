@@ -118,10 +118,12 @@ export function GuestForm() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              <label htmlFor="full_name" className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
                 Họ và tên <span className="text-rose-500">*</span>
               </label>
               <input
+                id="full_name"
+                name="full_name"
                 type="text"
                 required
                 value={formData.full_name}
@@ -132,10 +134,12 @@ export function GuestForm() {
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              <label htmlFor="gender" className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
                 Giới tính
               </label>
               <select
+                id="gender"
+                name="gender"
                 value={formData.gender}
                 onChange={(e: any) => setFormData({ ...formData, gender: e.target.value })}
                 className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
@@ -147,10 +151,12 @@ export function GuestForm() {
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              <label htmlFor="nationality" className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
                 Quốc tịch (Mã 2 chữ cái)
               </label>
               <input
+                id="nationality"
+                name="nationality"
                 type="text"
                 value={formData.nationality}
                 maxLength={2}
@@ -170,10 +176,12 @@ export function GuestForm() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              <label htmlFor="phone" className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
                 Số điện thoại
               </label>
               <input
+                id="phone"
+                name="phone"
                 type="text"
                 value={formData.phone || ''}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -183,10 +191,12 @@ export function GuestForm() {
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              <label htmlFor="email" className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
                 Email
               </label>
               <input
+                id="email"
+                name="email"
                 type="email"
                 value={formData.email || ''}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -196,10 +206,12 @@ export function GuestForm() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              <label htmlFor="address_line" className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
                 Địa chỉ cư trú
               </label>
               <input
+                id="address_line"
+                name="address_line"
                 type="text"
                 value={formData.address_line || ''}
                 onChange={(e) => setFormData({ ...formData, address_line: e.target.value })}

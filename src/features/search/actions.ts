@@ -33,8 +33,8 @@ export async function searchGuestsAction(
     }
 
     const hasPerm = await requirePermission('guest.search');
-    if (!hasPerm) {
-      return fail('FORBIDDEN');
+    if (!hasPerm.ok) {
+      return hasPerm;
     }
 
     const mode = explicitMode || inferSearchMode(q);

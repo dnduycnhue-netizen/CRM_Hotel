@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default async function SearchPage() {
   const hasPerm = await requirePermission('guest.search');
-  if (!hasPerm) {
+  if (!hasPerm.ok) {
     redirect('/');
   }
 
