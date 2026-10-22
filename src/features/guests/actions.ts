@@ -244,8 +244,7 @@ export async function exportGuestsAction(): Promise<
     }
 
     const hasExportFullPerm = await requirePermission('guest.export_full');
-    const hasViewFullPerm = await requirePermission('guest.view_full');
-    const allowFull = hasExportFullPerm.ok || hasViewFullPerm.ok;
+    const allowFull = hasExportFullPerm.ok;
 
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -316,9 +315,11 @@ export async function exportGuestsAction(): Promise<
 
       if (!allowFull) {
         if (phoneDisplay.length >= 7) {
-          phoneDisplay = phoneDisplay.slice(0, 3) + '***' + phoneDisplay.slice(-4);
+          phoneDisplay = phoneDisplay.slice(0, 3) + '****' + phoneDisplay.slice(-3);
         }
-        if (docDisplay.length >= 6) {
+        if (docDisplay.length >= 7) {
+          docDisplay = docDisplay.slice(0, 3) + '******' + docDisplay.slice(-3);
+        } else if (docDisplay) {
           docDisplay = '******' + docDisplay.slice(-4);
         }
         if (dobDisplay.length >= 4) {
@@ -358,7 +359,7 @@ export async function exportGuestsAction(): Promise<
       p_entity: 'guests',
       p_meta: {
         exported_count: data.length,
-        has_full_view: hasViewFullPerm,
+        has_full_view: allowFull,
       },
     });
 

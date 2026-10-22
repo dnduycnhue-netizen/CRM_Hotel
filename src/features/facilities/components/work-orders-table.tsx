@@ -33,7 +33,7 @@ export function WorkOrdersTable({
   branches,
   currentBranchId,
 }: WorkOrdersTableProps) {
-  const [selectedBranch, setSelectedBranch] = useState<string>(currentBranchId || 'all');
+  const [selectedBranch, setSelectedBranch] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isPending, startTransition] = useTransition();
 

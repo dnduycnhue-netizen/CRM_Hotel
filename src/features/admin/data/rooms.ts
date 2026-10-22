@@ -16,7 +16,17 @@ export async function getRooms(branchId?: string | null): Promise<RoomItem[]> {
       query = query.eq('branch_id', branchId);
     }
 
-    const { data, error } = await query;
+    // Fetch rooms, active stays and room blocks to determine room availability
+    const [roomsRes, staysRes, blocksRes] = await Promise.all([
+      query,
+      supabase.from('stays').select('room_id').eq('status', 'in_house'),
+      supabase.from('room_blocks').select('room_id').is('released_at', null),
+    ]);
+
+    const { data, error } = roomsRes;
+    const occupiedRoomIds = new Set(staysRes.data?.map((s: any) => s.room_id) || []);
+    const blockedRoomIds = new Set(blocksRes.data?.map((b: any) => b.room_id) || []);
+
     if (!error && Array.isArray(data) && data.length > 0) {
       return data.map((r: any) => ({
         id: r.id,
@@ -27,10 +37,12 @@ export async function getRooms(branchId?: string | null): Promise<RoomItem[]> {
         floor: r.floor,
         roomType: r.room_type || 'Standard',
         isActive: r.is_active,
+        isOccupied: occupiedRoomIds.has(r.id),
+        isBlocked: blockedRoomIds.has(r.id),
       }));
     }
   } catch {
-    // Fallback when Supabase container is initializing
+    // Continue to fallback
   }
 
   // Generate fallback rooms from seed specifications (240 rooms total)

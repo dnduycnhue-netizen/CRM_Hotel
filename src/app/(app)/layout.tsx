@@ -28,6 +28,10 @@ export default async function AppLayout({
             branches={branches}
             currentBranchId={currentBranchId}
             userEmail={session?.email}
+            canManageUsers={session?.can('settings.users') ?? false}
+            canViewRoles={session?.can('settings.roles') ?? false}
+            canCreateStay={session?.can('stay.create') ?? false}
+            canReportFacility={session?.can('wo.create') ?? false}
           />
           <main className="flex-1 p-6 overflow-y-auto">{children}</main>
         </div>

@@ -43,9 +43,13 @@ const isErrorCode = (c: string): c is ErrorCode => c in messages.errors;
 export const ok = <T>(data: T): ActionResult<T> => ({ ok: true, data });
 
 // Nhận ErrorCode của app hoặc SQLSTATE của Postgres
-export function fail(code: string | undefined, fieldErrors?: Record<string, string[]>): ActionResult<never> {
+export function fail(
+  code: string | undefined,
+  fieldErrors?: Record<string, string[]>,
+  customMessage?: string
+): ActionResult<never> {
   const c: ErrorCode = code && isErrorCode(code) ? code : (code && PG_CODE_MAP[code]) || 'UNKNOWN';
-  return { ok: false, error: { code: c, message: messages.errors[c], fieldErrors } };
+  return { ok: false, error: { code: c, message: customMessage || messages.errors[c], fieldErrors } };
 }
 
 export const toFieldErrors = (e: z.ZodError) => z.flattenError(e).fieldErrors as Record<string, string[]>;

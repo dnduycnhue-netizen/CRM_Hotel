@@ -25,6 +25,7 @@ export async function createUserAction(
   if (!hasPerm.ok) {
     return hasPerm;
   }
+  const callerUserId = hasPerm.data.userId;
 
   const email = (formData.get('email') as string)?.trim().toLowerCase();
   const password = formData.get('password') as string;
@@ -42,6 +43,22 @@ export async function createUserAction(
   }
 
   const adminClient = supabaseAdmin();
+
+  // Chống leo quyền: Chỉ Chủ chuỗi mới có quyền gán role Owner
+  const { data: assignedRole } = await (adminClient
+    .from('roles') as any)
+    .select('key')
+    .eq('id', roleId)
+    .single();
+
+  const { data: callerRoles } = await (adminClient.from('user_roles') as any)
+    .select('role:roles(key)')
+    .eq('user_id', callerUserId);
+  const isCallerOwner = callerRoles?.some((r: any) => r.role?.key === 'owner');
+
+  if (assignedRole?.key === 'owner' && !isCallerOwner) {
+    return fail('FORBIDDEN', undefined, 'Chỉ Chủ chuỗi mới có quyền tạo tài khoản với vai trò Chủ chuỗi');
+  }
 
   // 1. Tạo auth user
   const { data: userRes, error: userErr } = await adminClient.auth.admin.createUser({
@@ -86,7 +103,7 @@ export async function createUserAction(
 }
 
 /**
- * Cập nhật thông tin nhân sự và phân bổ lại vai trò / cơ sở
+ * Cập nhật thông tin nhân sự và phân bổ lại vai trò / cơ sở (chống leo quyền)
  */
 export async function updateUserAction(
   formData: FormData
@@ -95,6 +112,7 @@ export async function updateUserAction(
   if (!hasPerm.ok) {
     return hasPerm;
   }
+  const callerUserId = hasPerm.data.userId;
 
   const userId = formData.get('userId') as string;
   const fullName = (formData.get('fullName') as string)?.trim();
@@ -108,6 +126,51 @@ export async function updateUserAction(
   }
 
   const adminClient = supabaseAdmin();
+
+  // Kiểm tra vai trò của người thực hiện
+  const { data: callerRoles } = await (adminClient.from('user_roles') as any)
+    .select('role:roles(key)')
+    .eq('user_id', callerUserId);
+  const isCallerOwner = callerRoles?.some((r: any) => r.role?.key === 'owner');
+
+  // Kiểm tra tài khoản đích có phải là Chủ chuỗi
+  const { data: targetRoles } = await (adminClient.from('user_roles') as any)
+    .select('role:roles(key)')
+    .eq('user_id', userId);
+  const isTargetOwner = targetRoles?.some((r: any) => r.role?.key === 'owner');
+
+  if (isTargetOwner && !isCallerOwner) {
+    return fail('FORBIDDEN', undefined, 'Bạn không thể chỉnh sửa tài khoản của Chủ chuỗi');
+  }
+
+  // Kiểm tra vai trò đang muốn gán
+  const { data: assignedRole } = await (adminClient
+    .from('roles') as any)
+    .select('key')
+    .eq('id', roleId)
+    .single();
+
+  if (assignedRole?.key === 'owner' && !isCallerOwner) {
+    return fail('FORBIDDEN', undefined, 'Chỉ Chủ chuỗi mới có quyền gán vai trò Chủ chuỗi');
+  }
+
+  // So sánh tập quyền: người thực hiện không được sửa tài khoản có quyền mà mình không có
+  if (!isCallerOwner) {
+    const { data: targetPerms } = await adminClient
+      .from('user_effective_permissions')
+      .select('permission_key')
+      .eq('user_id', userId);
+    const { data: callerPerms } = await adminClient
+      .from('user_effective_permissions')
+      .select('permission_key')
+      .eq('user_id', callerUserId);
+
+    const callerSet = new Set((callerPerms || []).map((p: any) => p.permission_key));
+    const targetHasUnheld = (targetPerms || []).some((p: any) => !callerSet.has(p.permission_key));
+    if (targetHasUnheld) {
+      return fail('FORBIDDEN', undefined, 'Không thể chỉnh sửa nhân sự sở hữu tập quyền cao hơn bạn');
+    }
+  }
 
   // 1. Cập nhật profile
   const { error: pErr } = await adminClient
@@ -140,7 +203,7 @@ export async function updateUserAction(
 }
 
 /**
- * Lưu ma trận quyền hạn cho một vai trò hệ thống
+ * Lưu ma trận quyền hạn cho một vai trò hệ thống (chỉ Chủ chuỗi được chỉnh sửa)
  */
 export async function updateRolePermissionsAction(
   roleId: string,
@@ -150,8 +213,33 @@ export async function updateRolePermissionsAction(
   if (!hasPerm.ok) {
     return hasPerm;
   }
+  const callerUserId = hasPerm.data.userId;
 
   const adminClient = supabaseAdmin();
+
+  // Kiểm tra vai trò của người gọi
+  const { data: callerRoles } = await (adminClient.from('user_roles') as any)
+    .select('role:roles(key)')
+    .eq('user_id', callerUserId);
+  const isCallerOwner = callerRoles?.some((r: any) => r.role?.key === 'owner');
+
+  if (!isCallerOwner) {
+    return fail('FORBIDDEN', undefined, 'Chỉ Chủ chuỗi mới có thẩm quyền chỉnh sửa ma trận phân quyền hệ thống');
+  }
+
+  const { data: targetRole } = await (adminClient
+    .from('roles') as any)
+    .select('key, name')
+    .eq('id', roleId)
+    .single();
+
+  if (!targetRole) {
+    return fail('NOT_FOUND');
+  }
+
+  if (targetRole.key === 'owner') {
+    return fail('FORBIDDEN', undefined, 'Vai trò Chủ chuỗi được bảo vệ, không thể sửa đổi ma trận quyền');
+  }
 
   // Xóa quyền cũ và ghi quyền mới
   await adminClient.from('role_permissions').delete().eq('role_id', roleId);
@@ -177,4 +265,94 @@ export async function updateRolePermissionsAction(
 
   revalidatePath('/settings/roles');
   return ok({ count: permissionKeys.length });
+}
+
+export interface SaveBranchInput {
+  id?: string | null;
+  code: string;
+  name: string;
+  phone?: string | null;
+  address?: string | null;
+  nightCutoff?: string;
+  defaultCheckoutTime?: string;
+  isActive?: boolean;
+}
+
+/**
+ * Thêm mới hoặc cập nhật thông tin cơ sở khách sạn
+ */
+export async function saveBranchAction(
+  rawInput: FormData | SaveBranchInput
+): Promise<ActionResult<{ id: string }>> {
+  const hasPerm = await requirePermission('settings.branches');
+  if (!hasPerm.ok) return hasPerm;
+
+  let id: string | null = null;
+  let code = '';
+  let name = '';
+  let phone: string | null = null;
+  let address: string | null = null;
+  let nightCutoff = '06:00:00';
+  let defaultCheckoutTime = '12:00:00';
+  let isActive = true;
+
+  if (rawInput instanceof FormData) {
+    id = (rawInput.get('id') as string) || null;
+    code = (rawInput.get('code') as string)?.trim().toUpperCase() || '';
+    name = (rawInput.get('name') as string)?.trim() || '';
+    phone = (rawInput.get('phone') as string)?.trim() || null;
+    address = (rawInput.get('address') as string)?.trim() || null;
+    nightCutoff = (rawInput.get('nightCutoff') as string) || '06:00:00';
+    defaultCheckoutTime = (rawInput.get('defaultCheckoutTime') as string) || '12:00:00';
+    isActive = rawInput.get('isActive') !== 'false';
+  } else {
+    id = rawInput.id || null;
+    code = rawInput.code?.trim().toUpperCase() || '';
+    name = rawInput.name?.trim() || '';
+    phone = rawInput.phone?.trim() || null;
+    address = rawInput.address?.trim() || null;
+    nightCutoff = rawInput.nightCutoff || '06:00:00';
+    defaultCheckoutTime = rawInput.defaultCheckoutTime || '12:00:00';
+    isActive = rawInput.isActive !== undefined ? rawInput.isActive : true;
+  }
+
+  if (!code || !name) {
+    return fail('VALIDATION', { name: ['Mã và tên cơ sở không được để trống'] });
+  }
+
+  const adminClient = supabaseAdmin();
+  if (id) {
+    const { error } = await (adminClient.from('branches') as any)
+      .update({
+        code,
+        name,
+        phone,
+        address,
+        night_cutoff: nightCutoff,
+        default_checkout_time: defaultCheckoutTime,
+        is_active: isActive,
+      })
+      .eq('id', id);
+    if (error) return fail(error.code);
+  } else {
+    const { data, error } = await (adminClient.from('branches') as any)
+      .insert({
+        code,
+        name,
+        phone,
+        address,
+        night_cutoff: nightCutoff,
+        default_checkout_time: defaultCheckoutTime,
+        is_active: isActive,
+      })
+      .select('id')
+      .single();
+    if (error || !data) return fail(error?.code || 'INTERNAL_ERROR');
+    revalidatePath('/settings/branches');
+    return ok({ id: (data as any).id });
+  }
+
+  revalidatePath('/settings/branches');
+  revalidatePath('/', 'layout');
+  return ok({ id: id || '' });
 }

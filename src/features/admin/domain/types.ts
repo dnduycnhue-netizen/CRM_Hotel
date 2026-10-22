@@ -21,6 +21,8 @@ export interface RoomItem {
   floor: number | null;
   roomType: string | null;
   isActive: boolean;
+  isOccupied?: boolean;
+  isBlocked?: boolean;
 }
 
 export interface SystemModule {

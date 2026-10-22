@@ -4,15 +4,17 @@ import React, { useState } from 'react';
 import { MergeRequestItem, PendingFlagItem } from '../types';
 import { MergeApprovalCard } from './merge-approval-card';
 import { FlagsApprovalTable } from './flags-approval-table';
-import { GitMerge, ShieldAlert, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ActiveFlagsTable } from './active-flags-table';
+import { GitMerge, ShieldAlert, CheckCircle2, ShieldCheck } from 'lucide-react';
 
 interface Props {
   mergeRequests: MergeRequestItem[];
   pendingFlags: PendingFlagItem[];
+  activeFlags?: PendingFlagItem[];
 }
 
-export function ApprovalsHub({ mergeRequests, pendingFlags }: Props) {
-  const [activeTab, setActiveTab] = useState<'merges' | 'flags'>('merges');
+export function ApprovalsHub({ mergeRequests, pendingFlags, activeFlags = [] }: Props) {
+  const [activeTab, setActiveTab] = useState<'merges' | 'flags' | 'active_flags'>('merges');
 
   return (
     <div className="space-y-6">
@@ -40,13 +42,11 @@ export function ApprovalsHub({ mergeRequests, pendingFlags }: Props) {
 
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-400">Tiêu chuẩn bảo mật</p>
-            <p className="text-sm font-semibold text-emerald-400 mt-1 flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4" /> Xác thực 2 lớp (RPC)
-            </p>
+            <p className="text-xs font-medium text-slate-400">Cờ Blacklist đang hiệu lực</p>
+            <p className="text-2xl font-bold text-emerald-400 mt-1">{activeFlags.length}</p>
           </div>
           <span className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400">
-            <AlertCircle className="w-6 h-6" />
+            <ShieldCheck className="w-6 h-6" />
           </span>
         </div>
       </div>
@@ -63,7 +63,7 @@ export function ApprovalsHub({ mergeRequests, pendingFlags }: Props) {
           }`}
         >
           <GitMerge className="w-4 h-4" />
-          Gộp hồ sơ trùng lặp
+          <span>Gộp hồ sơ trùng lặp</span>
           {mergeRequests.length > 0 && (
             <span className="px-2 py-0.5 rounded-full text-xs bg-indigo-500/20 text-indigo-300 font-bold">
               {mergeRequests.length}
@@ -81,10 +81,28 @@ export function ApprovalsHub({ mergeRequests, pendingFlags }: Props) {
           }`}
         >
           <ShieldAlert className="w-4 h-4" />
-          Xét duyệt cờ Blacklist & Chú ý
+          <span>Xét duyệt cờ Blacklist & Chú ý</span>
           {pendingFlags.length > 0 && (
             <span className="px-2 py-0.5 rounded-full text-xs bg-rose-500/20 text-rose-300 font-bold">
               {pendingFlags.length}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('active_flags')}
+          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
+            activeTab === 'active_flags'
+              ? 'border-emerald-500 text-emerald-400'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <ShieldCheck className="w-4 h-4" />
+          <span>Danh sách cờ đang áp dụng</span>
+          {activeFlags.length > 0 && (
+            <span className="px-2 py-0.5 rounded-full text-xs bg-emerald-500/20 text-emerald-300 font-bold">
+              {activeFlags.length}
             </span>
           )}
         </button>
@@ -105,8 +123,10 @@ export function ApprovalsHub({ mergeRequests, pendingFlags }: Props) {
             mergeRequests.map((req) => <MergeApprovalCard key={req.id} request={req} />)
           )}
         </div>
-      ) : (
+      ) : activeTab === 'flags' ? (
         <FlagsApprovalTable flags={pendingFlags} />
+      ) : (
+        <ActiveFlagsTable flags={activeFlags} />
       )}
     </div>
   );

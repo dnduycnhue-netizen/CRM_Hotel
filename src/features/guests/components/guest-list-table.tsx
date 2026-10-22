@@ -23,9 +23,10 @@ import { FileSpreadsheet, Download, Loader2 } from 'lucide-react';
 interface GuestListTableProps {
   initialGuests: GuestListItem[];
   salesUsers: SalesUser[];
+  canExport?: boolean;
 }
 
-export function GuestListTable({ initialGuests, salesUsers }: GuestListTableProps) {
+export function GuestListTable({ initialGuests, salesUsers, canExport = false }: GuestListTableProps) {
   const [filterOwner, setFilterOwner] = useState<string>('all');
   const [filterTier, setFilterTier] = useState<string>('all');
   const [searchFilter, setSearchFilter] = useState('');
@@ -101,20 +102,22 @@ export function GuestListTable({ initialGuests, salesUsers }: GuestListTableProp
         </div>
 
         <div className="flex items-center gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={isExporting}
-            onClick={handleExportExcel}
-            className="rounded-xl font-medium border-slate-700 hover:bg-slate-800 text-slate-200"
-          >
-            {isExporting ? (
-              <Loader2 className="w-4 h-4 mr-1.5 animate-spin text-slate-400" />
-            ) : (
-              <FileSpreadsheet className="w-4 h-4 mr-1.5 text-emerald-400" />
-            )}
-            {isExporting ? 'Đang xuất...' : 'Xuất Excel'}
-          </Button>
+          {canExport && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isExporting}
+              onClick={handleExportExcel}
+              className="rounded-xl font-medium border-slate-700 hover:bg-slate-800 text-slate-200"
+            >
+              {isExporting ? (
+                <Loader2 className="w-4 h-4 mr-1.5 animate-spin text-slate-400" />
+              ) : (
+                <FileSpreadsheet className="w-4 h-4 mr-1.5 text-emerald-400" />
+              )}
+              {isExporting ? 'Đang xuất...' : 'Xuất Excel'}
+            </Button>
+          )}
 
           <Link href="/guests/new">
             <Button className="rounded-xl font-medium bg-indigo-600 hover:bg-indigo-700 text-white">

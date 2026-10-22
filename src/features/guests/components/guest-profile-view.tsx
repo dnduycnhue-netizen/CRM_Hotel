@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
+import { useCan } from '@/shared/auth';
 import {
   User,
   Phone,
@@ -47,6 +48,7 @@ interface GuestProfileViewProps {
 }
 
 export function GuestProfileView({ profile, salesUsers, branches }: GuestProfileViewProps) {
+  const canPerm = useCan();
   const [activeTab, setActiveTab] = useState<'stays' | 'notes' | 'companions' | 'flags' | 'consents'>('stays');
   const [isPending, startTransition] = useTransition();
 
@@ -152,12 +154,14 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
               </Button>
             </Link>
           )}
-          <Link href={`/check-in?lookup=${encodeURIComponent(guest.phone || '')}`}>
-            <Button size="sm" className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium">
-              <Plus className="w-4 h-4 mr-1.5" />
-              Tạo lượt ở mới
-            </Button>
-          </Link>
+          {canPerm('stay.create') && (
+            <Link href={`/check-in?lookup=${encodeURIComponent(guest.phone || '')}`}>
+              <Button size="sm" className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium">
+                <Plus className="w-4 h-4 mr-1.5" />
+                Tạo lượt ở mới
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 

@@ -13,10 +13,17 @@ export default async function GuestsPage() {
     redirect('/');
   }
 
-  const [guests, salesUsers] = await Promise.all([
+  const [guests, salesUsers, canExportRes] = await Promise.all([
     getGuestsList({ limit: 100 }),
     getSalesUsers(),
+    requirePermission('guest.export'),
   ]);
 
-  return <GuestListTable initialGuests={guests} salesUsers={salesUsers} />;
+  return (
+    <GuestListTable
+      initialGuests={guests}
+      salesUsers={salesUsers}
+      canExport={canExportRes.ok}
+    />
+  );
 }

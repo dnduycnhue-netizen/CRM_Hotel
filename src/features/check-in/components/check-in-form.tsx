@@ -47,7 +47,13 @@ import { toast } from 'sonner';
 interface CheckInFormProps {
   currentBranchId: string;
   branchName: string;
-  rooms: Array<{ id: string; number: string; roomType: string | null }>;
+  rooms: Array<{
+    id: string;
+    number: string;
+    roomType: string | null;
+    isOccupied?: boolean;
+    isBlocked?: boolean;
+  }>;
 }
 
 export function CheckInForm({
@@ -219,7 +225,7 @@ export function CheckInForm({
             </span>
             <span className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center justify-end gap-1">
               <BedDouble className="h-4 w-4" />
-              {rooms.length} phòng
+              {rooms.filter(r => !r.isOccupied && !r.isBlocked).length} / {rooms.length} phòng
             </span>
           </div>
         </div>
@@ -378,6 +384,30 @@ export function CheckInForm({
                         <div className="flex flex-wrap gap-1.5">
                           {floorRooms.map((r) => {
                             const isSelected = selectedRoomId === r.id;
+                            const isOccupied = !!r.isOccupied;
+                            const isBlocked = !!r.isBlocked;
+                            const isUnavailable = isOccupied || isBlocked;
+
+                            if (isUnavailable) {
+                              return (
+                                <button
+                                  key={r.id}
+                                  type="button"
+                                  disabled
+                                  title={isOccupied ? 'Phòng đang có khách ở' : 'Phòng đang khóa ngừng bán (OOO)'}
+                                  className={`px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-not-allowed border flex items-center gap-1 shadow-2xs opacity-60 ${
+                                    isBlocked
+                                      ? 'bg-rose-500/10 border-rose-500/30 text-rose-500'
+                                      : 'bg-muted/40 border-border/50 text-muted-foreground'
+                                  }`}
+                                >
+                                  <span className={`h-1.5 w-1.5 rounded-full ${isBlocked ? 'bg-rose-500' : 'bg-muted-foreground'}`} />
+                                  <span>P.{r.number}</span>
+                                  <span className="text-[9px] font-bold">({isBlocked ? 'OOO' : 'Ở'})</span>
+                                </button>
+                              );
+                            }
+
                             return (
                               <button
                                 key={r.id}
@@ -412,11 +442,14 @@ export function CheckInForm({
                     required
                   >
                     <option value="">-- Hoặc chọn từ danh sách --</option>
-                    {rooms.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        Phòng {r.number} ({r.roomType || 'Tiêu chuẩn'})
-                      </option>
-                    ))}
+                    {rooms.map((r) => {
+                      const isUnavailable = r.isOccupied || r.isBlocked;
+                      return (
+                        <option key={r.id} value={r.id} disabled={isUnavailable}>
+                          Phòng {r.number} ({r.roomType || 'Tiêu chuẩn'}) {r.isOccupied ? '— [Đang có khách]' : r.isBlocked ? '— [Đang khóa OOO]' : '— [Sẵn sàng]'}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
 

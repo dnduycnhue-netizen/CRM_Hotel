@@ -1,6 +1,7 @@
-import { getSession } from '@/shared/auth/server';
+import { getSession, requirePermission } from '@/shared/auth/server';
 import { getActiveBranches, getRooms } from '@/features/admin';
 import { CheckInForm } from '@/features/check-in';
+import { redirect } from 'next/navigation';
 
 export const metadata = {
   title: 'Check-in | CRM Chuỗi Khách Sạn',
@@ -8,6 +9,11 @@ export const metadata = {
 };
 
 export default async function CheckInPage() {
+  const hasPerm = await requirePermission('stay.create');
+  if (!hasPerm.ok) {
+    redirect('/');
+  }
+
   const session = await getSession();
   const branches = await getActiveBranches();
 

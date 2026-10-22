@@ -30,15 +30,65 @@ interface AppHeaderProps {
   branches: Array<{ id: string; code: string; name: string }>;
   currentBranchId: string | null;
   userEmail?: string;
+  canManageUsers?: boolean;
+  canViewRoles?: boolean;
+  canCreateStay?: boolean;
+  canReportFacility?: boolean;
 }
 
 export function AppHeader({
   branches,
   currentBranchId,
   userEmail,
+  canManageUsers = false,
+  canViewRoles = false,
+  canCreateStay = false,
+  canReportFacility = false,
 }: AppHeaderProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const userInitials = (userEmail ? userEmail.slice(0, 2) : 'AD').toUpperCase();
+
+  // Compute friendly role description and clean initials
+  const isOwner = userEmail?.includes('owner') || userEmail?.includes('duy') || userEmail?.includes('admin');
+  const isManager = userEmail?.includes('quanly');
+  const isReception = userEmail?.includes('letan');
+  const isSales = userEmail?.includes('sales');
+  const isTech = userEmail?.includes('kythuat');
+
+  const roleName = isOwner
+    ? 'Chủ chuỗi'
+    : isManager
+    ? 'Quản lý cơ sở'
+    : isReception
+    ? 'Lễ tân'
+    : isSales
+    ? 'Kinh doanh (Sales)'
+    : isTech
+    ? 'Kỹ thuật CSVC'
+    : 'Nhân viên';
+
+  const roleBadge = isOwner
+    ? 'Toàn quyền'
+    : isManager
+    ? 'Cơ sở'
+    : isReception
+    ? 'Vận hành'
+    : isSales
+    ? 'Bán hàng'
+    : isTech
+    ? 'Bảo trì'
+    : 'Nội bộ';
+
+  const userInitials = isOwner
+    ? 'CC'
+    : isManager
+    ? 'QL'
+    : isReception
+    ? 'LT'
+    : isSales
+    ? 'KD'
+    : isTech
+    ? 'KT'
+    : (userEmail ? userEmail.slice(0, 2).toUpperCase() : 'NV');
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -84,31 +134,37 @@ export function AppHeader({
         {/* Right: Quick Actions & User Menu */}
         <div className="flex items-center gap-2.5">
           {/* Quick Check-in Button */}
-          <Link
-            href="/check-in"
-            className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm shadow-emerald-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-          >
-            <UserCheck className="h-3.5 w-3.5" />
-            <span>Check-in</span>
-          </Link>
+          {canCreateStay && (
+            <Link
+              href="/check-in"
+              className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm shadow-emerald-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <UserCheck className="h-3.5 w-3.5" />
+              <span>Check-in</span>
+            </Link>
+          )}
 
           {/* Quick Report Button */}
-          <Link
-            href="/facilities/report"
-            className="hidden lg:inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border/70 bg-card hover:bg-accent text-foreground text-xs font-semibold shadow-xs transition-all hover:border-amber-500/40"
-          >
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-            <span>Báo sự cố</span>
-          </Link>
+          {canReportFacility && (
+            <Link
+              href="/facilities/report"
+              className="hidden lg:inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border/70 bg-card hover:bg-accent text-foreground text-xs font-semibold shadow-xs transition-all hover:border-amber-500/40"
+            >
+              <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+              <span>Báo sự cố</span>
+            </Link>
+          )}
 
-          {/* Quick Accounts & Roles Button */}
-          <Link
-            href="/settings/users"
-            className="hidden xl:inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border/70 bg-card hover:bg-accent text-foreground text-xs font-semibold shadow-xs transition-all hover:border-amber-500/40"
-          >
-            <User className="h-3.5 w-3.5 text-amber-500" />
-            <span>Phân quyền nhân sự</span>
-          </Link>
+          {/* Quick Accounts & Roles Button (Only if has settings.users) */}
+          {canManageUsers && (
+            <Link
+              href="/settings/users"
+              className="hidden xl:inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border/70 bg-card hover:bg-accent text-foreground text-xs font-semibold shadow-xs transition-all hover:border-amber-500/40"
+            >
+              <User className="h-3.5 w-3.5 text-amber-500" />
+              <span>Phân quyền nhân sự</span>
+            </Link>
+          )}
 
           {/* Mobile search trigger */}
           <button
@@ -121,7 +177,7 @@ export function AppHeader({
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger className="focus:outline-none ml-1">
-              <div className="relative group flex items-center gap-2 p-1 rounded-full hover:bg-muted/50 transition-colors">
+              <div className="relative group flex items-center gap-2 p-1 rounded-full hover:bg-muted/50 transition-colors cursor-pointer">
                 <Avatar className="h-9 w-9 border-2 border-amber-500/30 transition-transform group-hover:scale-105 shadow-sm">
                   <AvatarFallback className="bg-gradient-to-br from-amber-500 to-amber-700 text-white text-xs font-bold">
                     {userInitials}
@@ -131,37 +187,43 @@ export function AppHeader({
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-60 p-1.5 shadow-lg border-border/60">
-              <DropdownMenuLabel className="font-normal px-2.5 py-2">
+              <div className="font-normal px-2.5 py-2">
                 <div className="flex flex-col space-y-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-xs text-foreground">
-                      {userEmail?.includes('admin') || userEmail?.includes('owner') || userEmail?.includes('duy')
-                        ? 'Chủ chuỗi / Admin'
-                        : 'Nhân viên lễ tân'}
+                  <div className="flex items-center justify-between gap-1.5">
+                    <span className="font-bold text-xs text-foreground truncate">
+                      {roleName}
                     </span>
-                    <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/20">
-                      Full Access
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/20 shrink-0">
+                      {roleBadge}
                     </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground truncate">
-                    {userEmail || 'admin@khachsan.vn'}
+                    {userEmail || 'Chưa đăng nhập'}
                   </p>
                 </div>
-              </DropdownMenuLabel>
+              </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-xs cursor-pointer rounded-md p-0">
-                <Link href="/settings/users" className="flex items-center w-full px-2 py-1.5">
-                  <User className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-                  <span>Quản lý tài khoản</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-xs cursor-pointer rounded-md p-0">
-                <Link href="/settings/roles" className="flex items-center w-full px-2 py-1.5">
-                  <Shield className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-                  <span>Ma trận phân quyền</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
+
+              {canManageUsers && (
+                <DropdownMenuItem className="text-xs cursor-pointer rounded-md p-0">
+                  <Link href="/settings/users" className="flex items-center w-full px-2 py-1.5">
+                    <User className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                    <span>Quản lý tài khoản</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
+
+              {canViewRoles && (
+                <DropdownMenuItem className="text-xs cursor-pointer rounded-md p-0">
+                  <Link href="/settings/roles" className="flex items-center w-full px-2 py-1.5">
+                    <Shield className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                    <span>Ma trận phân quyền</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
+
+              {(canManageUsers || canViewRoles) && <DropdownMenuSeparator />}
+
               <DropdownMenuItem
                 className="text-xs text-destructive focus:text-destructive cursor-pointer rounded-md focus:bg-destructive/10"
                 onClick={() => logoutAction()}

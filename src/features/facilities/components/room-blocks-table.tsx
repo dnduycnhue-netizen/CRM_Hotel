@@ -31,7 +31,7 @@ export function RoomBlocksTable({
   rooms,
   currentBranchId,
 }: RoomBlocksTableProps) {
-  const [selectedBranch, setSelectedBranch] = useState<string>(currentBranchId || 'all');
+  const [selectedBranch, setSelectedBranch] = useState<string>('all');
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 

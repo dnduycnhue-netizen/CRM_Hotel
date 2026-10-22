@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { PmPlanItem, InspectionItem } from '../data/maintenance';
+import { createPmPlanAction } from '../actions';
 import {
   Wrench,
   ClipboardCheck,
@@ -12,7 +14,11 @@ import {
   FileCheck,
   Clock,
   User,
+  Plus,
+  Loader2,
 } from 'lucide-react';
+import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, Input, Label } from '@/shared/ui';
+import { toast } from 'sonner';
 
 interface Props {
   plans: PmPlanItem[];
@@ -21,8 +27,48 @@ interface Props {
 }
 
 export function MaintenanceHub({ plans, inspections, branches }: Props) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<'plans' | 'inspections'>('plans');
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
+
+  // Create plan dialog state
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [planBranch, setPlanBranch] = useState(branches[0]?.id || '');
+  const [planName, setPlanName] = useState('');
+  const [planInterval, setPlanInterval] = useState('30');
+  const [planChecklistText, setPlanChecklistText] = useState('Kiểm tra vận hành kỹ thuật\nVệ sinh lọc gió và bề mặt\nSiết ốc và kiểm tra an toàn');
+
+  const handleCreatePlan = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!planName.trim()) {
+      toast.error('Vui lòng nhập tên kế hoạch bảo trì');
+      return;
+    }
+
+    startTransition(async () => {
+      const checklistItems = planChecklistText
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      const res = await createPmPlanAction({
+        branch_id: planBranch,
+        name: planName.trim(),
+        interval_days: parseInt(planInterval, 10) || 30,
+        checklist: checklistItems,
+      });
+
+      if (res.ok) {
+        toast.success(`Đã tạo kế hoạch bảo trì: ${planName}`);
+        setIsCreateOpen(false);
+        setPlanName('');
+        router.refresh();
+      } else {
+        toast.error(`Không thể tạo kế hoạch: ${res.error}`);
+      }
+    });
+  };
 
   const filteredPlans = plans.filter((p) => {
     if (selectedBranch !== 'all' && p.branch_id !== selectedBranch) return false;
@@ -101,19 +147,30 @@ export function MaintenanceHub({ plans, inspections, branches }: Props) {
           </button>
         </div>
 
-        <div className="w-48">
-          <select
-            value={selectedBranch}
-            onChange={(e) => setSelectedBranch(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-slate-200 outline-none focus:ring-1 focus:ring-indigo-500"
+        <div className="flex items-center gap-2.5">
+          <Button
+            size="sm"
+            onClick={() => setIsCreateOpen(true)}
+            className="h-8 text-xs font-semibold gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white"
           >
-            <option value="all">Tất cả 8 cơ sở</option>
-            {branches.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
+            <Plus className="h-3.5 w-3.5" />
+            <span>Tạo kế hoạch bảo trì</span>
+          </Button>
+
+          <div className="w-44">
+            <select
+              value={selectedBranch}
+              onChange={(e) => setSelectedBranch(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:ring-1 focus:ring-indigo-500"
+            >
+              <option value="all">Tất cả 8 cơ sở</option>
+              {branches.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -252,6 +309,107 @@ export function MaintenanceHub({ plans, inspections, branches }: Props) {
           </div>
         </div>
       )}
+
+      {/* Create Maintenance Plan Dialog */}
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wrench className="h-5 w-5 text-indigo-500" />
+              <span>Thiết lập Kế hoạch Bảo trì Định kỳ</span>
+            </DialogTitle>
+            <DialogDescription>
+              Tạo chu kỳ kiểm tra, bảo dưỡng tự động sinh phiếu công việc cho kỹ thuật
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleCreatePlan} className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="planBranch" className="text-xs font-semibold">
+                Cơ sở áp dụng *
+              </Label>
+              <select
+                id="planBranch"
+                value={planBranch}
+                onChange={(e) => setPlanBranch(e.target.value)}
+                className="w-full h-9 rounded-xl border border-input bg-background px-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                required
+              >
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="planName" className="text-xs font-semibold">
+                Tên kế hoạch bảo trì *
+              </Label>
+              <Input
+                id="planName"
+                value={planName}
+                onChange={(e) => setPlanName(e.target.value)}
+                placeholder="VD: Bảo dưỡng hệ thống điều hòa VRV mùa hè"
+                className="h-9 text-xs"
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="planInterval" className="text-xs font-semibold">
+                Chu kỳ lặp lại (ngày) *
+              </Label>
+              <select
+                id="planInterval"
+                value={planInterval}
+                onChange={(e) => setPlanInterval(e.target.value)}
+                className="w-full h-9 rounded-xl border border-input bg-background px-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+              >
+                <option value="15">Mỗi 15 ngày (Nửa tháng)</option>
+                <option value="30">Mỗi 30 ngày (1 tháng)</option>
+                <option value="90">Mỗi 90 ngày (Hàng quý)</option>
+                <option value="180">Mỗi 180 ngày (Nửa năm)</option>
+                <option value="365">Mỗi 365 ngày (Hàng năm)</option>
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="planChecklist" className="text-xs font-semibold">
+                Danh mục hạng mục kiểm tra (Mỗi dòng 1 mục)
+              </Label>
+              <textarea
+                id="planChecklist"
+                value={planChecklistText}
+                onChange={(e) => setPlanChecklistText(e.target.value)}
+                rows={3}
+                className="w-full rounded-xl border border-input bg-background p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/30 resize-none font-mono"
+              />
+            </div>
+
+            <DialogFooter className="pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsCreateOpen(false)}
+                disabled={isPending}
+                className="h-9 text-xs"
+              >
+                Hủy
+              </Button>
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="h-9 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white gap-1.5"
+              >
+                {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                <span>Lưu kế hoạch</span>
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

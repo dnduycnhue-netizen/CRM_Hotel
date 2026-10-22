@@ -149,3 +149,59 @@ export async function releaseRoomBlockAction(
     return fail('UNKNOWN');
   }
 }
+
+export interface CreatePmPlanInput {
+  branch_id: string;
+  name: string;
+  interval_days: number;
+  lead_days?: number;
+  checklist?: string[];
+  next_due_date?: string;
+}
+
+export async function createPmPlanAction(
+  rawInput: CreatePmPlanInput
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    if (!rawInput.name || rawInput.name.trim().length < 3) {
+      return fail('VALIDATION');
+    }
+    const hasPerm = await requirePermission('pm.manage', rawInput.branch_id);
+    if (!hasPerm.ok) {
+      const altPerm = await requirePermission('facility.view', rawInput.branch_id);
+      if (!altPerm.ok) return hasPerm;
+    }
+
+    const supabase = await createClient();
+    const dueDate =
+      rawInput.next_due_date ||
+      new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+
+    const { data, error } = await (supabase
+      .from('pm_plans') as any)
+      .insert({
+        branch_id: rawInput.branch_id,
+        name: rawInput.name.trim(),
+        interval_days: rawInput.interval_days || 30,
+        lead_days: rawInput.lead_days || 7,
+        checklist:
+          rawInput.checklist && rawInput.checklist.length > 0
+            ? rawInput.checklist
+            : ['Kiểm tra vận hành kỹ thuật', 'Vệ sinh chi tiết', 'Bảo dưỡng định kỳ'],
+        next_due_date: dueDate,
+        is_active: true,
+      })
+      .select('id')
+      .single();
+
+    if (error) {
+      return fail(error.code);
+    }
+
+    revalidatePath('/facilities/maintenance');
+    return ok({ id: (data as any)?.id || '' });
+  } catch (err: unknown) {
+    return fail('UNKNOWN');
+  }
+}
+

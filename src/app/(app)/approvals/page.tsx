@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import {
   getPendingMergeRequests,
   getPendingFlags,
+  getActiveBlacklist,
   ApprovalsHub,
 } from '@/features/approvals';
 
@@ -21,9 +22,10 @@ export default async function ApprovalsPage() {
     redirect('/');
   }
 
-  const [mergeRequests, pendingFlags] = await Promise.all([
+  const [mergeRequests, pendingFlags, activeFlags] = await Promise.all([
     getPendingMergeRequests(),
     getPendingFlags(),
+    getActiveBlacklist(),
   ]);
 
   return (
@@ -40,6 +42,7 @@ export default async function ApprovalsPage() {
       <ApprovalsHub
         mergeRequests={mergeRequests}
         pendingFlags={pendingFlags}
+        activeFlags={activeFlags}
       />
     </div>
   );

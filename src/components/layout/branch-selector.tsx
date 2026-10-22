@@ -1,12 +1,12 @@
 'use client';
 
 import { useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/shared/ui';
 import { selectBranchAction } from '@/features/admin/actions';
 import { Building2, Loader2, MapPin } from 'lucide-react';
@@ -21,6 +21,7 @@ export function BranchSelector({
   branches,
   currentBranchId,
 }: BranchSelectorProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const handleBranchChange = (value: string | null) => {
@@ -29,6 +30,7 @@ export function BranchSelector({
     startTransition(async () => {
       await selectBranchAction(value);
       toast.info(`Đã chuyển làm việc sang cơ sở: ${branch?.name || value}`);
+      router.refresh();
     });
   };
 
@@ -54,7 +56,7 @@ export function BranchSelector({
         onValueChange={handleBranchChange}
         disabled={isPending}
       >
-        <SelectTrigger className="w-[190px] h-9 text-xs font-semibold border-border/80 bg-background/90 shadow-sm hover:border-amber-500/50 hover:bg-accent/40 transition-all rounded-lg focus:ring-amber-500/30">
+        <SelectTrigger className="w-[200px] h-9 text-xs font-semibold border-border/80 bg-background/90 shadow-sm hover:border-amber-500/50 hover:bg-accent/40 transition-all rounded-lg focus:ring-amber-500/30">
           <div className="flex items-center gap-2 truncate">
             {isPending ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-500 shrink-0" />
@@ -63,7 +65,9 @@ export function BranchSelector({
                 {selectedBranch?.code?.slice(0, 2) || 'KS'}
               </span>
             )}
-            <SelectValue placeholder="Chọn cơ sở" />
+            <span className="truncate font-semibold text-foreground">
+              {selectedBranch?.name || 'Chọn cơ sở'}
+            </span>
           </div>
         </SelectTrigger>
         <SelectContent className="max-h-72">
