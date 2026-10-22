@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { requirePermission } from '@/shared/auth/server';
+import { createClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { ok, fail, type ActionResult } from '@/shared/errors';
 
@@ -36,10 +37,6 @@ export async function createUserAction(
 
   if (!email || !password || !fullName || !roleId) {
     return fail('VALIDATION');
-  }
-
-  if (password.length < 6) {
-    return fail('VALIDATION', { password: ['Mật khẩu phải có tối thiểu 6 ký tự'] });
   }
 
   const adminClient = supabaseAdmin();
@@ -88,22 +85,25 @@ export async function createUserAction(
     return fail('UNKNOWN');
   }
 
-  // 3. Gán vai trò (user_roles)
-  await adminClient.from('user_roles').insert({
-    user_id: userId,
-    role_id: roleId,
-    branch_id: branchId || null,
+  // 3. Gán vai trò qua RPC an toàn set_user_access (thay vì insert trực tiếp)
+  const supabase = await createClient();
+  const { error: accessErr } = await (supabase.rpc as any)('set_user_access', {
+    p_user_id: userId,
+    p_roles: [{ role_id: roleId, branch_id: branchId || null }],
+    p_overrides: [],
   });
 
-  // 4. Kích hoạt trigger tính lại permissions
-  await adminClient.from('profiles').update({ is_active: true }).eq('id', userId);
+  if (accessErr) {
+    await adminClient.auth.admin.deleteUser(userId);
+    return fail(accessErr.code, undefined, accessErr.message);
+  }
 
   revalidatePath('/settings/users');
   return ok({ id: userId, fullName });
 }
 
 /**
- * Cập nhật thông tin nhân sự và phân bổ lại vai trò / cơ sở (chống leo quyền)
+ * Cập nhật thông tin nhân sự và phân bổ lại vai trò / cơ sở (chống leo quyền qua RPC)
  */
 export async function updateUserAction(
   formData: FormData
@@ -125,54 +125,25 @@ export async function updateUserAction(
     return fail('VALIDATION');
   }
 
+  // Chặn tự sửa quyền chính mình
+  if (userId === callerUserId) {
+    return fail('FORBIDDEN', undefined, 'Bạn không thể tự chỉnh sửa quyền hoặc vai trò của chính mình');
+  }
+
+  // 1. Cập nhật phân quyền thông qua RPC set_user_access (bảo vệ chống leo quyền & chống xóa owner cuối cùng)
+  const supabase = await createClient();
+  const { error: accessErr } = await (supabase.rpc as any)('set_user_access', {
+    p_user_id: userId,
+    p_roles: [{ role_id: roleId, branch_id: branchId || null }],
+    p_overrides: [],
+  });
+
+  if (accessErr) {
+    return fail(accessErr.code, undefined, accessErr.message);
+  }
+
+  // 2. Cập nhật thông tin hồ sơ
   const adminClient = supabaseAdmin();
-
-  // Kiểm tra vai trò của người thực hiện
-  const { data: callerRoles } = await (adminClient.from('user_roles') as any)
-    .select('role:roles(key)')
-    .eq('user_id', callerUserId);
-  const isCallerOwner = callerRoles?.some((r: any) => r.role?.key === 'owner');
-
-  // Kiểm tra tài khoản đích có phải là Chủ chuỗi
-  const { data: targetRoles } = await (adminClient.from('user_roles') as any)
-    .select('role:roles(key)')
-    .eq('user_id', userId);
-  const isTargetOwner = targetRoles?.some((r: any) => r.role?.key === 'owner');
-
-  if (isTargetOwner && !isCallerOwner) {
-    return fail('FORBIDDEN', undefined, 'Bạn không thể chỉnh sửa tài khoản của Chủ chuỗi');
-  }
-
-  // Kiểm tra vai trò đang muốn gán
-  const { data: assignedRole } = await (adminClient
-    .from('roles') as any)
-    .select('key')
-    .eq('id', roleId)
-    .single();
-
-  if (assignedRole?.key === 'owner' && !isCallerOwner) {
-    return fail('FORBIDDEN', undefined, 'Chỉ Chủ chuỗi mới có quyền gán vai trò Chủ chuỗi');
-  }
-
-  // So sánh tập quyền: người thực hiện không được sửa tài khoản có quyền mà mình không có
-  if (!isCallerOwner) {
-    const { data: targetPerms } = await adminClient
-      .from('user_effective_permissions')
-      .select('permission_key')
-      .eq('user_id', userId);
-    const { data: callerPerms } = await adminClient
-      .from('user_effective_permissions')
-      .select('permission_key')
-      .eq('user_id', callerUserId);
-
-    const callerSet = new Set((callerPerms || []).map((p: any) => p.permission_key));
-    const targetHasUnheld = (targetPerms || []).some((p: any) => !callerSet.has(p.permission_key));
-    if (targetHasUnheld) {
-      return fail('FORBIDDEN', undefined, 'Không thể chỉnh sửa nhân sự sở hữu tập quyền cao hơn bạn');
-    }
-  }
-
-  // 1. Cập nhật profile
   const { error: pErr } = await adminClient
     .from('profiles')
     .update({
@@ -187,23 +158,12 @@ export async function updateUserAction(
     return fail('UNKNOWN');
   }
 
-  // 2. Cập nhật vai trò (user_roles)
-  await adminClient.from('user_roles').delete().eq('user_id', userId);
-  await adminClient.from('user_roles').insert({
-    user_id: userId,
-    role_id: roleId,
-    branch_id: branchId || null,
-  });
-
-  // 3. Kích hoạt trigger tính lại permissions
-  await adminClient.from('profiles').update({ is_active: isActive }).eq('id', userId);
-
   revalidatePath('/settings/users');
   return ok({ success: true });
 }
 
 /**
- * Lưu ma trận quyền hạn cho một vai trò hệ thống (chỉ Chủ chuỗi được chỉnh sửa)
+ * Lưu ma trận quyền hạn cho một vai trò hệ thống (chỉ Chủ chuỗi được chỉnh sửa qua RPC set_role_permissions)
  */
 export async function updateRolePermissionsAction(
   roleId: string,
@@ -213,54 +173,15 @@ export async function updateRolePermissionsAction(
   if (!hasPerm.ok) {
     return hasPerm;
   }
-  const callerUserId = hasPerm.data.userId;
 
-  const adminClient = supabaseAdmin();
+  const supabase = await createClient();
+  const { error: rpcErr } = await (supabase.rpc as any)('set_role_permissions', {
+    p_role_id: roleId,
+    p_keys: permissionKeys,
+  });
 
-  // Kiểm tra vai trò của người gọi
-  const { data: callerRoles } = await (adminClient.from('user_roles') as any)
-    .select('role:roles(key)')
-    .eq('user_id', callerUserId);
-  const isCallerOwner = callerRoles?.some((r: any) => r.role?.key === 'owner');
-
-  if (!isCallerOwner) {
-    return fail('FORBIDDEN', undefined, 'Chỉ Chủ chuỗi mới có thẩm quyền chỉnh sửa ma trận phân quyền hệ thống');
-  }
-
-  const { data: targetRole } = await (adminClient
-    .from('roles') as any)
-    .select('key, name')
-    .eq('id', roleId)
-    .single();
-
-  if (!targetRole) {
-    return fail('NOT_FOUND');
-  }
-
-  if (targetRole.key === 'owner') {
-    return fail('FORBIDDEN', undefined, 'Vai trò Chủ chuỗi được bảo vệ, không thể sửa đổi ma trận quyền');
-  }
-
-  // Xóa quyền cũ và ghi quyền mới
-  await adminClient.from('role_permissions').delete().eq('role_id', roleId);
-
-  if (permissionKeys.length > 0) {
-    const rows = permissionKeys.map((k) => ({
-      role_id: roleId,
-      permission_key: k,
-    }));
-    await adminClient.from('role_permissions').insert(rows);
-  }
-
-  // Dựng lại quyền cho các user mang vai trò này
-  const { data: usersWithRole } = await (adminClient.from('user_roles') as any)
-    .select('user_id')
-    .eq('role_id', roleId);
-
-  if (usersWithRole && Array.isArray(usersWithRole)) {
-    for (const u of usersWithRole) {
-      await adminClient.from('profiles').update({ is_active: true }).eq('id', (u as any).user_id);
-    }
+  if (rpcErr) {
+    return fail(rpcErr.code, undefined, rpcErr.message);
   }
 
   revalidatePath('/settings/roles');
@@ -279,7 +200,7 @@ export interface SaveBranchInput {
 }
 
 /**
- * Thêm mới hoặc cập nhật thông tin cơ sở khách sạn
+ * Thêm mới hoặc cập nhật thông tin cơ sở khách sạn qua RPC an toàn save_branch
  */
 export async function saveBranchAction(
   rawInput: FormData | SaveBranchInput
@@ -320,39 +241,23 @@ export async function saveBranchAction(
     return fail('VALIDATION', { name: ['Mã và tên cơ sở không được để trống'] });
   }
 
-  const adminClient = supabaseAdmin();
-  if (id) {
-    const { error } = await (adminClient.from('branches') as any)
-      .update({
-        code,
-        name,
-        phone,
-        address,
-        night_cutoff: nightCutoff,
-        default_checkout_time: defaultCheckoutTime,
-        is_active: isActive,
-      })
-      .eq('id', id);
-    if (error) return fail(error.code);
-  } else {
-    const { data, error } = await (adminClient.from('branches') as any)
-      .insert({
-        code,
-        name,
-        phone,
-        address,
-        night_cutoff: nightCutoff,
-        default_checkout_time: defaultCheckoutTime,
-        is_active: isActive,
-      })
-      .select('id')
-      .single();
-    if (error || !data) return fail(error?.code || 'INTERNAL_ERROR');
-    revalidatePath('/settings/branches');
-    return ok({ id: (data as any).id });
+  const supabase = await createClient();
+  const { data: savedId, error: rpcErr } = await (supabase.rpc as any)('save_branch', {
+    p_id: id || null,
+    p_code: code,
+    p_name: name,
+    p_phone: phone,
+    p_address: address,
+    p_night_cutoff: nightCutoff,
+    p_default_checkout_time: defaultCheckoutTime,
+    p_is_active: isActive,
+  });
+
+  if (rpcErr) {
+    return fail(rpcErr.code, undefined, rpcErr.message);
   }
 
   revalidatePath('/settings/branches');
   revalidatePath('/', 'layout');
-  return ok({ id: id || '' });
+  return ok({ id: savedId || id || '' });
 }

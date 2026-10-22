@@ -79,19 +79,3 @@ export async function getAuditLogs(
   }));
 }
 
-export async function recordSecurityLog(
-  action: string,
-  entity: string,
-  entityId?: string,
-  branchId?: string,
-  meta?: Record<string, unknown>
-): Promise<void> {
-  const supabase = await createClient();
-  await supabase.rpc('log_event' as any, {
-    p_action: action,
-    p_entity: entity,
-    p_entity_id: entityId || null,
-    p_branch_id: branchId || null,
-    p_meta: meta || null,
-  });
-}

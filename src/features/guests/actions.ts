@@ -247,27 +247,13 @@ export async function exportGuestsAction(): Promise<
     const allowFull = hasExportFullPerm.ok;
 
     const supabase = await createClient();
-    const { data, error } = await supabase
-      .from('guests')
-      .select(`
-        id,
-        full_name,
-        gender,
-        dob,
-        phone,
-        email,
-        nationality,
-        tags,
-        sales_owner:profiles!guests_sales_owner_id_fkey(full_name),
-        stats:guest_stats(total_stays, total_nights),
-        documents:guest_documents(doc_number, doc_type)
-      `)
-      .is('merged_into', null)
-      .order('created_at', { ascending: false })
-      .limit(500);
+    const { data, error } = await (supabase.rpc as any)('export_guests', {
+      p_reason: 'Xuất danh sách khách hàng phục vụ quản lý chuỗi',
+      p_limit: 500,
+    });
 
     if (error || !data) {
-      return fail('UNKNOWN');
+      return fail(error?.code || 'UNKNOWN');
     }
 
     const ExcelJS = (await import('exceljs')).default;
@@ -306,27 +292,6 @@ export async function exportGuestsAction(): Promise<
     headerRow.height = 26;
 
     data.forEach((g: any, idx: number) => {
-      const stats = Array.isArray(g.stats) ? g.stats[0] : g.stats;
-      const doc = Array.isArray(g.documents) ? g.documents[0] : g.documents;
-
-      let phoneDisplay = g.phone || '';
-      let docDisplay = doc?.doc_number || '';
-      let dobDisplay = g.dob || '';
-
-      if (!allowFull) {
-        if (phoneDisplay.length >= 7) {
-          phoneDisplay = phoneDisplay.slice(0, 3) + '****' + phoneDisplay.slice(-3);
-        }
-        if (docDisplay.length >= 7) {
-          docDisplay = docDisplay.slice(0, 3) + '******' + docDisplay.slice(-3);
-        } else if (docDisplay) {
-          docDisplay = '******' + docDisplay.slice(-4);
-        }
-        if (dobDisplay.length >= 4) {
-          dobDisplay = dobDisplay.slice(0, 4); // Chỉ hiện năm sinh
-        }
-      }
-
       const genderMap: Record<string, string> = {
         male: 'Nam',
         female: 'Nữ',
@@ -337,31 +302,21 @@ export async function exportGuestsAction(): Promise<
         stt: idx + 1,
         full_name: g.full_name,
         gender: genderMap[g.gender] || g.gender || '',
-        phone: phoneDisplay,
-        doc: docDisplay,
-        dob: dobDisplay,
+        phone: g.phone || '',
+        doc: g.doc_number || '',
+        dob: g.dob || '',
         email: g.email || '',
         nationality: g.nationality || 'VN',
-        stays: stats?.total_stays ?? 0,
-        nights: stats?.total_nights ?? 0,
+        stays: g.total_stays ?? 0,
+        nights: g.total_nights ?? 0,
         tags: Array.isArray(g.tags) ? g.tags.join(', ') : '',
-        sales: g.sales_owner?.full_name || '',
+        sales: g.sales_name || '',
       });
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
     const base64 = Buffer.from(buffer).toString('base64');
     const filename = `KhachHang_CRM_${new Date().toISOString().slice(0, 10)}.xlsx`;
-
-    // Log security audit event
-    await supabase.rpc('log_event' as any, {
-      p_action: 'guest.export_excel',
-      p_entity: 'guests',
-      p_meta: {
-        exported_count: data.length,
-        has_full_view: allowFull,
-      },
-    });
 
     return ok({
       filename,
