@@ -101,6 +101,15 @@ export function AppHeader({
             <span>Báo sự cố</span>
           </Link>
 
+          {/* Quick Accounts & Roles Button */}
+          <Link
+            href="/settings/users"
+            className="hidden xl:inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border/70 bg-card hover:bg-accent text-foreground text-xs font-semibold shadow-xs transition-all hover:border-amber-500/40"
+          >
+            <User className="h-3.5 w-3.5 text-amber-500" />
+            <span>Phân quyền nhân sự</span>
+          </Link>
+
           {/* Mobile search trigger */}
           <button
             onClick={() => setIsSearchOpen(true)}

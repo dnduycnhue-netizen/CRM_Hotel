@@ -1,10 +1,11 @@
 import { Metadata } from 'next';
 import { requirePermission } from '@/shared/auth/server';
 import { redirect } from 'next/navigation';
-import { getUsersList, getActiveBranches, UsersTable } from '@/features/admin';
+import { getUsersList, getActiveBranches, getSystemRoles, UsersTable } from '@/features/admin';
 
 export const metadata: Metadata = {
-  title: 'Người dùng & Tài khoản nhân sự | Cài đặt hệ thống',
+  title: 'Người Dùng & Phân Quyền Tài Khoản | CRM Chuỗi Khách Sạn',
+  description: 'Thêm tài khoản nhân sự mới, phân bổ cơ sở làm việc và gán vai trò quyền hạn',
 };
 
 export default async function UsersPage() {
@@ -13,23 +14,15 @@ export default async function UsersPage() {
     redirect('/');
   }
 
-  const [users, branches] = await Promise.all([
+  const [users, branches, { roles }] = await Promise.all([
     getUsersList(),
     getActiveBranches(),
+    getSystemRoles(),
   ]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">
-          Người dùng & Tài khoản nhân sự
-        </h1>
-        <p className="text-sm text-slate-400 mt-1">
-          Quản lý danh sách nhân sự toàn chuỗi (19 tài khoản), cơ sở công tác và phân bổ vai trò
-        </p>
-      </div>
-
-      <UsersTable initialUsers={users} branches={branches} />
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <UsersTable initialUsers={users} branches={branches} roles={roles} />
     </div>
   );
 }
