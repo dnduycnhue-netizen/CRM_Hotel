@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useMemo } from 'react';
+import Link from 'next/link';
 import type { InHouseStay } from '../domain/types';
 import {
   Table,
@@ -12,6 +13,7 @@ import {
 } from '@/shared/ui';
 import { Badge } from '@/shared/ui';
 import { Button } from '@/shared/ui';
+import { Input } from '@/shared/ui';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui';
 import { checkoutStayAction, cancelStayAction } from '../actions';
 import {
@@ -24,6 +26,10 @@ import {
   Phone,
   Ban,
   Loader2,
+  Search,
+  UserCheck,
+  Building2,
+  ShieldCheck,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -40,16 +46,28 @@ export function InHouseTable({
 }: InHouseTableProps) {
   const [isPending, startTransition] = useTransition();
   const [activeStayList, setActiveStayList] = useState(stays);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredStays = useMemo(() => {
+    if (!searchTerm.trim()) return activeStayList;
+    const q = searchTerm.toLowerCase();
+    return activeStayList.filter(
+      (s) =>
+        s.roomNumber.toLowerCase().includes(q) ||
+        s.primaryGuestName.toLowerCase().includes(q) ||
+        (s.primaryGuestPhone && s.primaryGuestPhone.includes(q))
+    );
+  }, [activeStayList, searchTerm]);
 
   const handleCheckout = (stayId: string, roomNumber: string, guestName: string) => {
-    if (!confirm(`Xác nhận trả phòng ${roomNumber} cho khách ${guestName}?`)) {
+    if (!confirm(`Xác nhận hoàn tất thủ tục trả phòng ${roomNumber} cho khách ${guestName}?`)) {
       return;
     }
 
     startTransition(async () => {
       const res = await checkoutStayAction(stayId, currentBranchId);
       if (res.ok) {
-        toast.success(`Đã hoàn tất trả phòng ${roomNumber}!`);
+        toast.success(`Đã hoàn tất trả phòng ${roomNumber}! Phòng chuyển sang trạng thái dọn dẹp.`);
         setActiveStayList((prev) => prev.filter((s) => s.id !== stayId));
       } else {
         toast.error(res.error.message);
@@ -78,97 +96,193 @@ export function InHouseTable({
   };
 
   const overdueCount = activeStayList.filter((s) => s.isOverdue).length;
+  const totalGuests = activeStayList.reduce((sum, s) => sum + s.guestCount, 0);
 
   return (
-    <div className="space-y-4">
-      {/* Overview Cards */}
+    <div className="space-y-5">
+      {/* Overview Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="border-border/60">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-xs">Phòng đang có khách</CardDescription>
-            <CardTitle className="text-2xl font-bold text-primary">
-              {activeStayList.length} Phòng
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card className="border-border/60">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-xs">Tổng số khách lưu trú</CardDescription>
-            <CardTitle className="text-2xl font-bold text-foreground">
-              {activeStayList.reduce((sum, s) => sum + s.guestCount, 0)} Khách
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card className="border-border/60">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-xs">Quá hạn giờ trả phòng</CardDescription>
-            <CardTitle className={`text-2xl font-bold ${overdueCount > 0 ? 'text-amber-500' : 'text-emerald-600'}`}>
-              {overdueCount} Phòng
-            </CardTitle>
-          </CardHeader>
-        </Card>
+        {/* Card 1: Phòng đang có khách */}
+        <div className="p-4 rounded-xl border border-border/70 bg-card shadow-xs relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Phòng có khách
+            </span>
+            <div className="h-8 w-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+              <DoorClosed className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold text-foreground tracking-tight">
+              {activeStayList.length}
+            </span>
+            <span className="text-xs text-muted-foreground font-medium">phòng đang ở</span>
+          </div>
+          <div className="mt-2 h-1 w-full bg-blue-500/20 rounded-full overflow-hidden">
+            <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.min(100, activeStayList.length * 10)}%` }} />
+          </div>
+        </div>
+
+        {/* Card 2: Tổng số khách lưu trú */}
+        <div className="p-4 rounded-xl border border-border/70 bg-card shadow-xs relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Tổng số khách
+            </span>
+            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <Users className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold text-foreground tracking-tight">
+              {totalGuests}
+            </span>
+            <span className="text-xs text-muted-foreground font-medium">người lưu trú</span>
+          </div>
+          <div className="mt-2 h-1 w-full bg-emerald-500/20 rounded-full overflow-hidden">
+            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, totalGuests * 5)}%` }} />
+          </div>
+        </div>
+
+        {/* Card 3: Quá hạn giờ trả */}
+        <div className={`p-4 rounded-xl border shadow-xs relative overflow-hidden ${
+          overdueCount > 0
+            ? 'border-rose-500/40 bg-rose-500/5'
+            : 'border-border/70 bg-card'
+        }`}>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Quá hạn trả phòng
+            </span>
+            <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+              overdueCount > 0
+                ? 'bg-rose-500/15 text-rose-600 animate-pulse'
+                : 'bg-emerald-500/10 text-emerald-600'
+            }`}>
+              <Clock className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className={`text-3xl font-extrabold tracking-tight ${
+              overdueCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
+            }`}>
+              {overdueCount}
+            </span>
+            <span className="text-xs text-muted-foreground font-medium">
+              {overdueCount > 0 ? 'cần kiểm tra ngay' : 'đúng tiến độ'}
+            </span>
+          </div>
+          <div className="mt-2 h-1 w-full bg-muted rounded-full overflow-hidden">
+            <div className={`h-full rounded-full ${overdueCount > 0 ? 'bg-rose-500' : 'bg-emerald-500'}`} style={{ width: overdueCount > 0 ? '100%' : '0%' }} />
+          </div>
+        </div>
       </div>
 
-      {/* Main Stays Table */}
-      <Card className="border-border/60 shadow-sm overflow-hidden">
-        <CardHeader className="pb-3 border-b border-border/40">
-          <div className="flex items-center justify-between">
+      {/* Main Table Card */}
+      <Card className="border-border/70 shadow-xs overflow-hidden rounded-xl">
+        <CardHeader className="pb-3 border-b border-border/50 bg-card/60">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" />
-                Danh Sách Khách Đang Ở ({branchName})
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <Users className="h-5 w-5 text-amber-500" />
+                <span>Danh Sách Khách Đang Ở ({branchName})</span>
               </CardTitle>
-              <CardDescription className="text-xs">
-                Cập nhật thời gian thực, phím tắt: [C] trả phòng, [E] chỉnh sửa
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                Cập nhật tức thì, hỗ trợ tìm nhanh theo tên khách, phòng, số điện thoại
               </CardDescription>
+            </div>
+
+            {/* Quick search input & Action button */}
+            <div className="flex items-center gap-2.5">
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Lọc số phòng, tên khách..."
+                  className="pl-8.5 h-8.5 text-xs rounded-lg bg-background"
+                />
+              </div>
+
+              <Link
+                href="/check-in"
+                className="inline-flex items-center h-8.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg shadow-xs shrink-0 transition-all hover:scale-[1.02]"
+              >
+                <UserCheck className="h-3.5 w-3.5 mr-1.5" />
+                <span>+ Check-in mới</span>
+              </Link>
             </div>
           </div>
         </CardHeader>
+
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="text-xs bg-muted/40">
-                <TableHead className="w-24">Số phòng</TableHead>
-                <TableHead>Khách đại diện</TableHead>
-                <TableHead>Số người</TableHead>
-                <TableHead>Giờ nhận phòng</TableHead>
-                <TableHead>Dự kiến trả</TableHead>
-                <TableHead>Kênh nguồn</TableHead>
-                <TableHead>Tình trạng</TableHead>
-                <TableHead className="text-right">Thao tác</TableHead>
+              <TableRow className="text-xs bg-muted/30">
+                <TableHead className="w-28 font-bold">Số phòng</TableHead>
+                <TableHead className="font-bold">Khách đại diện</TableHead>
+                <TableHead className="font-bold">Số khách</TableHead>
+                <TableHead className="font-bold">Giờ nhận phòng</TableHead>
+                <TableHead className="font-bold">Dự kiến trả</TableHead>
+                <TableHead className="font-bold">Kênh nguồn</TableHead>
+                <TableHead className="font-bold">Trạng thái</TableHead>
+                <TableHead className="text-right font-bold">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {activeStayList.length === 0 ? (
+              {filteredStays.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-32 text-center text-xs text-muted-foreground">
-                    Hiện không có lượt ở nào tại cơ sở này
+                  <TableCell colSpan={8} className="h-44 text-center">
+                    <div className="flex flex-col items-center justify-center space-y-2.5 py-4">
+                      <div className="h-12 w-12 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground">
+                        <DoorClosed className="h-6 w-6" />
+                      </div>
+                      <p className="text-sm font-semibold text-foreground">
+                        {searchTerm ? 'Không tìm thấy lượt ở phù hợp' : 'Chưa có phòng nào đang ở tại cơ sở này'}
+                      </p>
+                      <p className="text-xs text-muted-foreground max-w-sm">
+                        {searchTerm ? 'Thử tìm với từ khóa khác' : 'Bấm nút "Check-in mới" để tiếp nhận khách nhận phòng tức thì.'}
+                      </p>
+                      {!searchTerm && (
+                        <Link
+                          href="/check-in"
+                          className="mt-2 inline-flex items-center h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-all"
+                        >
+                          <UserCheck className="h-3.5 w-3.5 mr-1.5" />
+                          <span>Tiến hành Check-in</span>
+                        </Link>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ) : (
-                activeStayList.map((s) => (
-                  <TableRow key={s.id} className="text-xs hover:bg-muted/40">
+                filteredStays.map((s) => (
+                  <TableRow key={s.id} className="text-xs hover:bg-muted/40 transition-colors">
                     <TableCell className="font-bold text-foreground">
                       <div className="flex items-center gap-1.5">
-                        <DoorClosed className="h-4 w-4 text-primary" />
-                        <span className="text-sm">Phòng {s.roomNumber}</span>
+                        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 font-bold text-xs">
+                          {s.roomNumber}
+                        </span>
+                        <span className="font-semibold text-sm">P.{s.roomNumber}</span>
                       </div>
-                      <span className="text-[10px] text-muted-foreground block">{s.roomType}</span>
+                      <span className="text-[10px] text-muted-foreground block pl-7">
+                        {s.roomType || 'Tiêu chuẩn'}
+                      </span>
                     </TableCell>
 
                     <TableCell>
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-foreground">{s.primaryGuestName}</span>
+                          <span className="font-bold text-foreground text-xs">{s.primaryGuestName}</span>
                           {s.tierName && (
                             <Badge
                               variant="default"
-                              className={`text-[9px] py-0 px-1 font-bold ${
+                              className={`text-[9px] py-0 px-1.5 font-bold ${
                                 s.tierName === 'Vàng'
-                                  ? 'bg-yellow-500 text-black'
+                                  ? 'bg-amber-500 text-black'
                                   : s.tierName === 'Bạc'
                                   ? 'bg-slate-400 text-white'
-                                  : 'bg-amber-700 text-white'
+                                  : 'bg-amber-800 text-white'
                               }`}
                             >
                               {s.tierName}
@@ -184,8 +298,8 @@ export function InHouseTable({
                       </div>
                     </TableCell>
 
-                    <TableCell className="font-medium text-muted-foreground">
-                      {s.guestCount} khách
+                    <TableCell className="font-medium text-foreground">
+                      {s.guestCount} người
                     </TableCell>
 
                     <TableCell className="text-muted-foreground font-mono">
@@ -193,13 +307,14 @@ export function InHouseTable({
                     </TableCell>
 
                     <TableCell className="font-mono">
-                      <span className={s.isOverdue ? 'text-destructive font-bold' : 'text-foreground'}>
+                      <span className={s.isOverdue ? 'text-rose-600 font-bold flex items-center gap-1' : 'text-foreground'}>
+                        {s.isOverdue && <AlertCircle className="h-3 w-3 text-rose-600 shrink-0" />}
                         {s.expectedCheckOutAt.replace('T', ' ').slice(0, 16)}
                       </span>
                     </TableCell>
 
                     <TableCell>
-                      <Badge variant="outline" className="text-[10px]">
+                      <Badge variant="outline" className="text-[10px] bg-card">
                         {s.sourceChannelName}
                       </Badge>
                     </TableCell>
@@ -207,10 +322,10 @@ export function InHouseTable({
                     <TableCell>
                       {s.isOverdue ? (
                         <Badge variant="destructive" className="text-[10px] animate-pulse">
-                          Quá giờ trả
+                          Quá hạn trả
                         </Badge>
                       ) : (
-                        <Badge variant="default" className="text-[10px] bg-emerald-600 hover:bg-emerald-600">
+                        <Badge variant="default" className="text-[10px] bg-emerald-600 hover:bg-emerald-600 text-white">
                           Đang ở
                         </Badge>
                       )}
@@ -223,7 +338,7 @@ export function InHouseTable({
                           size="sm"
                           onClick={() => handleCheckout(s.id, s.roomNumber, s.primaryGuestName)}
                           disabled={isPending}
-                          className="h-7 text-xs font-semibold px-2.5 text-primary border-primary/40 hover:bg-primary/10"
+                          className="h-8 text-xs font-bold px-3 text-emerald-700 dark:text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/10 hover:border-emerald-500 transition-all rounded-lg"
                         >
                           <LogOut className="h-3.5 w-3.5 mr-1" />
                           Trả phòng
@@ -233,7 +348,7 @@ export function InHouseTable({
                           size="sm"
                           onClick={() => handleCancel(s.id, s.roomNumber)}
                           disabled={isPending}
-                          className="h-7 text-xs px-2 text-muted-foreground hover:text-destructive"
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 rounded-lg"
                           title="Hủy lượt ở (trong 6h)"
                         >
                           <Ban className="h-3.5 w-3.5" />

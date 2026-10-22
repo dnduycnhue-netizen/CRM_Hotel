@@ -9,7 +9,8 @@ import {
   SelectValue,
 } from '@/shared/ui';
 import { selectBranchAction } from '@/features/admin/actions';
-import { Building2 } from 'lucide-react';
+import { Building2, Loader2, MapPin } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface BranchSelectorProps {
   branches: Array<{ id: string; code: string; name: string }>;
@@ -24,35 +25,56 @@ export function BranchSelector({
 
   const handleBranchChange = (value: string | null) => {
     if (!value) return;
+    const branch = branches.find((b) => b.id === value);
     startTransition(async () => {
       await selectBranchAction(value);
+      toast.info(`Đã chuyển làm việc sang cơ sở: ${branch?.name || value}`);
     });
   };
 
   if (!branches.length) {
     return (
-      <div className="flex items-center gap-2 text-xs text-muted-foreground px-2 py-1 bg-muted/40 rounded">
-        <Building2 className="h-3.5 w-3.5" />
+      <div className="flex items-center gap-2 text-xs text-muted-foreground px-3 py-1.5 bg-muted/50 rounded-lg border border-border/60">
+        <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
         <span>Chưa có cơ sở</span>
       </div>
     );
   }
 
+  const selectedBranch = branches.find(b => b.id === (currentBranchId || branches[0]?.id)) || branches[0];
+
   return (
     <div className="flex items-center gap-2">
+      <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground font-medium mr-1">
+        <MapPin className="h-3.5 w-3.5 text-amber-500" />
+        <span>Cơ sở:</span>
+      </div>
       <Select
         defaultValue={currentBranchId || branches[0]?.id}
         onValueChange={handleBranchChange}
         disabled={isPending}
       >
-        <SelectTrigger className="w-[180px] h-9 text-xs font-medium border-border/60 bg-background">
-          <Building2 className="h-3.5 w-3.5 mr-2 text-primary shrink-0" />
-          <SelectValue placeholder="Chọn cơ sở" />
+        <SelectTrigger className="w-[190px] h-9 text-xs font-semibold border-border/80 bg-background/90 shadow-sm hover:border-amber-500/50 hover:bg-accent/40 transition-all rounded-lg focus:ring-amber-500/30">
+          <div className="flex items-center gap-2 truncate">
+            {isPending ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-500 shrink-0" />
+            ) : (
+              <span className="flex h-5 w-5 items-center justify-center rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold text-[10px] shrink-0">
+                {selectedBranch?.code?.slice(0, 2) || 'KS'}
+              </span>
+            )}
+            <SelectValue placeholder="Chọn cơ sở" />
+          </div>
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="max-h-72">
           {branches.map((b) => (
-            <SelectItem key={b.id} value={b.id} className="text-xs">
-              {b.name} ({b.code})
+            <SelectItem key={b.id} value={b.id} className="text-xs font-medium py-2">
+              <div className="flex items-center justify-between w-full gap-3">
+                <span className="font-semibold text-foreground">{b.name}</span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                  {b.code}
+                </span>
+              </div>
             </SelectItem>
           ))}
         </SelectContent>
