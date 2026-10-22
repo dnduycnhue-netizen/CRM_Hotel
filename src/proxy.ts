@@ -4,31 +4,30 @@ import { createServerClient } from '@supabase/ssr';
 
 const PUBLIC_PATHS = ['/login', '/offline'];
 
-// Strict route-level permission checks
-const ROUTE_RULES: Array<{
+// Strict route-level permission checks (Deny by default)
+const ROUTE_PERMISSION_RULES: Array<{
   prefix: string;
-  allowedRoles?: string[];
-  blockedRoles?: string[];
+  requiredAnyPerms: string[];
 }> = [
   {
     prefix: '/settings',
-    // Only owner/admin can access settings
-    blockedRoles: ['receptionist', 'sales', 'technician'],
+    // Only users with settings management capabilities
+    requiredAnyPerms: ['settings.branches', 'settings.users', 'settings.roles'],
   },
   {
     prefix: '/audit',
-    // Audit logs are restricted to owner/manager
-    blockedRoles: ['receptionist', 'sales', 'technician'],
+    // Only users with audit review capability
+    requiredAnyPerms: ['audit.view'],
   },
   {
     prefix: '/reports',
-    // Reports are restricted to owner/manager
-    blockedRoles: ['receptionist', 'technician'],
+    // Operational or revenue reporting
+    requiredAnyPerms: ['report.revenue', 'report.operational'],
   },
   {
     prefix: '/check-in',
-    // Only staff with frontdesk / check-in capability can access
-    blockedRoles: ['sales', 'technician'],
+    // Frontdesk check-in capability
+    requiredAnyPerms: ['stay.create'],
   },
 ];
 
@@ -65,38 +64,36 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // Route-level enforcement based on email pattern or role
+  // Strict route-level permission enforcement based on user's actual permissions from my_access()
   if (data?.claims) {
-    const email = (data.claims.email as string) || '';
+    const matchedRule = ROUTE_PERMISSION_RULES.find((rule) =>
+      pathname.startsWith(rule.prefix)
+    );
 
-    // Identify test / standard account role
-    const isOwner =
-      email.includes('owner') ||
-      email.includes('admin') ||
-      email.includes('duy');
-    const isManager = email.includes('quanly');
-    const isReception = email.includes('letan');
-    const isSales = email.includes('sales');
-    const isTech = email.includes('kythuat');
+    if (matchedRule) {
+      try {
+        const { data: access } = await supabase.rpc('my_access');
+        const userPerms = new Set<string>();
 
-    const userRole = isOwner
-      ? 'owner'
-      : isManager
-      ? 'branch_manager'
-      : isReception
-      ? 'receptionist'
-      : isSales
-      ? 'sales'
-      : isTech
-      ? 'technician'
-      : 'staff';
+        if (access?.permissions && typeof access.permissions === 'object') {
+          Object.values(access.permissions).forEach((perms: any) => {
+            if (Array.isArray(perms)) {
+              perms.forEach((p) => userPerms.add(p));
+            }
+          });
+        }
 
-    for (const rule of ROUTE_RULES) {
-      if (pathname.startsWith(rule.prefix)) {
-        if (rule.blockedRoles && rule.blockedRoles.includes(userRole)) {
-          // Block unauthorized access and redirect to home dashboard
+        const hasAccess = matchedRule.requiredAnyPerms.some((perm) =>
+          userPerms.has(perm)
+        );
+
+        // Deny by default if user does not hold the required permission
+        if (!hasAccess) {
           return NextResponse.redirect(new URL('/', request.url));
         }
+      } catch {
+        // If access verification fails, fail-safe redirect to home
+        return NextResponse.redirect(new URL('/', request.url));
       }
     }
   }
