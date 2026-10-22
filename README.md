@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CRM Chuỗi Khách Sạn (Hotel Chain CRM)
 
-## Getting Started
+Hệ thống quản lý quan hệ khách hàng và vận hành dành riêng cho chuỗi khách sạn đa chi nhánh.
 
-First, run the development server:
+- **Production App**: [https://crm-hotel-five.vercel.app](https://crm-hotel-five.vercel.app)
+- **Tài liệu bàn giao & Kế thừa**: [HANDOVER_NOTES.md](file:///Users/duyduong/Documents/code/CRM_Hotel/HANDOVER_NOTES.md)
+- **Quy chuẩn phát triển bắt buộc**: [AGENTS.md](file:///Users/duyduong/Documents/code/CRM_Hotel/AGENTS.md)
+
+---
+
+## 🚀 Bắt đầu nhanh
+
+Cài đặt phụ thuộc và khởi chạy máy chủ phát triển cục bộ:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Mở trình duyệt tại [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🧪 Kiểm thử & Xác thực chất lượng
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Trước khi tạo pull request hoặc triển khai, luôn đảm bảo vượt qua toàn bộ các bước kiểm tra:
 
-## Learn More
+```bash
+pnpm typecheck       # Kiểm tra kiểu TypeScript (0 errors)
+pnpm test            # Chạy toàn bộ Vitest unit tests
+pnpm build           # Kiểm tra Next.js Turbopack build
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 📚 Tài liệu chi tiết
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Vui lòng xem file [HANDOVER_NOTES.md](file:///Users/duyduong/Documents/code/CRM_Hotel/HANDOVER_NOTES.md) để nắm rõ:
+- Toàn bộ 25 mã lỗi QA (QA-01 → QA-25) đã được giải quyết và nguyên nhân gốc rễ.
+- Danh sách 6 tài khoản kiểm thử tiêu chuẩn tương ứng với các vai trò trong chuỗi.
+- Cấu trúc kiến trúc phân quyền hai lớp (Defense-in-depth) và cơ chế xử lý dữ liệu.
