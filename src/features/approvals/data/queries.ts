@@ -17,13 +17,11 @@ export async function getPendingMergeRequests(): Promise<MergeRequestItem[]> {
       proposer:profiles!merge_requests_proposed_by_fkey(full_name),
       keep_guest:guests!merge_requests_keep_guest_id_fkey(
         id, full_name, phone, dob, email, nationality, address_line, tags,
-        stats:guest_stats(total_stays, total_nights),
-        documents:guest_documents(doc_number)
+        stats:guest_stats(total_stays, total_nights)
       ),
       drop_guest:guests!merge_requests_drop_guest_id_fkey(
         id, full_name, phone, dob, email, nationality, address_line, tags,
-        stats:guest_stats(total_stays, total_nights),
-        documents:guest_documents(doc_number)
+        stats:guest_stats(total_stays, total_nights)
       )
     `)
     .eq('status', 'pending')
@@ -78,7 +76,7 @@ export async function getPendingFlags(): Promise<PendingFlagItem[]> {
     .select(`
       id,
       guest_id,
-      guest:guests!guest_flags_guest_id_fkey(full_name, phone, documents:guest_documents(doc_number)),
+      guest:guests!guest_flags_guest_id_fkey(full_name, phone),
       flag_type,
       status,
       reason,
@@ -95,7 +93,6 @@ export async function getPendingFlags(): Promise<PendingFlagItem[]> {
 
   return data.map((f: any) => {
     const guest = Array.isArray(f.guest) ? f.guest[0] : f.guest;
-    const doc = Array.isArray(guest?.documents) ? guest.documents[0] : guest?.documents;
     const branch = Array.isArray(f.branch) ? f.branch[0] : f.branch;
     const proposer = Array.isArray(f.proposer) ? f.proposer[0] : f.proposer;
 
@@ -104,11 +101,7 @@ export async function getPendingFlags(): Promise<PendingFlagItem[]> {
       guest_id: f.guest_id,
       guest_name: guest?.full_name || 'Khách',
       guest_phone: guest?.phone || null,
-      guest_doc_masked: doc?.doc_number
-        ? doc.doc_number.length > 6
-          ? `${doc.doc_number.slice(0, 3)}******${doc.doc_number.slice(-3)}`
-          : '***'
-        : null,
+      guest_doc_masked: null,
       flag_type: f.flag_type,
       status: f.status,
       reason: f.reason,
@@ -129,7 +122,7 @@ export async function getActiveBlacklist(): Promise<PendingFlagItem[]> {
     .select(`
       id,
       guest_id,
-      guest:guests!guest_flags_guest_id_fkey(full_name, phone, documents:guest_documents(doc_number)),
+      guest:guests!guest_flags_guest_id_fkey(full_name, phone),
       flag_type,
       status,
       reason,
