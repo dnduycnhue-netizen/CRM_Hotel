@@ -158,6 +158,28 @@ vercel --prod --yes
 - **P3.3 (Báo cáo nâng cao CSVC & Kỹ thuật)**:
   - Xây dựng component `FacilitiesReportView` (`src/features/reports/components/facilities-report-view.tsx`) với 6 thẻ KPI (Sự cố phát sinh, Đúng hạn SLA %, MTTR thời gian khắc phục, Tổng chi phí bảo trì VNĐ, Hoàn thành định kỳ PM %, Đêm phòng OOO) và bảng phân tích cơ cấu chi phí kèm thanh tỷ trọng %.
   - Xây dựng route mỏng `src/app/(app)/reports/facilities/page.tsx` tuân thủ Luật 1 và Luật 2 của `AGENTS.md`, kết nối RPC `report_facilities` và bảo vệ phân quyền `facility.view` / `report.view_branch`.
+
+### Phase P4: Cẩm nang Sử dụng & Bản vẽ Workflow Nghiệp vụ (SOP Hub) - ĐÃ HOÀN THÀNH
+- **P4.1 (Feature Guide & Kiến trúc chuẩn AGENTS.md)**:
+  - Khởi tạo `src/features/guide/` với Public API `index.ts`, types và bộ dữ liệu `guide-data.ts` chi tiết cho 5 vai trò, 4 quy trình nghiệp vụ cốt lõi, 6 modules hệ thống và FAQs.
+  - Route mỏng `src/app/(app)/guide/page.tsx` kết nối giao diện trung tâm `GuideHub`.
+- **P4.2 (Bản vẽ trực quan Workflow SOP)**:
+  - Thành phần `WorkflowVisualizer` hiển thị sơ đồ tuần tự các bước (pipeline nodes) với nhãn chức danh thực hiện, nút mở trực tiếp màn hình nghiệp vụ tương ứng, số thứ tự bước, nội dung hành động, lưu ý bảo mật dữ liệu và khung hướng dẫn chi tiết từng bước khi tương tác.
+  - Hỗ trợ 4 quy trình chuẩn khách sạn:
+    1. `SOP-FO-01`: Đón tiếp, Check-in & Trả phòng In-House.
+    2. `SOP-ENG-02`: Báo cáo sự cố CSVC, Sửa chữa & Khóa buồng phòng OOO.
+    3. `SOP-CRM-03`: Gắn cờ cảnh báo (Blacklist) & Đề xuất gộp hồ sơ khách trùng lặp.
+    4. `SOP-ADM-04`: Quản trị chuỗi, Thiết lập cơ sở, Ma trận phân quyền & Người dùng.
+- **P4.3 (Cẩm nang theo 5 Chức danh & Checklist hàng ngày)**:
+  - Thành phần `RoleGuideView` cung cấp cẩm nang chi tiết cho: Chủ chuỗi (Owner), Quản lý cơ sở (Manager), Lễ tân (Receptionist), Nhân viên Sales (Sales Executive), và Kỹ thuật viên (Technician).
+  - Tích hợp **Checklist công việc trong ca** tương tác trực tiếp (tích chọn hoàn thành, lưu trạng thái), ma trận màn hình được phép truy cập, danh sách **Hành vi nghiêm cấm** và lưu ý bảo vệ bí mật dữ liệu cá nhân (Nghị định 13/2023/NĐ-CP).
+- **P4.4 (Hướng dẫn 6 Modules & FAQ Thường gặp)**:
+  - Thành phần `ModuleGuideView` hệ thống hóa 6 phân hệ cốt lõi: Khách lưu trú, Tiếp đón Check-in, Cơ sở vật chất, Báo cáo thống kê, Phê duyệt & Kiểm soát, Cài đặt & Phân quyền.
+  - Hướng dẫn từng bước cách thực hiện, mẹo vận hành thực tế và giải đáp câu hỏi thường gặp (FAQ) dạng Accordion.
+- **P4.5 (Điều hướng & Tiện ích)**:
+  - Bổ sung nhóm mục "Tài liệu & Đào tạo" vào Sidebar (`app-sidebar.tsx`) với huy hiệu `SOP`.
+  - Bổ sung nút truy cập nhanh "Quy trình (SOP)" trên Header (`app-header.tsx`).
+  - Tích hợp thanh tìm kiếm thời gian thực (Realtime Search) tra cứu toàn văn theo từ khóa và nút In tài liệu quy trình chuẩn (Print SOP).
   - Đồng bộ thanh Tab chuyển đổi module báo cáo (Tổng quan KPI | Doanh thu 12 tháng | CSVC & Kỹ thuật) và Filter Toolbar trên cả 3 trang báo cáo.
 - **P3.4 (Chất lượng & Build Sản phẩm)**:
   - Vượt qua toàn bộ kiểm thử TypeScript `tsc --noEmit` (0 lỗi), 22/22 unit tests Vitest (100% pass), và Next.js Turbopack `next build` thành công cho 30 routes.

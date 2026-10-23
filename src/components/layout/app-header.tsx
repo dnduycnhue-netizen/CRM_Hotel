@@ -2,6 +2,7 @@
 
 import {
   AlertTriangle,
+  Compass,
   LogOut,
   Search,
   Shield,
@@ -171,6 +172,16 @@ export function AppHeader({
               <span>Phân quyền nhân sự</span>
             </Link>
           )}
+
+          {/* Quick Guide / SOP Button */}
+          <Link
+            href="/guide"
+            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-semibold shadow-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
+            title="Xem Hướng dẫn sử dụng & Quy trình nghiệp vụ (SOP)"
+          >
+            <Compass className="h-3.5 w-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Quy trình (SOP)</span>
+          </Link>
 
           {/* Mobile search trigger */}
           <button

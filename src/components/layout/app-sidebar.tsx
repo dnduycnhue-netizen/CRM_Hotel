@@ -8,6 +8,7 @@ import {
   CheckSquare,
   ChevronRight,
   ClipboardList,
+  Compass,
   FileSpreadsheet,
   Hotel,
   KeyRound,
@@ -176,6 +177,18 @@ const NAV_GROUPS: NavGroup[] = [
         href: "/audit",
         icon: ClipboardList,
         perm: "audit.view_branch",
+      },
+    ],
+  },
+  {
+    group: "Tài liệu & Đào tạo",
+    items: [
+      {
+        title: "Hướng dẫn & Quy trình",
+        href: "/guide",
+        icon: Compass,
+        badge: "SOP",
+        badgeVariant: "gold",
       },
     ],
   },
