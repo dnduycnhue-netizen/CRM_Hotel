@@ -4,20 +4,14 @@ import {
   AlertTriangle,
   BedDouble,
   Building,
-  Calendar,
   Check,
-  CheckCircle2,
   Clock,
-  CreditCard,
   Crown,
-  DoorClosed,
   FileText,
   History,
   Loader2,
   Percent,
-  Phone,
   Search,
-  ShieldCheck,
   Sparkles,
   UserCheck,
 } from "lucide-react";
@@ -79,7 +73,7 @@ export function CheckInForm({
   const [expectedCheckOut, setExpectedCheckOut] = useState(() => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split("T")[0] + "T12:00";
+    return `${tomorrow.toISOString().split("T")[0]}T12:00`;
   });
 
   // Manager backdated mode
@@ -133,6 +127,61 @@ export function CheckInForm({
     }
   }, [queryValue, currentBranchId]);
 
+  // Restore draft on mount (US-21)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(
+        `crm_checkin_draft_${currentBranchId}`,
+      );
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.fullName || parsed.phone || parsed.docNumber) {
+          if (parsed.fullName) setFullName(parsed.fullName);
+          if (parsed.phone) setPhone(parsed.phone);
+          if (parsed.docNumber) setDocNumber(parsed.docNumber);
+          if (parsed.gender) setGender(parsed.gender);
+          if (parsed.dob) setDob(parsed.dob);
+          if (parsed.selectedRoomId) setSelectedRoomId(parsed.selectedRoomId);
+          if (parsed.sourceChannel) setSourceChannel(parsed.sourceChannel);
+          toast.info("Đã khôi phục dữ liệu khách đang nhập trước đó");
+        }
+      }
+    } catch {
+      // Ignore storage error
+    }
+  }, [currentBranchId]);
+
+  // Persist draft on changes (US-21)
+  useEffect(() => {
+    try {
+      if (fullName || phone || docNumber || selectedRoomId) {
+        localStorage.setItem(
+          `crm_checkin_draft_${currentBranchId}`,
+          JSON.stringify({
+            fullName,
+            phone,
+            docNumber,
+            gender,
+            dob,
+            selectedRoomId,
+            sourceChannel,
+          }),
+        );
+      }
+    } catch {
+      // Ignore storage error
+    }
+  }, [
+    fullName,
+    phone,
+    docNumber,
+    gender,
+    dob,
+    selectedRoomId,
+    sourceChannel,
+    currentBranchId,
+  ]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -173,6 +222,11 @@ export function CheckInForm({
 
       if (res.ok) {
         toast.success(`Check-in thành công cho khách ${fullName}!`);
+        try {
+          localStorage.removeItem(`crm_checkin_draft_${currentBranchId}`);
+        } catch {
+          // Ignore storage error
+        }
         // Reset form
         setQueryValue("");
         setFullName("");
@@ -195,7 +249,7 @@ export function CheckInForm({
       const floor =
         r.number.length >= 3 ? parseInt(r.number.slice(0, -2), 10) : 1;
       if (!map.has(floor)) map.set(floor, []);
-      map.get(floor)!.push(r);
+      map.get(floor)?.push(r);
     }
     return Array.from(map.entries()).sort((a, b) => b[0] - a[0]); // top floors first
   }, [rooms]);

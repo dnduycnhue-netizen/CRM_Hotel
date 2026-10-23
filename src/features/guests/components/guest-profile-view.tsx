@@ -1,19 +1,14 @@
 "use client";
 
 import {
-  AlertTriangle,
   Award,
   Building2,
-  Calendar,
   CheckCircle2,
   ChevronRight,
-  Clock,
-  ExternalLink,
   GitMerge,
   Loader2,
   Lock,
   Mail,
-  MapPin,
   MessageSquare,
   Phone,
   Plus,
@@ -394,6 +389,7 @@ export function GuestProfileView({
                     #{t}
                     {can.tag && (
                       <button
+                        type="button"
                         onClick={() => handleRemoveTag(t)}
                         className="text-slate-400 hover:text-rose-500 ml-0.5"
                       >
@@ -418,6 +414,7 @@ export function GuestProfileView({
                         }}
                       />
                       <button
+                        type="button"
                         onClick={handleAddTag}
                         className="text-[11px] text-indigo-600 font-semibold px-1"
                       >
@@ -426,6 +423,7 @@ export function GuestProfileView({
                     </div>
                   ) : (
                     <button
+                      type="button"
                       onClick={() => setIsAddingTag(true)}
                       className="text-[11px] text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 font-medium px-1.5 py-0.5 rounded border border-dashed border-indigo-300 dark:border-indigo-800"
                     >
@@ -510,6 +508,7 @@ export function GuestProfileView({
       {/* Tabs Navigation */}
       <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6 text-sm font-semibold">
         <button
+          type="button"
           onClick={() => setActiveTab("stays")}
           className={`pb-3 relative transition flex items-center gap-2 ${
             activeTab === "stays"
@@ -525,6 +524,7 @@ export function GuestProfileView({
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab("notes")}
           className={`pb-3 relative transition flex items-center gap-2 ${
             activeTab === "notes"
@@ -540,6 +540,7 @@ export function GuestProfileView({
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab("companions")}
           className={`pb-3 relative transition flex items-center gap-2 ${
             activeTab === "companions"
@@ -555,6 +556,7 @@ export function GuestProfileView({
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab("flags")}
           className={`pb-3 relative transition flex items-center gap-2 ${
             activeTab === "flags"
@@ -570,6 +572,7 @@ export function GuestProfileView({
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab("consents")}
           className={`pb-3 relative transition flex items-center gap-2 ${
             activeTab === "consents"
@@ -799,6 +802,7 @@ export function GuestProfileView({
                   </div>
 
                   <button
+                    type="button"
                     onClick={() => handleDeleteNote(n.id)}
                     className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition shrink-0"
                     title="Xóa ghi chú"
@@ -1149,10 +1153,11 @@ export function GuestProfileView({
                 {mergeCandidates.length > 0 && !selectedCandidate && (
                   <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-slate-900">
                     {mergeCandidates.map((c) => (
-                      <div
+                      <button
+                        type="button"
                         key={c.id}
                         onClick={() => setSelectedCandidate(c)}
-                        className="p-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer flex items-center justify-between text-xs"
+                        className="w-full text-left p-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer flex items-center justify-between text-xs transition-colors"
                       >
                         <div>
                           <div className="font-semibold text-slate-900 dark:text-slate-100">
@@ -1163,14 +1168,10 @@ export function GuestProfileView({
                             {c.email || "Chưa có"}
                           </div>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-xs rounded-lg"
-                        >
+                        <span className="h-7 px-2.5 inline-flex items-center text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
                           Chọn gộp
-                        </Button>
-                      </div>
+                        </span>
+                      </button>
                     ))}
                   </div>
                 )}

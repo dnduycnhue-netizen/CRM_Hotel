@@ -313,7 +313,7 @@ export async function getRoomsForBranch(
 }
 
 export async function getStaffForBranch(
-  branchId: string,
+  _branchId: string,
 ): Promise<Array<{ id: string; full_name: string }>> {
   const supabase = await createClient();
   const { data, error } = await supabase

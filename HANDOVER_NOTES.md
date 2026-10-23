@@ -162,6 +162,28 @@ vercel --prod --yes
 - **P3.4 (Chất lượng & Build Sản phẩm)**:
   - Vượt qua toàn bộ kiểm thử TypeScript `tsc --noEmit` (0 lỗi), 22/22 unit tests Vitest (100% pass), và Next.js Turbopack `next build` thành công cho 30 routes.
 
+### Phase P4: Quản trị Nguồn khách/Đối tác, Dọn sạch Lỗi Lint & Tối ưu PWA (Nhánh `phase/p4-completion`) - ĐÃ HOÀN THÀNH
+- **P4.1 (Quản lý Nguồn khách & Kênh Đối tác - Settings > Sources)**:
+  - Tạo schema validation Zod (`sourceChannelSchema`, `partnerSchema`) và bộ unit test Vitest (`src/features/admin/schemas.test.ts`).
+  - Viết Server Actions `saveSourceChannelAction`, `savePartnerAction` trong [actions.ts](file:///Users/duyduong/Documents/code/CRM_Hotel/src/features/admin/actions.ts) kết nối bảng `source_channels` và `partners` qua RLS policy `private.has_perm('settings.sources')` và kiểm tra quyền hai lớp `requirePermission('settings.sources')`.
+  - Nâng cấp [sources-table.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/features/admin/components/sources-table.tsx):
+    - Thêm nút và modal Thêm/Sửa kênh nguồn khách (Mã, Tên hiển thị, Phân loại, Bắt buộc chọn đối tác US-22, Thứ tự, Trạng thái).
+    - Thêm nút và modal Thêm/Sửa hồ sơ đối tác lữ hành/doanh nghiệp (Tên công ty, Phân loại, Người liên hệ, SĐT, Email, MST, Ghi chú hợp đồng, Trạng thái).
+    - Cập nhật tức thì trên giao diện và hiển thị toast Sonner.
+- **P4.2 (Chuẩn hóa Code Quality & Biome Linter - Đạt chuẩn AGENTS.md Luật 15)**:
+  - Khắc phục triệt để 70 lỗi linter của Biome: bổ sung `type="button"` cho toàn bộ các nút HTML, cấu hình rule accessibility chuẩn cho UI library trong `biome.json`.
+  - Tối ưu [command-palette.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/features/search/components/command-palette.tsx) (thay div clickable bằng button chuẩn a11y, thêm role dialog).
+  - Tối ưu callback `forEach` trong `src/proxy.ts` và `src/lib/supabase/server.ts`.
+  - `pnpm lint` vượt qua 160 files với 0 lỗi (Exit Code 0).
+- **P4.3 (PWA Offline Resilience & Form Draft Auto-save - US-20, US-21)**:
+  - Định kiểu chuẩn `BeforeInstallPromptEvent` cho thanh cài đặt PWA trong [network-status-banner.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/components/pwa/network-status-banner.tsx).
+  - Bổ sung cơ chế tự động sao lưu bản nháp check-in vào `localStorage` khi đang nhập liệu (`crm_checkin_draft_[branchId]`) trong [check-in-form.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/features/check-in/components/check-in-form.tsx) và tự động khôi phục nếu mất mạng/tải lại trang, xóa sạch bản nháp khi check-in thành công.
+- **P4.4 (Kiểm thử Toàn diện & Build Sản phẩm)**:
+  - TypeScript `tsc --noEmit` đạt 0 lỗi (100% Pass).
+  - Vitest Unit Tests: 28/28 tests passed (100% Pass).
+  - Biome Lint: 0 errors (100% Pass).
+  - Turbopack Production Build: 30/30 routes biên dịch thành công (100% Pass).
+
 ---
 
 ## 6. Lưu ý cho người bảo trì tiếp theo (Caveats & Best Practices)

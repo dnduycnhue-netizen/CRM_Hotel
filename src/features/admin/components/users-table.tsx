@@ -3,7 +3,6 @@
 import {
   Building2,
   CheckCircle2,
-  Crown,
   Edit3,
   KeyRound,
   Loader2,
@@ -11,8 +10,6 @@ import {
   Phone,
   Search,
   Shield,
-  ShieldAlert,
-  Sparkles,
   UserPlus,
   Users,
   X,
@@ -21,17 +18,7 @@ import {
 import type React from "react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Input,
-  Label,
-} from "@/shared/ui";
+import { Button, Card, Input, Label } from "@/shared/ui";
 import { createUserAction, updateUserAction } from "../actions";
 import type { AdminUserItem } from "../data/users";
 import type { SystemRole } from "../domain/types";

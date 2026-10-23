@@ -280,3 +280,135 @@ export async function saveBranchAction(
   revalidatePath("/", "layout");
   return ok({ id: savedId || id || "" });
 }
+
+import {
+  type PartnerInput,
+  partnerSchema,
+  type SourceChannelInput,
+  sourceChannelSchema,
+} from "./schemas";
+
+/**
+ * Thêm mới hoặc cập nhật kênh nguồn khách (direct, ota, partner, corporate)
+ */
+export async function saveSourceChannelAction(
+  rawInput: SourceChannelInput,
+): Promise<ActionResult<{ id: string }>> {
+  const hasPerm = await requirePermission("settings.sources");
+  if (!hasPerm.ok) return hasPerm;
+
+  const parsed = sourceChannelSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return fail("VALIDATION", parsed.error.flatten().fieldErrors);
+  }
+
+  const { id, code, name, kind, requires_partner, is_active, sort } =
+    parsed.data;
+  const supabase = await createClient();
+
+  if (id) {
+    const { error } = await (supabase.from("source_channels") as any)
+      .update({
+        code,
+        name,
+        kind,
+        requires_partner,
+        is_active,
+        sort,
+      })
+      .eq("id", id);
+    if (error) {
+      return fail(error.code, undefined, error.message);
+    }
+    revalidatePath("/settings/sources");
+    return ok({ id });
+  }
+
+  const { data, error } = await (supabase.from("source_channels") as any)
+    .insert({
+      code,
+      name,
+      kind,
+      requires_partner,
+      is_active,
+      sort,
+    })
+    .select("id")
+    .single();
+
+  if (error || !data) {
+    return fail(error?.code || "UNKNOWN", undefined, error?.message);
+  }
+
+  revalidatePath("/settings/sources");
+  return ok({ id: data.id });
+}
+
+/**
+ * Thêm mới hoặc cập nhật đối tác lữ hành / doanh nghiệp
+ */
+export async function savePartnerAction(
+  rawInput: PartnerInput,
+): Promise<ActionResult<{ id: string }>> {
+  const hasPerm = await requirePermission("settings.sources");
+  if (!hasPerm.ok) return hasPerm;
+
+  const parsed = partnerSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return fail("VALIDATION", parsed.error.flatten().fieldErrors);
+  }
+
+  const {
+    id,
+    name,
+    kind,
+    contact_name,
+    phone,
+    email,
+    tax_code,
+    note,
+    is_active,
+  } = parsed.data;
+  const supabase = await createClient();
+
+  if (id) {
+    const { error } = await (supabase.from("partners") as any)
+      .update({
+        name,
+        kind,
+        contact_name: contact_name || null,
+        phone: phone || null,
+        email: email || null,
+        tax_code: tax_code || null,
+        note: note || null,
+        is_active,
+      })
+      .eq("id", id);
+    if (error) {
+      return fail(error.code, undefined, error.message);
+    }
+    revalidatePath("/settings/sources");
+    return ok({ id });
+  }
+
+  const { data, error } = await (supabase.from("partners") as any)
+    .insert({
+      name,
+      kind,
+      contact_name: contact_name || null,
+      phone: phone || null,
+      email: email || null,
+      tax_code: tax_code || null,
+      note: note || null,
+      is_active,
+    })
+    .select("id")
+    .single();
+
+  if (error || !data) {
+    return fail(error?.code || "UNKNOWN", undefined, error?.message);
+  }
+
+  revalidatePath("/settings/sources");
+  return ok({ id: data.id });
+}

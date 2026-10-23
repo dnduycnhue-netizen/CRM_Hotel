@@ -4,13 +4,9 @@ import {
   AlertTriangle,
   Boxes,
   Building2,
-  CheckCircle2,
-  Clock,
   DoorOpen,
-  Plus,
   QrCode,
   RefreshCw,
-  ShieldAlert,
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";

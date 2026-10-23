@@ -1,25 +1,18 @@
 "use client";
 
 import {
-  AlertTriangle,
-  ArrowDownRight,
-  ArrowUpRight,
-  BarChart3,
   Bed,
   Building2,
   Calendar,
-  CheckCircle2,
   Clock,
   DollarSign,
-  FileSpreadsheet,
   Layers,
-  PieChart,
   ShieldCheck,
   Wrench,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { Button } from "@/shared/ui";
 import { formatDateVN, getVnDateRange } from "@/shared/utils/date";
 import type { FacilityReportResponse } from "../types";
@@ -69,7 +62,7 @@ export function FacilitiesReportView({
   };
 
   const curr = data?.current;
-  const comp = data?.compare;
+  const _comp = data?.compare;
 
   const formatVND = (num: number) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -157,6 +150,7 @@ export function FacilitiesReportView({
           {/* Chọn nhanh mốc thời gian */}
           <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
             <button
+              type="button"
               onClick={() => handlePresetChange("7days")}
               disabled={isPending}
               className={`px-3 py-1 rounded-lg font-medium transition ${
@@ -168,6 +162,7 @@ export function FacilitiesReportView({
               7 ngày qua
             </button>
             <button
+              type="button"
               onClick={() => handlePresetChange("30days")}
               disabled={isPending}
               className={`px-3 py-1 rounded-lg font-medium transition ${
@@ -179,6 +174,7 @@ export function FacilitiesReportView({
               30 ngày qua
             </button>
             <button
+              type="button"
               onClick={() => handlePresetChange("thisMonth")}
               disabled={isPending}
               className={`px-3 py-1 rounded-lg font-medium transition ${

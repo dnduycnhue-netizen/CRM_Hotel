@@ -1,12 +1,18 @@
 "use client";
 
 import { Download, Wifi, WifiOff, X } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
 
 export function NetworkStatusBanner() {
   const [isOnline, setIsOnline] = useState<boolean>(true);
   const [showReconnected, setShowReconnected] = useState<boolean>(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState<boolean>(false);
 
   useEffect(() => {
@@ -36,7 +42,7 @@ export function NetworkStatusBanner() {
 
       const handleBeforeInstallPrompt = (e: Event) => {
         e.preventDefault();
-        setDeferredPrompt(e);
+        setDeferredPrompt(e as unknown as BeforeInstallPromptEvent);
         setShowInstallPrompt(true);
       };
 

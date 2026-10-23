@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle, ArrowRight, Check, UserCheck, X } from "lucide-react";
-import React, { useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { formatDateTimeVN, formatDateVN } from "@/shared/utils/date";
 import { approveMergeAction, rejectMergeAction } from "../actions";

@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { type ActionResult, fail, ok } from "@/shared/errors";
+import { type ActionResult, fail } from "@/shared/errors";
 
 export async function loginAction(
   formData: FormData,

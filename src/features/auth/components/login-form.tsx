@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { lazy, Suspense, useEffect, useState, useTransition } from "react";
+import { lazy, Suspense, useState, useTransition } from "react";
 import {
   Button,
   Card,

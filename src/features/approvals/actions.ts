@@ -42,7 +42,7 @@ export async function proposeMergeAction(
 
     revalidatePath("/approvals");
     return ok({ request_id: data as string });
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -70,7 +70,7 @@ export async function approveMergeAction(
     revalidatePath("/approvals");
     revalidatePath("/guests");
     return ok(undefined);
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -97,7 +97,7 @@ export async function rejectMergeAction(
 
     revalidatePath("/approvals");
     return ok(undefined);
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -131,7 +131,7 @@ export async function proposeFlagAction(
     revalidatePath("/approvals");
     revalidatePath(`/guests/${parsed.data.guest_id}`);
     return ok({ flag_id: data as string });
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -160,7 +160,7 @@ export async function decideFlagAction(
     revalidatePath("/approvals");
     revalidatePath("/guests");
     return ok(undefined);
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -188,7 +188,7 @@ export async function removeFlagAction(
     revalidatePath("/approvals");
     revalidatePath("/guests");
     return ok(undefined);
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }

@@ -9,7 +9,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import React, { useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { decideFlagAction } from "../actions";
 import type { PendingFlagItem } from "../types";
 

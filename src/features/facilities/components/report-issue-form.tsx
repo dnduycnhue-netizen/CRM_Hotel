@@ -5,11 +5,9 @@ import {
   ArrowLeft,
   Building2,
   CheckCircle2,
-  Clock,
   DoorOpen,
   Loader2,
   ShieldAlert,
-  Wrench,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -58,7 +56,7 @@ export function ReportIssueForm({
     if (filteredRooms.length > 0 && !selectedRoom) {
       setSelectedRoom(filteredRooms[0].id);
     }
-  }, [selectedBranch, filteredRooms, selectedRoom]);
+  }, [filteredRooms, selectedRoom]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

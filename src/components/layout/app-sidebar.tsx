@@ -15,7 +15,6 @@ import {
   Search,
   Settings,
   ShieldCheck,
-  Sparkles,
   UserCheck,
   Users,
   Wrench,
@@ -226,7 +225,7 @@ export function AppSidebar() {
                 {visibleItems.map((item) => {
                   const isActive =
                     pathname === item.href ||
-                    (item.href !== "/" && pathname.startsWith(item.href + "/"));
+                    (item.href !== "/" && pathname.startsWith(`${item.href}/`));
                   const Icon = item.icon;
                   return (
                     <Link

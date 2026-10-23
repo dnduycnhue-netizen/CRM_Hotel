@@ -1,18 +1,6 @@
 "use client";
 
-import {
-  AlertTriangle,
-  Building2,
-  Calendar,
-  CheckCircle2,
-  DoorOpen,
-  Loader2,
-  Lock,
-  Plus,
-  ShieldAlert,
-  Unlock,
-  User,
-} from "lucide-react";
+import { Loader2, Lock, Plus, Unlock, User } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/shared/ui";
@@ -266,6 +254,7 @@ export function RoomBlocksTable({
                 Khóa phòng thủ công
               </h2>
               <button
+                type="button"
                 onClick={() => setShowModal(false)}
                 className="text-slate-400 hover:text-slate-600"
               >

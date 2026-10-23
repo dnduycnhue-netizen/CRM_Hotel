@@ -1,18 +1,14 @@
 "use client";
 
 import {
-  ArrowUpRight,
   BarChart3,
   Building2,
   Calendar,
   CheckCircle2,
-  Filter,
   Globe,
   Hotel,
   Loader2,
-  PieChart,
   Share2,
-  ShieldAlert,
   Sparkles,
   TrendingDown,
   TrendingUp,
@@ -106,7 +102,7 @@ export function DashboardOverview({
   const occDelta = compare
     ? (current.occupancy - compare.occupancy).toFixed(1)
     : null;
-  const arrivalsDelta = compare
+  const _arrivalsDelta = compare
     ? getDelta(current.arrivals, compare.arrivals)
     : null;
   const returnDelta = compare
@@ -190,6 +186,7 @@ export function DashboardOverview({
           {/* Chọn mốc thời gian */}
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
             <button
+              type="button"
               onClick={() => handlePresetChange("7days")}
               disabled={isPending}
               className={`px-2.5 py-1 rounded-lg font-semibold transition ${
@@ -201,6 +198,7 @@ export function DashboardOverview({
               7 ngày qua
             </button>
             <button
+              type="button"
               onClick={() => handlePresetChange("30days")}
               disabled={isPending}
               className={`px-2.5 py-1 rounded-lg font-semibold transition ${
@@ -212,6 +210,7 @@ export function DashboardOverview({
               30 ngày qua
             </button>
             <button
+              type="button"
               onClick={() => handlePresetChange("thisMonth")}
               disabled={isPending}
               className={`px-2.5 py-1 rounded-lg font-semibold transition ${
@@ -229,6 +228,7 @@ export function DashboardOverview({
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
             <button
+              type="button"
               onClick={() => setActiveView("chain")}
               className={`px-2.5 py-1 rounded-lg font-semibold transition ${
                 activeView === "chain"
@@ -239,6 +239,7 @@ export function DashboardOverview({
               Tổng quan chuỗi
             </button>
             <button
+              type="button"
               onClick={() => setActiveView("branches")}
               className={`px-2.5 py-1 rounded-lg font-semibold transition ${
                 activeView === "branches"
@@ -249,6 +250,7 @@ export function DashboardOverview({
               Theo 8 cơ sở
             </button>
             <button
+              type="button"
               onClick={() => setActiveView("channels")}
               className={`px-2.5 py-1 rounded-lg font-semibold transition ${
                 activeView === "channels"

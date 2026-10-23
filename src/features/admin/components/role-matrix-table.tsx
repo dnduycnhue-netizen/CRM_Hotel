@@ -1,17 +1,15 @@
 "use client";
 
-import { Check, Loader2, RotateCcw, Save, ShieldCheck } from "lucide-react";
+import { Loader2, RotateCcw, Save, ShieldCheck } from "lucide-react";
 import React, { useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   Badge,
   Button,
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  Checkbox,
   Table,
   TableBody,
   TableCell,
@@ -138,7 +136,7 @@ export function RoleMatrixTable({ roles, permissions }: RoleMatrixTableProps) {
         toast.success(
           `Đã lưu thành công các thay đổi phân quyền vào cơ sở dữ liệu!`,
         );
-      } catch (err: any) {
+      } catch (_err: any) {
         toast.error("Lỗi khi lưu phân quyền");
       }
     });

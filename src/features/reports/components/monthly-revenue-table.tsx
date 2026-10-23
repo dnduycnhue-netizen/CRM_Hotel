@@ -1,17 +1,9 @@
 "use client";
 
-import {
-  Building2,
-  Calendar,
-  DollarSign,
-  FileSpreadsheet,
-  Layers,
-  Loader2,
-  TrendingUp,
-} from "lucide-react";
+import { Building2, FileSpreadsheet, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import type { MonthlyReportRow } from "../types";
 
 interface MonthlyRevenueTableProps {

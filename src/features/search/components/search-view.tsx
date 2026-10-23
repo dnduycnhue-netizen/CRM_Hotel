@@ -4,7 +4,6 @@ import {
   ArrowRight,
   Award,
   Building2,
-  Calendar,
   Loader2,
   Phone,
   Search,

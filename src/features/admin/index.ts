@@ -14,3 +14,4 @@ export * from "./data/rooms";
 export * from "./data/sources";
 export * from "./data/users";
 export * from "./domain/types";
+export * from "./schemas";

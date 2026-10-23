@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  ArrowLeft,
-  CheckCircle2,
-  FileText,
-  Loader2,
-  Mail,
-  MapPin,
-  Phone,
-  Tag,
-  User,
-} from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";

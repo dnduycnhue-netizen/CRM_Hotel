@@ -7,7 +7,7 @@
 export function normalizeVnPhone(input: string): string {
   const digits = input.replace(/\D/g, "");
   if (digits.startsWith("84") && digits.length === 11) {
-    return "0" + digits.slice(2);
+    return `0${digits.slice(2)}`;
   }
   return digits;
 }

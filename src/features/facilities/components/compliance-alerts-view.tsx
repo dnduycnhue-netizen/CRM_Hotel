@@ -3,14 +3,11 @@
 import {
   AlertTriangle,
   Building2,
-  Calendar,
   CheckCircle2,
   Clock,
-  ExternalLink,
-  FileText,
   ShieldAlert,
 } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import { formatDateVN } from "@/shared/utils/date";
 import type { ComplianceAlertItem } from "../data/alerts";
 

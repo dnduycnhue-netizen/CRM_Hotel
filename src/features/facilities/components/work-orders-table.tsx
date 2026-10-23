@@ -1,18 +1,14 @@
 "use client";
 
 import {
-  AlertTriangle,
   Building2,
   CheckCircle2,
   CheckSquare,
   Clock,
   DoorOpen,
-  Filter,
   Lock,
   Play,
   Plus,
-  ShieldAlert,
-  Unlock,
   User,
   Wrench,
 } from "lucide-react";
@@ -445,6 +441,7 @@ export function WorkOrdersTable({
                 Báo cáo hoàn thành phiếu #{activeOrder.number}
               </h2>
               <button
+                type="button"
                 onClick={() => {
                   setActiveOrder(null);
                   setActionType(null);

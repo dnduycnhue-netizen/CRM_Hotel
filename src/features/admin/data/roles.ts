@@ -561,14 +561,13 @@ export async function getSystemRoles(): Promise<{
 }> {
   try {
     const supabase = await createClient();
-    const [{ data: rolesData }, { data: permsData }, { data: rolePermsData }] =
-      await Promise.all([
-        supabase.from("roles").select("id, key, name, description, is_system"),
-        supabase
-          .from("permissions")
-          .select("key, module_key, kind, label, description, sort"),
-        supabase.from("role_permissions").select("role_id, permission_key"),
-      ]);
+    const [{ data: rolesData }, , { data: rolePermsData }] = await Promise.all([
+      supabase.from("roles").select("id, key, name, description, is_system"),
+      supabase
+        .from("permissions")
+        .select("key, module_key, kind, label, description, sort"),
+      supabase.from("role_permissions").select("role_id, permission_key"),
+    ]);
 
     if (rolesData && rolesData.length > 0) {
       const permsMap = (rolePermsData || []).reduce(

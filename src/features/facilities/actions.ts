@@ -67,7 +67,7 @@ export async function createWorkOrderAction(
     revalidatePath("/facilities/work-orders");
     revalidatePath("/facilities/room-blocks");
     return ok(data as { id: string; number: number; due_at: string });
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -97,7 +97,7 @@ export async function transitionWorkOrderAction(
     revalidatePath("/facilities/work-orders");
     revalidatePath("/facilities/room-blocks");
     return ok(undefined);
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -128,7 +128,7 @@ export async function setRoomBlockAction(
     revalidatePath("/facilities/room-blocks");
     revalidatePath("/check-in");
     return ok({ block_id: data as string });
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -152,7 +152,7 @@ export async function releaseRoomBlockAction(
     revalidatePath("/facilities/room-blocks");
     revalidatePath("/check-in");
     return ok(undefined);
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -213,7 +213,7 @@ export async function createPmPlanAction(
 
     revalidatePath("/facilities/maintenance");
     return ok({ id: (data as any)?.id || "" });
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -268,7 +268,7 @@ export async function createAssetAction(
 
     revalidatePath("/facilities/assets");
     return ok({ id: data.id });
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -313,7 +313,7 @@ export async function updateAssetStatusAction(
 
     revalidatePath("/facilities/assets");
     return ok(undefined);
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }

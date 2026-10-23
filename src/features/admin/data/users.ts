@@ -50,7 +50,7 @@ export async function getUsersList(): Promise<AdminUserItem[]> {
     if (!rolesByUser.has(ur.user_id)) {
       rolesByUser.set(ur.user_id, []);
     }
-    rolesByUser.get(ur.user_id)!.push({
+    rolesByUser.get(ur.user_id)?.push({
       role_id: ur.role_id,
       role_name: ur.role?.name || "Chưa đặt tên",
       role_key: ur.role?.key || "",

@@ -3,15 +3,12 @@
 import {
   AlertCircle,
   Ban,
-  Building2,
   Clock,
   DoorClosed,
   Loader2,
   LogOut,
   Phone,
   Search,
-  ShieldCheck,
-  Sparkles,
   UserCheck,
   Users,
 } from "lucide-react";
@@ -22,12 +19,10 @@ import {
   Badge,
   Button,
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -82,7 +77,7 @@ export function InHouseTable({
       (s) =>
         s.roomNumber.toLowerCase().includes(q) ||
         s.primaryGuestName.toLowerCase().includes(q) ||
-        (s.primaryGuestPhone && s.primaryGuestPhone.includes(q)),
+        s.primaryGuestPhone?.includes(q),
     );
   }, [activeStayList, searchTerm]);
 

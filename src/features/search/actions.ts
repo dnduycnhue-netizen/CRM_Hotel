@@ -51,7 +51,7 @@ export async function searchGuestsAction(
     }
 
     return ok(data as SearchGuestResult[]);
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }

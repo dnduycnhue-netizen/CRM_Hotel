@@ -2,7 +2,6 @@
 
 import {
   Building2,
-  Calendar,
   ChevronDown,
   ChevronRight,
   ClipboardList,
@@ -10,9 +9,7 @@ import {
   Eye,
   FileSpreadsheet,
   Plus,
-  ShieldAlert,
   Trash2,
-  UserCheck,
 } from "lucide-react";
 import React, { useState } from "react";
 import { formatDateTimeVN } from "@/shared/utils/date";
@@ -244,7 +241,7 @@ export function AuditTable({ initialLogs, branches }: Props) {
                         <td className="py-3 px-4 text-xs font-medium text-slate-200">
                           {log.actor_name ||
                             (log.actor_id
-                              ? log.actor_id.substring(0, 8) + "..."
+                              ? `${log.actor_id.substring(0, 8)}...`
                               : "Hệ thống (Cron)")}
                         </td>
                         <td className="py-3 px-4 text-xs text-slate-400">
@@ -265,7 +262,7 @@ export function AuditTable({ initialLogs, branches }: Props) {
                         </td>
                         <td className="py-3 px-4 text-xs text-slate-500 font-mono">
                           {log.entity_id
-                            ? log.entity_id.substring(0, 8) + "..."
+                            ? `${log.entity_id.substring(0, 8)}...`
                             : "-"}
                         </td>
                       </tr>

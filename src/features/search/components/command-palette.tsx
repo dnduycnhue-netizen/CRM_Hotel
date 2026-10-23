@@ -91,8 +91,11 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-150">
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Tìm kiếm nhanh khách hàng"
         className="w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
-        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
       >
         {/* Header / Input bar */}
         <div className="relative flex items-center px-4 border-b border-slate-200 dark:border-slate-800">
@@ -110,6 +113,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             <Loader2 className="w-5 h-5 text-indigo-500 animate-spin mr-2 shrink-0" />
           )}
           <button
+            type="button"
             onClick={onClose}
             className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
           >
@@ -135,11 +139,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
           {results.map((guest, idx) => {
             const isSelected = idx === selectedIndex;
             return (
-              <div
+              <button
+                type="button"
                 key={guest.id}
                 onClick={() => handleSelect(guest)}
                 onMouseEnter={() => setSelectedIndex(idx)}
-                className={`p-3 rounded-xl cursor-pointer transition flex items-center justify-between ${
+                className={`w-full text-left p-3 rounded-xl cursor-pointer transition flex items-center justify-between ${
                   isSelected
                     ? "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-950 dark:text-indigo-100"
                     : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
@@ -214,7 +219,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                     </div>
                   )}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

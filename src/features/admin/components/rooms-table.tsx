@@ -1,12 +1,11 @@
 "use client";
 
-import { Building, DoorClosed, Filter } from "lucide-react";
+import { DoorClosed } from "lucide-react";
 import { useState } from "react";
 import {
   Badge,
   Button,
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,

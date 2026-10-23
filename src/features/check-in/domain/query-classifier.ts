@@ -12,7 +12,7 @@ export function classifyQuery(input: string): {
   // 1. Số điện thoại Việt Nam (10 số, bắt đầu bằng 0 hoặc 84)
   if (/^(0|84)[3|5|7|8|9][0-9]{8}$/.test(digitsOnly)) {
     const phone = digitsOnly.startsWith("84")
-      ? "0" + digitsOnly.slice(2)
+      ? `0${digitsOnly.slice(2)}`
       : digitsOnly;
     return { kind: "phone", cleanValue: phone };
   }

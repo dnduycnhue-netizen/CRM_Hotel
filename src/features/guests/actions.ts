@@ -55,7 +55,7 @@ export async function createGuestAction(
 
     revalidatePath("/guests");
     return ok(data as { guest_id: string; existing: boolean });
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -90,7 +90,7 @@ export async function updateGuestAction(
     revalidatePath(`/guests/${guestId}`);
     revalidatePath("/guests");
     return ok(data as { id: string; updated: boolean });
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -123,7 +123,7 @@ export async function addGuestNoteAction(
 
     revalidatePath(`/guests/${parsed.data.guest_id}`);
     return ok(data);
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -144,7 +144,7 @@ export async function deleteGuestNoteAction(
 
     revalidatePath(`/guests/${guestId}`);
     return ok(undefined);
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -171,7 +171,7 @@ export async function setGuestTagsAction(
 
     revalidatePath(`/guests/${guestId}`);
     return ok(undefined);
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -199,7 +199,7 @@ export async function assignSalesOwnerAction(
     revalidatePath(`/guests/${guestId}`);
     revalidatePath("/guests");
     return ok(undefined);
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -229,7 +229,7 @@ export async function setGuestConsentAction(
 
     revalidatePath(`/guests/${guestId}`);
     return ok(undefined);
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -244,7 +244,7 @@ export async function exportGuestsAction(): Promise<
     }
 
     const hasExportFullPerm = await requirePermission("guest.export_full");
-    const allowFull = hasExportFullPerm.ok;
+    const _allowFull = hasExportFullPerm.ok;
 
     const supabase = await createClient();
     const { data, error } = await (supabase.rpc as any)("export_guests", {
@@ -323,7 +323,7 @@ export async function exportGuestsAction(): Promise<
       base64,
       count: data.length,
     });
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -356,7 +356,7 @@ export async function proposeGuestFlagAction(input: {
     revalidatePath("/approvals");
     revalidatePath(`/guests/${input.guest_id}`);
     return ok({ flag_id: data as string });
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -409,7 +409,7 @@ export async function searchCandidateGuestsAction(
         nationality: string;
       }>) || [],
     );
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
@@ -442,7 +442,7 @@ export async function proposeGuestMergeAction(params: {
     revalidatePath("/approvals");
     revalidatePath(`/guests/${params.keepGuestId}`);
     return ok({ request_id: data as string });
-  } catch (err: unknown) {
+  } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }

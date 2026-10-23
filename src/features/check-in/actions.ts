@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requirePermission } from "@/shared/auth/server";
 import { type ActionResult, fail, ok, toFieldErrors } from "@/shared/errors";
 import { toVnTimestamptz } from "@/shared/utils/date";
-import { type CheckInInput, checkInSchema } from "./schemas";
+import { checkInSchema } from "./schemas";
 
 export interface GuestLookupResult {
   guestId: string;
@@ -85,7 +85,7 @@ export async function lookupGuestAction(
     };
 
     return ok(result);
-  } catch (err) {
+  } catch (_err) {
     return fail("UNKNOWN");
   }
 }
@@ -157,7 +157,7 @@ export async function checkInGuestAction(
         document: hasCleanDoc
           ? {
               type: data.documentType,
-              number: data.documentNumber!.trim().toUpperCase(),
+              number: data.documentNumber?.trim().toUpperCase(),
               country: (data.nationality || "VN").slice(0, 2).toUpperCase(),
             }
           : null,

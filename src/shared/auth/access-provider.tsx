@@ -25,5 +25,5 @@ export function Can({
   children: React.ReactNode;
 }) {
   const can = useCan();
-  return can(perm) ? <>{children}</> : null;
+  return can(perm) ? children : null;
 }

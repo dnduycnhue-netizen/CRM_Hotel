@@ -41,11 +41,13 @@ export async function proxy(request: NextRequest) {
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll: (list) => {
-          list.forEach(({ name, value }) => request.cookies.set(name, value));
+          list.forEach(({ name, value }) => {
+            request.cookies.set(name, value);
+          });
           response = NextResponse.next({ request });
-          list.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options),
-          );
+          list.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+          });
         },
       },
     },
@@ -79,7 +81,9 @@ export async function proxy(request: NextRequest) {
         if (access?.permissions && typeof access.permissions === "object") {
           Object.values(access.permissions).forEach((perms: any) => {
             if (Array.isArray(perms)) {
-              perms.forEach((p) => userPerms.add(p));
+              perms.forEach((p) => {
+                userPerms.add(p);
+              });
             }
           });
         }

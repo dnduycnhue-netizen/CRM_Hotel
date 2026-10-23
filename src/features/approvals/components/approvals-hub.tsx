@@ -1,7 +1,7 @@
 "use client";
 
-import { CheckCircle2, GitMerge, ShieldAlert, ShieldCheck } from "lucide-react";
-import React, { useState } from "react";
+import { GitMerge, ShieldAlert, ShieldCheck } from "lucide-react";
+import { useState } from "react";
 import type { MergeRequestItem, PendingFlagItem } from "../types";
 import { ActiveFlagsTable } from "./active-flags-table";
 import { FlagsApprovalTable } from "./flags-approval-table";

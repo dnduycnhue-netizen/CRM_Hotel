@@ -2,18 +2,10 @@
 
 import {
   ArrowRight,
-  Award,
-  Building2,
-  Calendar,
-  CheckCircle2,
-  Download,
   FileSpreadsheet,
   Filter,
   Loader2,
-  Phone,
   Plus,
-  ShieldAlert,
-  Tag,
   User,
 } from "lucide-react";
 import Link from "next/link";
@@ -70,7 +62,7 @@ export function GuestListTable({
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       toast.success("Xuất file Excel thành công!");
-    } catch (err) {
+    } catch (_err) {
       toast.error("Đã xảy ra lỗi khi tạo tệp Excel");
     } finally {
       setIsExporting(false);

@@ -13,9 +13,9 @@ export async function createClient() {
         getAll: () => cookieStore.getAll(),
         setAll: (list) => {
           try {
-            list.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
-            );
+            list.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options);
+            });
           } catch {
             // Server Component không ghi được cookie; proxy.ts lo việc làm mới phiên.
           }

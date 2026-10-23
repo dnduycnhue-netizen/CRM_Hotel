@@ -1,13 +1,12 @@
 "use client";
 
-import { RotateCcw, Save, Settings } from "lucide-react";
-import React, { useState } from "react";
+import { Save, Settings } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import {
   Badge,
   Button,
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,

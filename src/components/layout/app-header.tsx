@@ -2,11 +2,9 @@
 
 import {
   AlertTriangle,
-  HelpCircle,
   LogOut,
   Search,
   Shield,
-  Sparkles,
   User,
   UserCheck,
 } from "lucide-react";
@@ -17,11 +15,9 @@ import { CommandPalette } from "@/features/search";
 import {
   Avatar,
   AvatarFallback,
-  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui";
@@ -125,6 +121,7 @@ export function AppHeader({
         {/* Center: Global Search Bar */}
         <div className="flex-1 max-w-lg mx-4 hidden md:block">
           <button
+            type="button"
             onClick={() => setIsSearchOpen(true)}
             className="w-full h-9.5 px-3.5 rounded-xl border border-border/60 bg-muted/30 hover:bg-muted/70 text-muted-foreground flex items-center justify-between text-xs transition-all shadow-xs hover:border-amber-500/40 hover:shadow-sm group"
           >
@@ -177,6 +174,7 @@ export function AppHeader({
 
           {/* Mobile search trigger */}
           <button
+            type="button"
             onClick={() => setIsSearchOpen(true)}
             className="md:hidden h-9 w-9 flex items-center justify-center rounded-lg border border-border/60 bg-card text-muted-foreground"
           >

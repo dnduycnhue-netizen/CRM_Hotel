@@ -7,7 +7,6 @@ import {
   PlusCircle,
   RefreshCw,
 } from "lucide-react";
-import React from "react";
 
 interface Props {
   action: string;
