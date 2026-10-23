@@ -9,31 +9,37 @@ interface DevAccountPickerProps {
 const DEV_TEST_ACCOUNTS = [
   {
     role: "Chủ chuỗi",
-    email: "owner@hotel.vn",
+    email: "dnduycnhue@gmail.com",
     scope: "Toàn quyền",
     badgeClass: "bg-amber-500/20 text-amber-300 border-amber-500/30",
   },
   {
     role: "Quản lý",
-    email: "quanly.boutique@hotel.vn",
+    email: "quanly.boutique@khachsan.vn",
     scope: "Boutique",
     badgeClass: "bg-purple-500/20 text-purple-300 border-purple-500/30",
   },
   {
     role: "Lễ tân",
-    email: "letan.boutique@hotel.vn",
+    email: "letan.boutique@khachsan.vn",
     scope: "Boutique",
     badgeClass: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
   },
   {
+    role: "Lễ tân Grand",
+    email: "letan.grand@khachsan.vn",
+    scope: "Grand",
+    badgeClass: "bg-teal-500/20 text-teal-300 border-teal-500/30",
+  },
+  {
     role: "Sales",
-    email: "sales@hotel.vn",
+    email: "sales@khachsan.vn",
     scope: "Toàn chuỗi",
     badgeClass: "bg-blue-500/20 text-blue-300 border-blue-500/30",
   },
   {
     role: "Kỹ thuật",
-    email: "kythuat@hotel.vn",
+    email: "kythuat@khachsan.vn",
     scope: "CSVC",
     badgeClass: "bg-orange-500/20 text-orange-300 border-orange-500/30",
   },

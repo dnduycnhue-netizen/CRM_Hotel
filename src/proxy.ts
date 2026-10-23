@@ -13,17 +13,29 @@ const ROUTE_PERMISSION_RULES: Array<{
   {
     prefix: "/settings",
     // Only users with settings management capabilities
-    requiredAnyPerms: ["settings.branches", "settings.users", "settings.roles"],
+    requiredAnyPerms: [
+      "settings.branches",
+      "settings.users",
+      "settings.roles",
+      "settings.sources",
+      "settings.rooms",
+      "settings.modules",
+    ],
   },
   {
     prefix: "/audit",
     // Only users with audit review capability
-    requiredAnyPerms: ["audit.view"],
+    requiredAnyPerms: ["audit.view_all", "audit.view_branch"],
   },
   {
     prefix: "/reports",
     // Operational or revenue reporting
-    requiredAnyPerms: ["report.revenue", "report.operational"],
+    requiredAnyPerms: [
+      "report.view_chain",
+      "report.view_branch",
+      "revenue.view",
+      "facility.view",
+    ],
   },
   {
     prefix: "/check-in",
