@@ -5,6 +5,7 @@ import {
   Building2,
   CheckCircle2,
   ChevronRight,
+  Compass,
   GitMerge,
   Loader2,
   Lock,
@@ -375,6 +376,13 @@ export function GuestProfileView({
                     <strong className="text-slate-700 dark:text-slate-300 uppercase">
                       {guest.nationality}
                     </strong>
+                  </span>
+                )}
+
+                {guest.source_channel?.name && (
+                  <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full font-medium bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                    <Compass className="w-3.5 h-3.5" />
+                    Nguồn: {guest.source_channel.name}
                   </span>
                 )}
               </div>

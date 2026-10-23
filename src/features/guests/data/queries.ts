@@ -60,6 +60,7 @@ export async function getGuestsList(options?: {
     tier: null,
     tags: g.tags || [],
     sales_owner_name: g.sales_owner_name || null,
+    source_channel_name: g.source_channel_name || null,
     has_blacklist: false,
     has_attention: false,
   }));

@@ -17,10 +17,19 @@ export default async function RoomBlocksPage() {
   if (!session.can("room.block")) {
     redirect("/");
   }
-  const [blocks, branches, rooms] = await Promise.all([
-    getRoomBlocks(),
-    getActiveBranches(),
-    getRooms(),
+  const canViewChain = session.can("report.view_chain");
+  const allBranches = await getActiveBranches();
+  const branches = canViewChain
+    ? allBranches
+    : allBranches.filter((b) => session.branchIds.includes(b.id));
+
+  const branchId = canViewChain
+    ? undefined
+    : session.currentBranchId || branches[0]?.id;
+
+  const [blocks, rooms] = await Promise.all([
+    getRoomBlocks(branchId),
+    getRooms(branchId),
   ]);
 
   return (
@@ -33,7 +42,7 @@ export default async function RoomBlocksPage() {
         type: r.roomType || "Standard",
         branch_id: r.branchId,
       }))}
-      currentBranchId={session?.currentBranchId || null}
+      currentBranchId={branchId || null}
     />
   );
 }

@@ -37,6 +37,7 @@ export async function checkoutStayAction(
     }
 
     revalidatePath("/stays");
+    revalidatePath("/check-in");
     return ok({ success: true });
   } catch {
     return fail("UNKNOWN");
@@ -73,6 +74,7 @@ export async function cancelStayAction(
     }
 
     revalidatePath("/stays");
+    revalidatePath("/check-in");
     return ok({ success: true });
   } catch {
     return fail("UNKNOWN");

@@ -16,16 +16,23 @@ export default async function WorkOrdersPage() {
   if (!session.can("wo.view")) {
     redirect("/");
   }
-  const [workOrders, branches] = await Promise.all([
-    getWorkOrders({ limit: 100 }),
-    getActiveBranches(),
-  ]);
+  const canViewChain = session.can("report.view_chain");
+  const allBranches = await getActiveBranches();
+  const branches = canViewChain
+    ? allBranches
+    : allBranches.filter((b) => session.branchIds.includes(b.id));
+
+  const branchId = canViewChain
+    ? undefined
+    : session.currentBranchId || branches[0]?.id;
+
+  const workOrders = await getWorkOrders({ limit: 100, branchId });
 
   return (
     <WorkOrdersTable
       initialOrders={workOrders}
       branches={branches}
-      currentBranchId={session?.currentBranchId || null}
+      currentBranchId={branchId || null}
     />
   );
 }

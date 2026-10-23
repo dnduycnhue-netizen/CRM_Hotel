@@ -95,6 +95,11 @@ export interface GuestProfile {
       id: string;
       name: string;
     } | null;
+    source_channel?: {
+      id: string;
+      name: string;
+      kind: string;
+    } | null;
   };
   tier?: GuestTierInfo | null;
   documents: GuestDocument[];
@@ -123,6 +128,7 @@ export interface GuestListItem {
   tier: string | null;
   tags: string[] | null;
   sales_owner_name: string | null;
+  source_channel_name?: string | null;
   has_blacklist: boolean;
   has_attention: boolean;
 }

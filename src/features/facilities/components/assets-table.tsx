@@ -28,7 +28,7 @@ export function AssetsTable({
   currentBranchId,
 }: AssetsTableProps) {
   const [selectedBranch, setSelectedBranch] = useState<string>(
-    currentBranchId || "all",
+    branches.length === 1 ? branches[0].id : currentBranchId || "all",
   );
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");

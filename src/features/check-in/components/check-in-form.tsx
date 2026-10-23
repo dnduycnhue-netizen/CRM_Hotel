@@ -48,6 +48,7 @@ interface CheckInFormProps {
     roomType: string | null;
     isOccupied?: boolean;
     isBlocked?: boolean;
+    isCleaning?: boolean;
   }>;
 }
 
@@ -325,9 +326,12 @@ export function CheckInForm({
               Phòng sẵn sàng
             </span>
             <span className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center justify-end gap-1">
-              <BedDouble className="h-4 w-4" />
-              {rooms.filter((r) => !r.isOccupied && !r.isBlocked).length} /{" "}
-              {rooms.length} phòng
+              {
+                rooms.filter(
+                  (r) => !r.isOccupied && !r.isBlocked && !r.isCleaning,
+                ).length
+              }{" "}
+              / {rooms.length} phòng
             </span>
           </div>
         </div>
@@ -529,7 +533,10 @@ export function CheckInForm({
                             const isSelected = selectedRoomId === r.id;
                             const isOccupied = !!r.isOccupied;
                             const isBlocked = !!r.isBlocked;
-                            const isUnavailable = isOccupied || isBlocked;
+                            const isCleaning =
+                              !!r.isCleaning && !isOccupied && !isBlocked;
+                            const isUnavailable =
+                              isOccupied || isBlocked || isCleaning;
 
                             if (isUnavailable) {
                               return (
@@ -538,22 +545,38 @@ export function CheckInForm({
                                   type="button"
                                   disabled
                                   title={
-                                    isOccupied
-                                      ? "Phòng đang có khách ở"
-                                      : "Phòng đang khóa ngừng bán (OOO)"
+                                    isBlocked
+                                      ? "Phòng đang khóa ngừng bán (OOO)"
+                                      : isCleaning
+                                        ? "Phòng vừa trả phòng, đang chờ dọn dẹp"
+                                        : "Phòng đang có khách ở"
                                   }
-                                  className={`px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-not-allowed border flex items-center gap-1 shadow-2xs opacity-60 ${
+                                  className={`px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-not-allowed border flex items-center gap-1 shadow-2xs opacity-75 ${
                                     isBlocked
                                       ? "bg-rose-500/10 border-rose-500/30 text-rose-500"
-                                      : "bg-muted/40 border-border/50 text-muted-foreground"
+                                      : isCleaning
+                                        ? "bg-amber-500/10 border-amber-500/30 text-amber-500"
+                                        : "bg-muted/40 border-border/50 text-muted-foreground"
                                   }`}
                                 >
                                   <span
-                                    className={`h-1.5 w-1.5 rounded-full ${isBlocked ? "bg-rose-500" : "bg-muted-foreground"}`}
+                                    className={`h-1.5 w-1.5 rounded-full ${
+                                      isBlocked
+                                        ? "bg-rose-500"
+                                        : isCleaning
+                                          ? "bg-amber-500"
+                                          : "bg-muted-foreground"
+                                    }`}
                                   />
                                   <span>P.{r.number}</span>
                                   <span className="text-[9px] font-bold">
-                                    ({isBlocked ? "OOO" : "Ở"})
+                                    (
+                                    {isBlocked
+                                      ? "OOO"
+                                      : isCleaning
+                                        ? "Dọn"
+                                        : "Ở"}
+                                    )
                                   </span>
                                 </button>
                               );
@@ -594,7 +617,8 @@ export function CheckInForm({
                   >
                     <option value="">-- Hoặc chọn từ danh sách --</option>
                     {rooms.map((r) => {
-                      const isUnavailable = r.isOccupied || r.isBlocked;
+                      const isUnavailable =
+                        r.isOccupied || r.isBlocked || r.isCleaning;
                       return (
                         <option
                           key={r.id}
@@ -606,7 +630,9 @@ export function CheckInForm({
                             ? "— [Đang có khách]"
                             : r.isBlocked
                               ? "— [Đang khóa OOO]"
-                              : "— [Sẵn sàng]"}
+                              : r.isCleaning
+                                ? "— [Chờ dọn dẹp]"
+                                : "— [Sẵn sàng]"}
                         </option>
                       );
                     })}

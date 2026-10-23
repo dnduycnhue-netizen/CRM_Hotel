@@ -305,5 +305,36 @@ vercel --prod --yes
    - **P2-7 (Lưu trữ tag khách hàng):** RPC `create_guest` lưu trữ mảng `tags` đầy đủ vào DB.
    - **P2-8 (Quyền xem SĐT khách của Sales):** Giải thích rõ ràng trường hợp tài khoản Sales nhìn thấy số điện thoại đầy đủ của khách do trực tiếp phụ trách (`sales_owner_id`), hoàn toàn đúng nghiệp vụ.
 
-
-
+7. **Khắc phục dứt điểm QA Vòng 7 (Phase 9 - 23/10/2026, 22:50 +07):**
+   - **C1 (/audit lộ toàn chuỗi với Quản lý cơ sở):**
+     - Sửa RLS policy `read_audit` trên bảng `public.audit_logs`: Bắt buộc `branch_id IS NOT NULL` và `branch_id IN (SELECT private.branches_with('audit.view_branch'))` đối với người dùng không có `audit.view_all`. Chặn toàn bộ log hệ thống không gắn cơ sở (tạo tài khoản, phân quyền, cấu hình chuỗi).
+     - Trong `audit/page.tsx`, lọc danh sách `branches` theo `session.branchIds` cho vai trò cơ sở.
+     - Sửa truy vấn trong `getAuditLogs` truy vấn trực tiếp bảng `audit_logs` có filter `branch_id` an toàn, loại bỏ lỗi PostgREST foreign key.
+     - Khởi tạo filter cơ sở trong `AuditTable` mặc định đúng cơ sở duy nhất của Quản lý, ẩn tùy chọn "Tất cả cơ sở" khi tài khoản chỉ quản lý 1 cơ sở.
+   - **C2 (/guests hiển thị khách toàn chuỗi với Quản lý cơ sở):**
+     - Sửa RPC `get_guests_list` ở tầng Database PostgreSQL: Nếu caller không có quyền `report.view_chain`, hàm tự động ép buộc phạm vi lọc `v_effective_branches` theo danh sách cơ sở của user (`v_my_branches`). Quản lý Boutique chỉ thấy 37 khách thuộc Boutique, 0 khách từ Grand, Aloha, Eco, Bãi Xếp.
+     - Cập nhật `src/app/(app)/guests/page.tsx`: Gán `branchId` mặc định cho vai trò cơ sở kể cả khi chưa có cookie `currentBranchId`.
+   - **C3 (/search tìm ra khách toàn chuỗi với Quản lý cơ sở):**
+     - Sửa RPC `search_guests` ở tầng Database: Đưa bộ lọc cơ sở `v_effective_branches` vào **ngay trong bước lấy tập ID ứng viên (`v_ids`)**, ngăn không cho khách cơ sở khác chiếm chỗ trong giới hạn 20 kết quả. Quản lý tìm "0902" trả về 20/20 khách 100% thuộc Boutique.
+   - **C4 (Giải trình quyền xem SĐT khách của Sales):**
+     - Lead "Nguyễn Văn Test V6" và "Nguyễn Văn Test V7" do chính tài khoản `sales@khachsan.vn` tạo ra (`sales_owner_id = sales@khachsan.vn`).
+     - Vai trò Sales có quyền `guest.view_full_own` ("Xem SĐT/CCCD đầy đủ của khách do mình phụ trách"). Khi xem lead do mình tạo, Sales nhìn thấy SĐT đầy đủ là **hoàn toàn đúng theo đặc tả nghiệp vụ**. Khi tài khoản khác xem lead này, SĐT vẫn bị che theo đúng quy tắc (`090****777`).
+   - **T1 (VÕ CÔNG KHANG hiện full SĐT):**
+     - Hồ sơ VÕ CÔNG KHANG đang lưu trú tại Boutique (`last_branch_id = Boutique`, status = `in_house`). Quản lý Boutique có quyền `guest.view_full` tại Boutique nên nhìn thấy SĐT đầy đủ là đúng phân quyền cơ sở.
+   - **T2 (Nguồn khách lưu FK thay vì text tag):**
+     - Cập nhật RPC `get_guests_list` trả về thêm `source_channel_name` từ bảng `public.source_channels`.
+     - Cập nhật RPC `get_guest_profile` trả về object `source_channel` chuẩn.
+     - Cập nhật `GuestProfileView` hiển thị badge Nguồn khách nổi bật trên profile (`Nguồn: [Tên nguồn]`).
+     - Cập nhật `GuestListTable` hiển thị badge `Nguồn: [Tên nguồn]` cạnh tag.
+     - Backfill `source_channel_id` cho khách hàng có tag `Nguồn: Điện thoại / Zalo`.
+   - **T3 (Combobox Cơ sở ở /facilities/work-orders và /facilities/room-blocks chưa scope):**
+     - Áp dụng pattern từ `/reports`: Trong các trang `/facilities/work-orders`, `/facilities/room-blocks`, `/facilities/assets`, `/facilities/maintenance`, `/facilities/alerts`, nếu tài khoản không có quyền `report.view_chain`, danh sách `branches` được lọc nghiêm ngặt theo `session.branchIds`.
+     - Bổ sung tham số `branchId` vào `getWorkOrders`, `getRoomBlocks`, `getRooms`, `getAssets`.
+     - Trong các component Table (`WorkOrdersTable`, `RoomBlocksTable`, `AssetsTable`), tự động chọn cơ sở duy nhất khi `branches.length === 1`.
+   - **T4 (Nhãn trạng thái phòng sau trả phòng):**
+     - Bổ sung trường `isCleaning?: boolean` vào `RoomItem`.
+     - Trong `getRooms()`, tự động phát hiện các phòng vừa trả phòng (`status = 'checked_out'` và `checked_out_at >= now - 4h`) chưa có khách mới -> gán `isCleaning = true`.
+     - Trong `CheckInForm`, phòng đang dọn được hiển thị nhãn màu hổ phách/vàng `(Dọn)` và tùy chọn dropdown `Phòng X (Loại) — [Chờ dọn dẹp]`, phân biệt hoàn toàn với phòng đang có khách `(Ở)` / `[Đang có khách]`.
+     - Bổ sung `revalidatePath('/check-in')` vào `checkoutStayAction` và `cancelStayAction` để cập nhật trạng thái phòng ngay lập tức khi trả/hủy phòng.
+   - **T5 (Áp dụng pattern scope cơ sở):**
+     - Đã nhân rộng pattern chuẩn từ `/reports` sang toàn bộ các trang `/audit`, `/guests`, `/facilities/**`.

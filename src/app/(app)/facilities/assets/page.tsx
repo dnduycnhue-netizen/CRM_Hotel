@@ -16,16 +16,23 @@ export default async function AssetsPage() {
   if (!session.can("facility.view")) {
     redirect("/");
   }
-  const [assets, branches] = await Promise.all([
-    getAssets({ limit: 150 }),
-    getActiveBranches(),
-  ]);
+  const canViewChain = session.can("report.view_chain");
+  const allBranches = await getActiveBranches();
+  const branches = canViewChain
+    ? allBranches
+    : allBranches.filter((b) => session.branchIds.includes(b.id));
+
+  const branchId = canViewChain
+    ? undefined
+    : session.currentBranchId || branches[0]?.id;
+
+  const assets = await getAssets({ limit: 150, branchId });
 
   return (
     <AssetsTable
       initialAssets={assets}
       branches={branches}
-      currentBranchId={session?.currentBranchId || null}
+      currentBranchId={branchId || null}
     />
   );
 }

@@ -23,6 +23,7 @@ export interface RoomItem {
   isActive: boolean;
   isOccupied?: boolean;
   isBlocked?: boolean;
+  isCleaning?: boolean;
 }
 
 export interface SystemModule {

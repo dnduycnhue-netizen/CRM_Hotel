@@ -20,10 +20,13 @@ export default async function ComplianceAlertsPage() {
     redirect("/");
   }
 
-  const [alerts, branches] = await Promise.all([
-    getComplianceAlerts(),
-    getActiveBranches(),
-  ]);
+  const canViewChain = session.can("report.view_chain");
+  const allBranches = await getActiveBranches();
+  const branches = canViewChain
+    ? allBranches
+    : allBranches.filter((b) => session.branchIds.includes(b.id));
+
+  const alerts = await getComplianceAlerts();
 
   return (
     <div className="space-y-6">

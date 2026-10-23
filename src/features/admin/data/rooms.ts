@@ -18,11 +18,19 @@ export async function getRooms(branchId?: string | null): Promise<RoomItem[]> {
       query = query.eq("branch_id", branchId);
     }
 
-    // Fetch rooms, active stays and room blocks to determine room availability
-    const [roomsRes, staysRes, blocksRes] = await Promise.all([
+    // Fetch rooms, active stays, room blocks, and recent checkouts (last 4 hours)
+    const fourHoursAgo = new Date(
+      Date.now() - 4 * 60 * 60 * 1000,
+    ).toISOString();
+    const [roomsRes, staysRes, blocksRes, checkoutsRes] = await Promise.all([
       query,
       supabase.from("stays").select("room_id").eq("status", "in_house"),
       supabase.from("room_blocks").select("room_id").is("released_at", null),
+      supabase
+        .from("stays")
+        .select("room_id")
+        .eq("status", "checked_out")
+        .gte("checked_out_at", fourHoursAgo),
     ]);
 
     const { data, error } = roomsRes;
@@ -31,6 +39,13 @@ export async function getRooms(branchId?: string | null): Promise<RoomItem[]> {
     );
     const blockedRoomIds = new Set(
       blocksRes.data?.map((b: any) => b.room_id) || [],
+    );
+    const cleaningRoomIds = new Set(
+      checkoutsRes.data
+        ?.map((s: any) => s.room_id)
+        ?.filter(
+          (id: string) => !occupiedRoomIds.has(id) && !blockedRoomIds.has(id),
+        ) || [],
     );
 
     if (!error && Array.isArray(data) && data.length > 0) {
@@ -45,6 +60,7 @@ export async function getRooms(branchId?: string | null): Promise<RoomItem[]> {
         isActive: r.is_active,
         isOccupied: occupiedRoomIds.has(r.id),
         isBlocked: blockedRoomIds.has(r.id),
+        isCleaning: cleaningRoomIds.has(r.id),
       }));
     }
   } catch {

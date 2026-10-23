@@ -238,18 +238,23 @@ export function GuestListTable({
                               </span>
                             )}
                           </div>
-                          {g.tags && g.tags.length > 0 && (
-                            <div className="flex items-center gap-1 mt-1">
-                              {g.tags.slice(0, 2).map((t) => (
+                          <div className="flex items-center gap-1 flex-wrap mt-1">
+                            {g.source_channel_name && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/50 font-medium">
+                                Nguồn: {g.source_channel_name}
+                              </span>
+                            )}
+                            {g.tags &&
+                              g.tags.length > 0 &&
+                              g.tags.slice(0, 2).map((t) => (
                                 <span
                                   key={t}
-                                  className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-500"
+                                  className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500"
                                 >
                                   #{t}
                                 </span>
                               ))}
-                            </div>
-                          )}
+                          </div>
                         </div>
                       </div>
                     </td>

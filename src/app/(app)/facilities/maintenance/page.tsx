@@ -21,10 +21,15 @@ export default async function MaintenancePage() {
     redirect("/");
   }
 
-  const [plans, inspections, branches] = await Promise.all([
+  const canViewChain = session.can("report.view_chain");
+  const allBranches = await getActiveBranches();
+  const branches = canViewChain
+    ? allBranches
+    : allBranches.filter((b) => session.branchIds.includes(b.id));
+
+  const [plans, inspections] = await Promise.all([
     getPmPlans(),
     getInspections(),
-    getActiveBranches(),
   ]);
 
   return (

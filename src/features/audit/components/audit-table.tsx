@@ -22,7 +22,9 @@ interface Props {
 }
 
 export function AuditTable({ initialLogs, branches }: Props) {
-  const [selectedBranch, setSelectedBranch] = useState<string>("all");
+  const [selectedBranch, setSelectedBranch] = useState<string>(
+    branches.length === 1 ? branches[0].id : "all",
+  );
   const [selectedEntity, setSelectedEntity] = useState<string>("all");
   const [selectedAction, setSelectedAction] = useState<string>("all");
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);

@@ -22,10 +22,10 @@ export default async function GuestsPage() {
   }
 
   // Quản lý cơ sở chỉ xem khách thuộc cơ sở của mình
-  const branchId =
-    !session.can("report.view_chain") && session.currentBranchId
-      ? session.currentBranchId
-      : undefined;
+  const canViewChain = session.can("report.view_chain");
+  const branchId = canViewChain
+    ? undefined
+    : session.currentBranchId || session.branchIds[0];
 
   const [guests, salesUsers] = await Promise.all([
     getGuestsList({ limit: 100, branchId }),

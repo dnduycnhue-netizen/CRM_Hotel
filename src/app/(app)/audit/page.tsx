@@ -14,26 +14,23 @@ export default async function AuditPage() {
     redirect("/login");
   }
 
-  const canViewAudit =
-    session.can("audit.view_all") || session.can("audit.view_branch");
+  const canViewChain = session.can("audit.view_all");
+  const canViewBranch = session.can("audit.view_branch");
 
-  if (!canViewAudit) {
+  if (!canViewChain && !canViewBranch) {
     redirect("/");
   }
 
-  const branchId =
-    !session.can("audit.view_all") && session.currentBranchId
-      ? session.currentBranchId
-      : undefined;
-
-  const [logs, allBranches] = await Promise.all([
-    getAuditLogs({ limit: 100, branchId }),
-    getActiveBranches(),
-  ]);
-
-  const branches = session.can("audit.view_all")
+  const allBranches = await getActiveBranches();
+  const branches = canViewChain
     ? allBranches
     : allBranches.filter((b) => session.branchIds.includes(b.id));
+
+  const branchId = canViewChain
+    ? undefined
+    : session.currentBranchId || branches[0]?.id;
+
+  const logs = await getAuditLogs({ limit: 100, branchId });
 
   return (
     <div className="space-y-6">
