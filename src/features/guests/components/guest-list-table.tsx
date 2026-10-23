@@ -100,8 +100,8 @@ export function GuestListTable({
             Hồ sơ khách hàng & Trung tâm Sales
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Quản lý khách hàng toàn chuỗi 8 khách sạn, phân công chăm sóc và
-            lịch sử lưu trú
+            Quản lý dữ liệu khách hàng, phân công phụ trách và tra cứu lịch sử
+            lưu trú
           </p>
         </div>
 

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function RoomBlocksPage() {
-  const hasPerm = await requirePermission("stay.view");
+  const hasPerm = await requirePermission("room.block");
   if (!hasPerm.ok) {
     redirect("/");
   }

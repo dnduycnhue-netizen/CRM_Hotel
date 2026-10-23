@@ -21,18 +21,18 @@ export async function getWorkOrders(options?: {
       id,
       number,
       branch_id,
-      branch:branches!work_orders_branch_id_fkey(name),
+      branch:branches(name),
       kind,
       title,
       description,
       priority,
       status,
       room_id,
-      room:rooms!work_orders_room_id_fkey(number),
+      room:rooms(number),
       location_id,
-      location:facility_locations!work_orders_location_id_fkey(name),
+      location:facility_locations(name),
       asset_id,
-      asset:assets!work_orders_asset_id_fkey(name),
+      asset:assets(name),
       blocks_room,
       reported_by,
       reporter:profiles!work_orders_reported_by_fkey(full_name),
@@ -63,7 +63,11 @@ export async function getWorkOrders(options?: {
   }
 
   const { data, error } = await query;
-  if (error || !data) return [];
+  if (error) {
+    console.error("[getWorkOrders error]", error);
+    return [];
+  }
+  if (!data) return [];
 
   return data.map((w: any) => {
     const branch = Array.isArray(w.branch) ? w.branch[0] : w.branch;
@@ -154,14 +158,14 @@ export async function getRoomBlocks(
     .select(`
       id,
       branch_id,
-      branch:branches!room_blocks_branch_id_fkey(name),
+      branch:branches(name),
       room_id,
-      room:rooms!room_blocks_room_id_fkey(number),
+      room:rooms(number),
       reason,
       starts_at,
       ends_at,
       work_order_id,
-      work_order:work_orders!room_blocks_work_order_id_fkey(number),
+      work_order:work_orders(number),
       created_by,
       creator:profiles!room_blocks_created_by_fkey(full_name)
     `)
@@ -173,7 +177,11 @@ export async function getRoomBlocks(
   }
 
   const { data, error } = await query;
-  if (error || !data) return [];
+  if (error) {
+    console.error("[getRoomBlocks error]", error);
+    return [];
+  }
+  if (!data) return [];
 
   return data.map((b: any) => {
     const branch = Array.isArray(b.branch) ? b.branch[0] : b.branch;
@@ -210,15 +218,15 @@ export async function getAssets(options?: {
     .select(`
       id,
       branch_id,
-      branch:branches!assets_branch_id_fkey(name),
+      branch:branches(name),
       code,
       name,
       category_id,
-      category:asset_categories!assets_category_id_fkey(name),
+      category:asset_categories(name),
       room_id,
-      room:rooms!assets_room_id_fkey(number),
+      room:rooms(number),
       location_id,
-      location:facility_locations!assets_location_id_fkey(name),
+      location:facility_locations(name),
       brand,
       model,
       serial_no,

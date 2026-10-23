@@ -11,11 +11,22 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const session = await getSession();
-  const branches = await getActiveBranches();
+  const allBranches = await getActiveBranches();
 
   // If no active session, provide fallback empty access for previewing shells
   const access = session?.access || { permissions: {}, modules: {} };
-  const currentBranchId = session?.currentBranchId || branches[0]?.id || null;
+
+  // Only provide branches the user actually has access to
+  const branches =
+    session?.branchIds && session.branchIds.length > 0
+      ? allBranches.filter((b) => session.branchIds.includes(b.id))
+      : allBranches;
+
+  const currentBranchId =
+    session?.currentBranchId &&
+    branches.some((b) => b.id === session.currentBranchId)
+      ? session.currentBranchId
+      : branches[0]?.id || null;
 
   return (
     <AccessProvider value={{ access, branchId: currentBranchId }}>

@@ -38,6 +38,19 @@ export function BranchSelector({
     );
   }
 
+  if (branches.length === 1) {
+    const singleBranch = branches[0];
+    return (
+      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 rounded-lg border border-border/70 text-xs font-semibold text-foreground shadow-xs">
+        <MapPin className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+        <span className="flex h-5 w-5 items-center justify-center rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold text-[10px] shrink-0">
+          {singleBranch.code?.slice(0, 2) || "KS"}
+        </span>
+        <span className="truncate max-w-[170px]">{singleBranch.name}</span>
+      </div>
+    );
+  }
+
   const selectedBranch =
     branches.find((b) => b.id === (currentBranchId || branches[0]?.id)) ||
     branches[0];

@@ -5,6 +5,7 @@ import {
   Building2,
   Calendar,
   CheckCircle2,
+  FileSpreadsheet,
   Globe,
   Hotel,
   Loader2,
@@ -17,7 +18,9 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { formatDateVN, getVnDateRange } from "@/shared/utils/date";
+import { exportReportAction } from "../actions";
 import type { ReportKpisResponse, ReportSeriesPoint } from "../types";
 
 interface DashboardOverviewProps {
@@ -28,6 +31,8 @@ interface DashboardOverviewProps {
   initialPreset?: string;
   initialFrom?: string;
   initialTo?: string;
+  canViewChain?: boolean;
+  canExport?: boolean;
 }
 
 export function DashboardOverview({
@@ -38,12 +43,56 @@ export function DashboardOverview({
   initialPreset = "30days",
   initialFrom,
   initialTo,
+  canViewChain = true,
+  canExport = false,
 }: DashboardOverviewProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [isExporting, setIsExporting] = useState(false);
   const [activeView, setActiveView] = useState<
     "chain" | "branches" | "channels"
   >("chain");
+
+  const handleExportExcel = async () => {
+    if (!data) return;
+    try {
+      setIsExporting(true);
+      const res = await exportReportAction({
+        from: data.range.from,
+        to: data.range.to,
+        branchId: initialBranchId,
+      });
+      if (!res.ok) {
+        toast.error(
+          `Không thể xuất báo cáo: ${res.error.message || res.error.code}`,
+        );
+        return;
+      }
+      const byteCharacters = atob(res.data.base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = res.data.filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success("Xuất báo cáo Excel thành công!");
+    } catch (_err) {
+      toast.error("Đã xảy ra lỗi khi tạo tệp Excel báo cáo");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const handlePresetChange = (preset: "7days" | "30days" | "thisMonth") => {
     const r = getVnDateRange(preset);
@@ -121,10 +170,12 @@ export function DashboardOverview({
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <BarChart3 className="w-6 h-6 text-indigo-600" />
-            Báo cáo điều hành & Công suất chuỗi 8 khách sạn
+            {canViewChain && initialBranchId === "all"
+              ? "Báo cáo điều hành & Công suất chuỗi 8 khách sạn"
+              : `Báo cáo điều hành & Công suất cơ sở: ${branches.find((b) => b.id === initialBranchId)?.name || "Cơ sở"}`}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {initialBranchId === "all"
+            {canViewChain && initialBranchId === "all"
               ? "Phân tích 240 phòng toàn chuỗi"
               : `Phân tích cơ sở: ${branches.find((b) => b.id === initialBranchId)?.name || initialBranchId}`}{" "}
             ({formatDateVN(range.from)} – {formatDateVN(range.to)})
@@ -136,26 +187,44 @@ export function DashboardOverview({
           </p>
         </div>
 
-        {/* Tab chuyển đổi giữa các module báo cáo */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700/60 text-xs self-start sm:self-auto">
-          <Link
-            href="/reports"
-            className="px-3 py-1.5 rounded-xl font-semibold bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm transition"
-          >
-            Tổng quan KPI
-          </Link>
-          <Link
-            href="/reports/monthly"
-            className="px-3 py-1.5 rounded-xl font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition"
-          >
-            Doanh thu 12 tháng
-          </Link>
-          <Link
-            href="/reports/facilities"
-            className="px-3 py-1.5 rounded-xl font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition"
-          >
-            CSVC & Kỹ thuật
-          </Link>
+        {/* Tab chuyển đổi giữa các module báo cáo & Nút Xuất Excel */}
+        <div className="flex flex-wrap items-center gap-3">
+          {canExport && (
+            <button
+              type="button"
+              onClick={handleExportExcel}
+              disabled={isExporting}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-xs text-xs disabled:opacity-50"
+            >
+              {isExporting ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <FileSpreadsheet className="w-3.5 h-3.5" />
+              )}
+              <span>{isExporting ? "Đang xuất..." : "Xuất báo cáo"}</span>
+            </button>
+          )}
+
+          <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700/60 text-xs self-start sm:self-auto">
+            <Link
+              href="/reports"
+              className="px-3 py-1.5 rounded-xl font-semibold bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm transition"
+            >
+              Tổng quan KPI
+            </Link>
+            <Link
+              href="/reports/monthly"
+              className="px-3 py-1.5 rounded-xl font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition"
+            >
+              Doanh thu 12 tháng
+            </Link>
+            <Link
+              href="/reports/facilities"
+              className="px-3 py-1.5 rounded-xl font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition"
+            >
+              CSVC & Kỹ thuật
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -174,7 +243,7 @@ export function DashboardOverview({
               disabled={isPending}
               className="bg-transparent font-bold text-slate-900 dark:text-slate-100 focus:outline-none cursor-pointer"
             >
-              <option value="all">Toàn bộ 8 khách sạn</option>
+              {canViewChain && <option value="all">Toàn bộ 8 khách sạn</option>}
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
                   {b.name}

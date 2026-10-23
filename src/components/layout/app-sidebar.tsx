@@ -100,7 +100,7 @@ const NAV_GROUPS: NavGroup[] = [
         title: "Khóa phòng ngừng bán",
         href: "/facilities/room-blocks",
         icon: Lock,
-        perm: "stay.view",
+        perm: "room.block",
       },
       {
         title: "Danh mục tài sản",

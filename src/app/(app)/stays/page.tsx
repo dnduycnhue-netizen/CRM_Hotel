@@ -9,11 +9,24 @@ export const metadata = {
 
 export default async function StaysPage() {
   const session = await getSession();
-  const branches = await getActiveBranches();
+  const allBranches = await getActiveBranches();
 
-  const currentBranchId = session?.currentBranchId || branches[0]?.id || "b1";
+  // Prioritize user's authorized branches
+  const branches =
+    session?.branchIds && session.branchIds.length > 0
+      ? allBranches.filter((b) => session.branchIds.includes(b.id))
+      : allBranches;
+
+  const currentBranchId =
+    (session?.currentBranchId &&
+    branches.some((b) => b.id === session.currentBranchId)
+      ? session.currentBranchId
+      : branches[0]?.id) || allBranches[0]?.id;
+
   const currentBranch =
-    branches.find((b) => b.id === currentBranchId) || branches[0];
+    branches.find((b) => b.id === currentBranchId) ||
+    branches[0] ||
+    allBranches[0];
   const stays = await getInHouseStays(currentBranchId);
 
   return (

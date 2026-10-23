@@ -262,11 +262,12 @@ export function AppHeader({
               <DropdownMenuSeparator />
 
               <DropdownMenuItem
-                className="text-xs text-destructive focus:text-destructive cursor-pointer rounded-md focus:bg-destructive/10"
+                variant="destructive"
+                className="text-xs cursor-pointer font-semibold py-1.5"
                 onClick={() => logoutAction()}
               >
-                <LogOut className="mr-2 h-3.5 w-3.5" />
-                <span className="font-semibold">Đăng xuất</span>
+                <LogOut className="mr-2 h-3.5 w-3.5 text-destructive" />
+                <span>Đăng xuất</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

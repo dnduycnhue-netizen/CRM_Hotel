@@ -1,3 +1,4 @@
+export * from "./actions";
 export { DashboardOverview } from "./components/dashboard-overview";
 export { FacilitiesReportView } from "./components/facilities-report-view";
 export { MonthlyRevenueTable } from "./components/monthly-revenue-table";

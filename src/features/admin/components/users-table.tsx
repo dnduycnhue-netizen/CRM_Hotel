@@ -661,71 +661,89 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-foreground">
-                    Vai trò đảm nhiệm *
-                  </Label>
-                  <select
-                    value={editRoleId}
-                    onChange={(e) => setEditRoleId(e.target.value)}
-                    className="w-full h-9.5 rounded-xl border border-input bg-background px-3 text-xs font-bold text-primary focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-                    required
-                  >
-                    {roles.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.name}
-                      </option>
-                    ))}
-                  </select>
+              {editingUser?.roles.some((r) => r.role_key === "owner") ? (
+                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-400 font-medium space-y-1">
+                  <div className="font-bold flex items-center gap-1.5 text-amber-300">
+                    <Shield className="w-4 h-4" />
+                    <span>Tài khoản Chủ chuỗi (Quản trị tối cao)</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Tài khoản Chủ chuỗi có phạm vi toàn chuỗi (8 khách sạn) và
+                    được bảo vệ vĩnh viễn, không thể bị hạ cấp hoặc khóa tài
+                    khoản.
+                  </p>
                 </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-bold text-foreground">
+                        Vai trò đảm nhiệm *
+                      </Label>
+                      <select
+                        value={editRoleId}
+                        onChange={(e) => setEditRoleId(e.target.value)}
+                        className="w-full h-9.5 rounded-xl border border-input bg-background px-3 text-xs font-bold text-primary focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                        required
+                      >
+                        {roles
+                          .filter((r) => r.key !== "owner")
+                          .map((r) => (
+                            <option key={r.id} value={r.id}>
+                              {r.name}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
 
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-foreground">
-                    Cơ sở làm việc *
-                  </Label>
-                  <select
-                    value={editBranchId}
-                    onChange={(e) => setEditBranchId(e.target.value)}
-                    className="w-full h-9.5 rounded-xl border border-input bg-background px-3 text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-                  >
-                    <option value="">Toàn chuỗi (8 khách sạn)</option>
-                    {branches.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-bold text-foreground">
+                        Cơ sở làm việc *
+                      </Label>
+                      <select
+                        value={editBranchId}
+                        onChange={(e) => setEditBranchId(e.target.value)}
+                        className="w-full h-9.5 rounded-xl border border-input bg-background px-3 text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                      >
+                        <option value="">Toàn chuỗi (8 khách sạn)</option>
+                        {branches.map((b) => (
+                          <option key={b.id} value={b.id}>
+                            {b.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
 
-              <div className="pt-2">
-                <Label className="text-xs font-bold text-foreground block mb-1.5">
-                  Trạng thái tài khoản
-                </Label>
-                <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                    <input
-                      type="radio"
-                      name="isActive"
-                      checked={editIsActive}
-                      onChange={() => setEditIsActive(true)}
-                      className="accent-emerald-600"
-                    />
-                    <span>Hoạt động bình thường</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-rose-600 dark:text-rose-400">
-                    <input
-                      type="radio"
-                      name="isActive"
-                      checked={!editIsActive}
-                      onChange={() => setEditIsActive(false)}
-                      className="accent-rose-600"
-                    />
-                    <span>Khóa tài khoản</span>
-                  </label>
-                </div>
-              </div>
+                  <div className="pt-2">
+                    <Label className="text-xs font-bold text-foreground block mb-1.5">
+                      Trạng thái tài khoản
+                    </Label>
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                        <input
+                          type="radio"
+                          name="isActive"
+                          checked={editIsActive}
+                          onChange={() => setEditIsActive(true)}
+                          className="accent-emerald-600"
+                        />
+                        <span>Hoạt động bình thường</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-rose-600 dark:text-rose-400">
+                        <input
+                          type="radio"
+                          name="isActive"
+                          checked={!editIsActive}
+                          onChange={() => setEditIsActive(false)}
+                          className="accent-rose-600"
+                        />
+                        <span>Khóa tài khoản</span>
+                      </label>
+                    </div>
+                  </div>
+                </>
+              )}
 
               <div className="pt-4 flex items-center justify-end gap-2 border-t border-border/50">
                 <Button
