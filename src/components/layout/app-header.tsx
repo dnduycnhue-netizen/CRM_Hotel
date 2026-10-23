@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ChangePasswordDialog, logoutAction } from "@/features/auth";
+import { ChangePasswordDialog } from "@/features/auth";
 import { CommandPalette } from "@/features/search";
 import {
   Avatar,

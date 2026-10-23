@@ -1,7 +1,6 @@
 "use client";
 
 import { AlertTriangle, Home, RefreshCw } from "lucide-react";
-import Link from "next/link";
 import { useEffect } from "react";
 import { Button } from "@/shared/ui";
 

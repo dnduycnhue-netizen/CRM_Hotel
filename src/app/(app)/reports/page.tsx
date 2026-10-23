@@ -6,7 +6,7 @@ import {
   getReportKpis,
   getReportSeries,
 } from "@/features/reports";
-import { getSession, requirePermission } from "@/shared/auth/server";
+import { getSession } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
   title: "Báo cáo công suất & Lưu trú | CRM Khách Sạn",
