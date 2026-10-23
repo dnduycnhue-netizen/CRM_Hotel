@@ -3,6 +3,7 @@
 import {
   AlertTriangle,
   Compass,
+  KeyRound,
   LogOut,
   Search,
   Shield,
@@ -11,7 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { logoutAction } from "@/features/auth/actions";
+import { ChangePasswordDialog, logoutAction } from "@/features/auth";
 import { CommandPalette } from "@/features/search";
 import {
   Avatar,
@@ -44,6 +45,7 @@ export function AppHeader({
   canReportFacility = false,
 }: AppHeaderProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
   // Compute friendly role description and clean initials
   const isOwner =
@@ -249,7 +251,15 @@ export function AppHeader({
                 </DropdownMenuItem>
               )}
 
-              {(canManageUsers || canViewRoles) && <DropdownMenuSeparator />}
+              <DropdownMenuItem
+                className="text-xs cursor-pointer rounded-md"
+                onClick={() => setIsChangePasswordOpen(true)}
+              >
+                <KeyRound className="mr-2 h-3.5 w-3.5 text-amber-500" />
+                <span>Đổi mật khẩu</span>
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
 
               <DropdownMenuItem
                 className="text-xs text-destructive focus:text-destructive cursor-pointer rounded-md focus:bg-destructive/10"
@@ -262,6 +272,12 @@ export function AppHeader({
           </DropdownMenu>
         </div>
       </header>
+
+      {/* Modal Tự đổi mật khẩu người dùng */}
+      <ChangePasswordDialog
+        open={isChangePasswordOpen}
+        onOpenChange={setIsChangePasswordOpen}
+      />
     </>
   );
 }
