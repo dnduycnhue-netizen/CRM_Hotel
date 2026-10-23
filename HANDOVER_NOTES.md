@@ -70,14 +70,14 @@ Dưới đây là chi tiết mã lỗi từ đợt kiểm thử QA ngày 22/10/2
 
 Tất cả tài khoản dùng chung mật khẩu thiết lập trong môi trường kiểm thử:
 
-| STT | Vai trò | Email đăng nhập | Phạm vi | Quyền hạn chính |
-| :---: | :--- | :--- | :--- | :--- |
-| 1 | **Chủ chuỗi (Owner)** | `duy.duong@hotel.vn` / `owner@hotel.vn` | Toàn chuỗi (8 KS) | Toàn quyền quản trị, sửa ma trận vai trò, phê duyệt blacklist |
-| 2 | **Quản lý Boutique** | `quanly.boutique@hotel.vn` | KS Boutique | Xem báo cáo doanh thu, duyệt chiết khấu, quản lý phòng/nhân viên |
-| 3 | **Lễ tân Boutique** | `letan.boutique@hotel.vn` | KS Boutique | Check-in, check-out, tra cứu khách, quản lý lượt ở đang có |
-| 4 | **Lễ tân Grand** | `letan.grand@hotel.vn` | KS Grand | Thao tác độc lập tại cơ sở Grand |
-| 5 | **Kinh doanh (Sales)** | `sales@hotel.vn` | Toàn chuỗi | Xem khách hàng phụ trách, ghi chú sở thích, không được check-in |
-| 6 | **Kỹ thuật CSVC** | `kythuat@hotel.vn` | Toàn chuỗi | Xử lý phiếu công việc, khóa phòng bảo trì (OOO), tạo PM Plan |
+| STT | Vai trò | Email đăng nhập | Mật khẩu | Phạm vi | Quyền hạn chính |
+| :---: | :--- | :--- | :--- | :--- | :--- |
+| 1 | **Chủ chuỗi (Owner)** | `dnduycnhue@gmail.com` | `Cy3ZcjXWBf-Qem.` | Toàn chuỗi (8 KS) | Toàn quyền quản trị, sửa ma trận vai trò, duyệt blacklist, xem toàn bộ báo cáo |
+| 2 | **Quản lý Boutique** | `quanly.boutique@khachsan.vn` | `Hotel@2026!` | KS Boutique | Xem báo cáo cơ sở, duyệt cờ/gộp hồ sơ, quản lý phòng & tài sản, khóa phòng OOO |
+| 3 | **Lễ tân Boutique** | `letan.boutique@khachsan.vn` | `Hotel@2026!` | KS Boutique | Check-in, check-out, tra cứu khách, quản lý khách đang ở In-House |
+| 4 | **Lễ tân Grand** | `letan.grand@khachsan.vn` | `Hotel@2026!` | KS Grand | Thao tác độc lập tại cơ sở Grand (kiểm tra tính cách ly đa chi nhánh) |
+| 5 | **Kinh doanh (Sales)** | `sales@khachsan.vn` | `Hotel@2026!` | Toàn chuỗi | Xem khách hàng phụ trách, ghi chú chăm sóc khách VIP, đề xuất gộp hồ sơ |
+| 6 | **Kỹ thuật CSVC** | `kythuat@khachsan.vn` | `Hotel@2026!` | Toàn chuỗi | Xử lý phiếu sửa chữa, bảo dưỡng thiết bị, cập nhật chi phí, nghiệm thu mở phòng |
 
 ---
 
