@@ -1,11 +1,11 @@
-import { createClient } from '@/lib/supabase/server';
-import {
-  WorkOrder,
-  WorkOrderEvent,
-  RoomBlockItem,
+import { createClient } from "@/lib/supabase/server";
+import type {
   Asset,
   FacilityLocation,
-} from '../types';
+  RoomBlockItem,
+  WorkOrder,
+  WorkOrderEvent,
+} from "../types";
 
 export async function getWorkOrders(options?: {
   branchId?: string;
@@ -16,7 +16,7 @@ export async function getWorkOrders(options?: {
   const limit = options?.limit || 50;
 
   let query = supabase
-    .from('work_orders')
+    .from("work_orders")
     .select(`
       id,
       number,
@@ -51,15 +51,15 @@ export async function getWorkOrders(options?: {
       total_cost,
       photo_paths
     `)
-    .order('reported_at', { ascending: false })
+    .order("reported_at", { ascending: false })
     .limit(limit);
 
   if (options?.branchId) {
-    query = query.eq('branch_id', options.branchId);
+    query = query.eq("branch_id", options.branchId);
   }
 
-  if (options?.status && options.status !== 'all') {
-    query = query.eq('status', options.status);
+  if (options?.status && options.status !== "all") {
+    query = query.eq("status", options.status);
   }
 
   const { data, error } = await query;
@@ -110,10 +110,12 @@ export async function getWorkOrders(options?: {
   });
 }
 
-export async function getWorkOrderEvents(workOrderId: string): Promise<WorkOrderEvent[]> {
+export async function getWorkOrderEvents(
+  workOrderId: string,
+): Promise<WorkOrderEvent[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from('work_order_events')
+    .from("work_order_events")
     .select(`
       id,
       work_order_id,
@@ -124,8 +126,8 @@ export async function getWorkOrderEvents(workOrderId: string): Promise<WorkOrder
       to_status,
       comment
     `)
-    .eq('work_order_id', workOrderId)
-    .order('at', { ascending: true });
+    .eq("work_order_id", workOrderId)
+    .order("at", { ascending: true });
 
   if (error || !data) return [];
 
@@ -135,7 +137,7 @@ export async function getWorkOrderEvents(workOrderId: string): Promise<WorkOrder
       id: e.id,
       work_order_id: e.work_order_id,
       at: e.at,
-      actor_name: actor?.full_name || 'Hệ thống',
+      actor_name: actor?.full_name || "Hệ thống",
       from_status: e.from_status,
       to_status: e.to_status,
       comment: e.comment,
@@ -143,10 +145,12 @@ export async function getWorkOrderEvents(workOrderId: string): Promise<WorkOrder
   });
 }
 
-export async function getRoomBlocks(branchId?: string): Promise<RoomBlockItem[]> {
+export async function getRoomBlocks(
+  branchId?: string,
+): Promise<RoomBlockItem[]> {
   const supabase = await createClient();
   let query = supabase
-    .from('room_blocks')
+    .from("room_blocks")
     .select(`
       id,
       branch_id,
@@ -161,11 +165,11 @@ export async function getRoomBlocks(branchId?: string): Promise<RoomBlockItem[]>
       created_by,
       creator:profiles!room_blocks_created_by_fkey(full_name)
     `)
-    .is('released_at', null)
-    .order('starts_at', { ascending: false });
+    .is("released_at", null)
+    .order("starts_at", { ascending: false });
 
   if (branchId) {
-    query = query.eq('branch_id', branchId);
+    query = query.eq("branch_id", branchId);
   }
 
   const { data, error } = await query;
@@ -180,9 +184,9 @@ export async function getRoomBlocks(branchId?: string): Promise<RoomBlockItem[]>
     return {
       id: b.id,
       branch_id: b.branch_id,
-      branch_name: branch?.name || '',
+      branch_name: branch?.name || "",
       room_id: b.room_id,
-      room_number: room?.number || '',
+      room_number: room?.number || "",
       reason: b.reason,
       starts_at: b.starts_at,
       ends_at: b.ends_at,
@@ -202,7 +206,7 @@ export async function getAssets(options?: {
   const limit = options?.limit || 100;
 
   let query = supabase
-    .from('assets')
+    .from("assets")
     .select(`
       id,
       branch_id,
@@ -225,15 +229,15 @@ export async function getAssets(options?: {
       status,
       note
     `)
-    .order('code')
+    .order("code")
     .limit(limit);
 
   if (options?.branchId) {
-    query = query.eq('branch_id', options.branchId);
+    query = query.eq("branch_id", options.branchId);
   }
 
   if (options?.roomId) {
-    query = query.eq('room_id', options.roomId);
+    query = query.eq("room_id", options.roomId);
   }
 
   const { data, error } = await query;
@@ -270,16 +274,18 @@ export async function getAssets(options?: {
   });
 }
 
-export async function getFacilityLocations(branchId?: string): Promise<FacilityLocation[]> {
+export async function getFacilityLocations(
+  branchId?: string,
+): Promise<FacilityLocation[]> {
   const supabase = await createClient();
   let query = supabase
-    .from('facility_locations')
-    .select('id, branch_id, name, kind, is_active')
-    .eq('is_active', true)
-    .order('name');
+    .from("facility_locations")
+    .select("id, branch_id, name, kind, is_active")
+    .eq("is_active", true)
+    .order("name");
 
   if (branchId) {
-    query = query.eq('branch_id', branchId);
+    query = query.eq("branch_id", branchId);
   }
 
   const { data, error } = await query;
@@ -287,26 +293,34 @@ export async function getFacilityLocations(branchId?: string): Promise<FacilityL
   return data as unknown as FacilityLocation[];
 }
 
-export async function getRoomsForBranch(branchId: string): Promise<Array<{ id: string; number: string; type: string }>> {
+export async function getRoomsForBranch(
+  branchId: string,
+): Promise<Array<{ id: string; number: string; type: string }>> {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from('rooms')
-    .select('id, number, room_type')
-    .eq('branch_id', branchId)
-    .eq('is_active', true)
-    .order('number');
+    .from("rooms")
+    .select("id, number, room_type")
+    .eq("branch_id", branchId)
+    .eq("is_active", true)
+    .order("number");
 
   if (error || !data) return [];
-  return (data as any[]).map((r) => ({ id: r.id, number: r.number, type: r.room_type || 'Standard' }));
+  return (data as any[]).map((r) => ({
+    id: r.id,
+    number: r.number,
+    type: r.room_type || "Standard",
+  }));
 }
 
-export async function getStaffForBranch(branchId: string): Promise<Array<{ id: string; full_name: string }>> {
+export async function getStaffForBranch(
+  branchId: string,
+): Promise<Array<{ id: string; full_name: string }>> {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from('profiles')
-    .select('id, full_name')
-    .eq('is_active', true)
-    .order('full_name');
+    .from("profiles")
+    .select("id, full_name")
+    .eq("is_active", true)
+    .order("full_name");
 
   if (error || !data) return [];
   return data as unknown as Array<{ id: string; full_name: string }>;

@@ -1,22 +1,23 @@
-import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
-import { Toaster } from 'sonner';
-import './globals.css';
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner";
+import "./globals.css";
 
 const geistSans = Geist({
-  variable: '--font-sans',
-  subsets: ['latin'],
+  variable: "--font-sans",
+  subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: 'CRM Chuỗi Khách Sạn | Quản Lý Vận Hành & Khách Hàng (8 Cơ Sở · 240 Phòng)',
+  title:
+    "CRM Chuỗi Khách Sạn | Quản Lý Vận Hành & Khách Hàng (8 Cơ Sở · 240 Phòng)",
   description:
-    'Hệ thống quản lý nội bộ chuỗi khách sạn: Check-in thông minh, hồ sơ khách hàng, CSVC, bảo trì và báo cáo doanh thu công suất.',
+    "Hệ thống quản lý nội bộ chuỗi khách sạn: Check-in thông minh, hồ sơ khách hàng, CSVC, bảo trì và báo cáo doanh thu công suất.",
 };
 
 export default function RootLayout({
@@ -31,12 +32,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col font-sans">
         {children}
-        <Toaster
-          position="top-right"
-          richColors
-          closeButton
-          duration={3500}
-        />
+        <Toaster position="top-right" richColors closeButton duration={3500} />
       </body>
     </html>
   );

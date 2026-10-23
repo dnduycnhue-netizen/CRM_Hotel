@@ -1,18 +1,19 @@
-import { getSession } from '@/shared/auth/server';
-import { getActiveBranches } from '@/features/admin';
-import { getInHouseStays, InHouseTable } from '@/features/stays';
+import { getActiveBranches } from "@/features/admin";
+import { getInHouseStays, InHouseTable } from "@/features/stays";
+import { getSession } from "@/shared/auth/server";
 
 export const metadata = {
-  title: 'Khách đang ở | CRM Chuỗi Khách Sạn',
-  description: 'Danh sách các lượt lưu trú đang ở tại cơ sở hiện tại',
+  title: "Khách đang ở | CRM Chuỗi Khách Sạn",
+  description: "Danh sách các lượt lưu trú đang ở tại cơ sở hiện tại",
 };
 
 export default async function StaysPage() {
   const session = await getSession();
   const branches = await getActiveBranches();
 
-  const currentBranchId = session?.currentBranchId || branches[0]?.id || 'b1';
-  const currentBranch = branches.find((b) => b.id === currentBranchId) || branches[0];
+  const currentBranchId = session?.currentBranchId || branches[0]?.id || "b1";
+  const currentBranch =
+    branches.find((b) => b.id === currentBranchId) || branches[0];
   const stays = await getInHouseStays(currentBranchId);
 
   return (
@@ -22,7 +23,8 @@ export default async function StaysPage() {
           Khách Đang Ở ({currentBranch.name})
         </h1>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Quản lý các phòng có khách, gia hạn thời gian và xử lý thủ tục trả phòng
+          Quản lý các phòng có khách, gia hạn thời gian và xử lý thủ tục trả
+          phòng
         </p>
       </div>
 

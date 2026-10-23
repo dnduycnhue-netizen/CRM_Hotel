@@ -1,27 +1,28 @@
-'use client';
+"use client";
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
 import {
-  BarChart3,
-  TrendingUp,
-  TrendingDown,
-  Users,
-  Hotel,
-  Calendar,
-  Building2,
-  PieChart,
-  Globe,
-  Share2,
-  ShieldAlert,
   ArrowUpRight,
-  Sparkles,
+  BarChart3,
+  Building2,
+  Calendar,
   CheckCircle2,
   Filter,
+  Globe,
+  Hotel,
   Loader2,
-} from 'lucide-react';
-import { ReportKpisResponse, ReportSeriesPoint } from '../types';
-import { getVnDateRange, formatDateVN } from '@/shared/utils/date';
+  PieChart,
+  Share2,
+  ShieldAlert,
+  Sparkles,
+  TrendingDown,
+  TrendingUp,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { formatDateVN, getVnDateRange } from "@/shared/utils/date";
+import type { ReportKpisResponse, ReportSeriesPoint } from "../types";
 
 interface DashboardOverviewProps {
   data: ReportKpisResponse | null;
@@ -37,23 +38,26 @@ export function DashboardOverview({
   data,
   series,
   branches,
-  initialBranchId = 'all',
-  initialPreset = '30days',
+  initialBranchId = "all",
+  initialPreset = "30days",
   initialFrom,
   initialTo,
 }: DashboardOverviewProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [activeView, setActiveView] = useState<'chain' | 'branches' | 'channels'>('chain');
+  const [activeView, setActiveView] = useState<
+    "chain" | "branches" | "channels"
+  >("chain");
 
-  const handlePresetChange = (preset: '7days' | '30days' | 'thisMonth') => {
+  const handlePresetChange = (preset: "7days" | "30days" | "thisMonth") => {
     const r = getVnDateRange(preset);
     startTransition(() => {
       const params = new URLSearchParams();
-      if (initialBranchId && initialBranchId !== 'all') params.set('branchId', initialBranchId);
-      params.set('preset', preset);
-      params.set('from', r.from);
-      params.set('to', r.to);
+      if (initialBranchId && initialBranchId !== "all")
+        params.set("branchId", initialBranchId);
+      params.set("preset", preset);
+      params.set("from", r.from);
+      params.set("to", r.to);
       router.push(`/reports?${params.toString()}`);
     });
   };
@@ -61,10 +65,10 @@ export function DashboardOverview({
   const handleBranchChange = (bId: string) => {
     startTransition(() => {
       const params = new URLSearchParams();
-      if (bId !== 'all') params.set('branchId', bId);
-      if (initialPreset) params.set('preset', initialPreset);
-      if (initialFrom) params.set('from', initialFrom);
-      if (initialTo) params.set('to', initialTo);
+      if (bId !== "all") params.set("branchId", bId);
+      if (initialPreset) params.set("preset", initialPreset);
+      if (initialFrom) params.set("from", initialFrom);
+      if (initialTo) params.set("to", initialTo);
       router.push(`/reports?${params.toString()}`);
     });
   };
@@ -72,12 +76,21 @@ export function DashboardOverview({
   if (!data) {
     return (
       <div className="p-12 text-center rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400">
-        Chưa có số liệu báo cáo cho khoảng thời gian này hoặc không đủ quyền truy cập.
+        Chưa có số liệu báo cáo cho khoảng thời gian này hoặc không đủ quyền
+        truy cập.
       </div>
     );
   }
 
-  const { current, compare, by_branch, by_channel, by_nationality, range, compare_range } = data;
+  const {
+    current,
+    compare,
+    by_branch,
+    by_channel,
+    by_nationality,
+    range,
+    compare_range,
+  } = data;
 
   const getDelta = (curr: number, prev?: number | null) => {
     if (prev === undefined || prev === null || prev === 0) return null;
@@ -90,24 +103,35 @@ export function DashboardOverview({
     };
   };
 
-  const occDelta = compare ? (current.occupancy - compare.occupancy).toFixed(1) : null;
-  const arrivalsDelta = compare ? getDelta(current.arrivals, compare.arrivals) : null;
-  const returnDelta = compare ? (current.returning_rate - compare.returning_rate).toFixed(1) : null;
+  const occDelta = compare
+    ? (current.occupancy - compare.occupancy).toFixed(1)
+    : null;
+  const arrivalsDelta = compare
+    ? getDelta(current.arrivals, compare.arrivals)
+    : null;
+  const returnDelta = compare
+    ? (current.returning_rate - compare.returning_rate).toFixed(1)
+    : null;
 
   return (
     <div className="space-y-6">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/40">
+              Phân hệ Vận hành & Công suất
+            </span>
+          </div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <BarChart3 className="w-6 h-6 text-indigo-600" />
             Báo cáo điều hành & Công suất chuỗi 8 khách sạn
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {initialBranchId === 'all'
-              ? 'Phân tích 240 phòng toàn chuỗi'
-              : `Phân tích cơ sở: ${branches.find((b) => b.id === initialBranchId)?.name || initialBranchId}`}
-            {' '}({formatDateVN(range.from)} – {formatDateVN(range.to)})
+            {initialBranchId === "all"
+              ? "Phân tích 240 phòng toàn chuỗi"
+              : `Phân tích cơ sở: ${branches.find((b) => b.id === initialBranchId)?.name || initialBranchId}`}{" "}
+            ({formatDateVN(range.from)} – {formatDateVN(range.to)})
             {compare_range && (
               <span className="text-indigo-600 dark:text-indigo-400 font-medium ml-1">
                 · So sánh cùng kỳ năm trước (YoY)
@@ -116,38 +140,26 @@ export function DashboardOverview({
           </p>
         </div>
 
-        {/* View Tabs */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700/60 text-xs">
-          <button
-            onClick={() => setActiveView('chain')}
-            className={`px-3 py-1.5 rounded-xl font-medium transition ${
-              activeView === 'chain'
-                ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
+        {/* Tab chuyển đổi giữa các module báo cáo */}
+        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700/60 text-xs self-start sm:self-auto">
+          <Link
+            href="/reports"
+            className="px-3 py-1.5 rounded-xl font-semibold bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm transition"
           >
-            Tổng quan chuỗi
-          </button>
-          <button
-            onClick={() => setActiveView('branches')}
-            className={`px-3 py-1.5 rounded-xl font-medium transition ${
-              activeView === 'branches'
-                ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
+            Tổng quan KPI
+          </Link>
+          <Link
+            href="/reports/monthly"
+            className="px-3 py-1.5 rounded-xl font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition"
           >
-            Theo 8 cơ sở
-          </button>
-          <button
-            onClick={() => setActiveView('channels')}
-            className={`px-3 py-1.5 rounded-xl font-medium transition ${
-              activeView === 'channels'
-                ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
+            Doanh thu 12 tháng
+          </Link>
+          <Link
+            href="/reports/facilities"
+            className="px-3 py-1.5 rounded-xl font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition"
           >
-            Kênh & Quốc tịch
-          </button>
+            CSVC & Kỹ thuật
+          </Link>
         </div>
       </div>
 
@@ -157,7 +169,9 @@ export function DashboardOverview({
           {/* Chọn cơ sở */}
           <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl">
             <Building2 className="w-3.5 h-3.5 text-slate-500" />
-            <span className="font-semibold text-slate-600 dark:text-slate-300">Cơ sở:</span>
+            <span className="font-semibold text-slate-600 dark:text-slate-300">
+              Cơ sở:
+            </span>
             <select
               value={initialBranchId}
               onChange={(e) => handleBranchChange(e.target.value)}
@@ -176,34 +190,34 @@ export function DashboardOverview({
           {/* Chọn mốc thời gian */}
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
             <button
-              onClick={() => handlePresetChange('7days')}
+              onClick={() => handlePresetChange("7days")}
               disabled={isPending}
               className={`px-2.5 py-1 rounded-lg font-semibold transition ${
-                initialPreset === '7days'
-                  ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800'
+                initialPreset === "7days"
+                  ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
+                  : "text-slate-500 hover:text-slate-800"
               }`}
             >
               7 ngày qua
             </button>
             <button
-              onClick={() => handlePresetChange('30days')}
+              onClick={() => handlePresetChange("30days")}
               disabled={isPending}
               className={`px-2.5 py-1 rounded-lg font-semibold transition ${
-                initialPreset === '30days'
-                  ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800'
+                initialPreset === "30days"
+                  ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
+                  : "text-slate-500 hover:text-slate-800"
               }`}
             >
               30 ngày qua
             </button>
             <button
-              onClick={() => handlePresetChange('thisMonth')}
+              onClick={() => handlePresetChange("thisMonth")}
               disabled={isPending}
               className={`px-2.5 py-1 rounded-lg font-semibold transition ${
-                initialPreset === 'thisMonth'
-                  ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800'
+                initialPreset === "thisMonth"
+                  ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
+                  : "text-slate-500 hover:text-slate-800"
               }`}
             >
               Tháng này
@@ -211,19 +225,54 @@ export function DashboardOverview({
           </div>
         </div>
 
-        {/* Trạng thái tải & ngày hiển thị */}
-        <div className="flex items-center gap-2 text-muted-foreground font-mono">
-          {isPending ? (
-            <span className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 font-semibold animate-pulse">
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              Đang tải số liệu...
-            </span>
-          ) : (
-            <span className="flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5 text-slate-400" />
-              {formatDateVN(range.from)} – {formatDateVN(range.to)}
-            </span>
-          )}
+        {/* Góc nhìn sub-views & Trạng thái tải */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+            <button
+              onClick={() => setActiveView("chain")}
+              className={`px-2.5 py-1 rounded-lg font-semibold transition ${
+                activeView === "chain"
+                  ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              Tổng quan chuỗi
+            </button>
+            <button
+              onClick={() => setActiveView("branches")}
+              className={`px-2.5 py-1 rounded-lg font-semibold transition ${
+                activeView === "branches"
+                  ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              Theo 8 cơ sở
+            </button>
+            <button
+              onClick={() => setActiveView("channels")}
+              className={`px-2.5 py-1 rounded-lg font-semibold transition ${
+                activeView === "channels"
+                  ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              Kênh & Quốc tịch
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2 text-muted-foreground font-mono">
+            {isPending ? (
+              <span className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 font-semibold animate-pulse">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Đang tải...
+              </span>
+            ) : (
+              <span className="flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                {formatDateVN(range.from)} – {formatDateVN(range.to)}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -232,7 +281,9 @@ export function DashboardOverview({
         {/* Card 1: Công suất buồng phòng */}
         <div className="p-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3 relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Công suất phòng (Occupancy)</span>
+            <span className="text-xs font-semibold text-slate-500">
+              Công suất phòng (Occupancy)
+            </span>
             <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 flex items-center justify-center">
               <Hotel className="w-4 h-4" />
             </div>
@@ -249,10 +300,13 @@ export function DashboardOverview({
                   </span>
                 ) : (
                   <span className="text-rose-600 flex items-center">
-                    <TrendingDown className="w-3.5 h-3.5 mr-0.5" />{occDelta}%
+                    <TrendingDown className="w-3.5 h-3.5 mr-0.5" />
+                    {occDelta}%
                   </span>
                 )}
-                <span className="text-slate-400 font-normal">so với cùng kỳ ({compare?.occupancy}%)</span>
+                <span className="text-slate-400 font-normal">
+                  so với cùng kỳ ({compare?.occupancy}%)
+                </span>
               </div>
             )}
           </div>
@@ -268,17 +322,20 @@ export function DashboardOverview({
         {/* Card 2: Tổng lượt khách & Đêm phòng */}
         <div className="p-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Đêm phòng đã bán (Room Nights)</span>
+            <span className="text-xs font-semibold text-slate-500">
+              Đêm phòng đã bán (Room Nights)
+            </span>
             <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center">
               <Calendar className="w-4 h-4" />
             </div>
           </div>
           <div>
             <div className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
-              {current.room_nights.toLocaleString('vi-VN')}
+              {current.room_nights.toLocaleString("vi-VN")}
             </div>
             <div className="text-xs text-slate-500 mt-1">
-              Khả dụng: <strong>{current.available_room_nights}</strong> đêm · Khóa OOO: <strong>{current.blocked_room_nights}</strong>
+              Khả dụng: <strong>{current.available_room_nights}</strong> đêm ·
+              Khóa OOO: <strong>{current.blocked_room_nights}</strong>
             </div>
           </div>
           <div className="text-[11px] text-slate-400">
@@ -289,7 +346,9 @@ export function DashboardOverview({
         {/* Card 3: Khách quay lại & Khách ở chéo chuỗi */}
         <div className="p-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Tỷ lệ khách quen quay lại</span>
+            <span className="text-xs font-semibold text-slate-500">
+              Tỷ lệ khách quen quay lại
+            </span>
             <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center">
               <Users className="w-4 h-4" />
             </div>
@@ -306,43 +365,57 @@ export function DashboardOverview({
                   </span>
                 ) : (
                   <span className="text-rose-600 flex items-center">
-                    <TrendingDown className="w-3.5 h-3.5 mr-0.5" />{returnDelta}%
+                    <TrendingDown className="w-3.5 h-3.5 mr-0.5" />
+                    {returnDelta}%
                   </span>
                 )}
-                <span className="text-slate-400 font-normal">so với kỳ trước</span>
+                <span className="text-slate-400 font-normal">
+                  so với kỳ trước
+                </span>
               </div>
             )}
           </div>
           <div className="text-[11px] text-slate-500">
-            <strong>{current.cross_branch_guests}</strong> khách ở chéo giữa 8 khách sạn
+            <strong>{current.cross_branch_guests}</strong> khách ở chéo giữa 8
+            khách sạn
           </div>
         </div>
 
         {/* Card 4: Số ngày ở bình quân & Tỷ lệ hủy */}
         <div className="p-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Thời gian ở bình quân (ALOS)</span>
+            <span className="text-xs font-semibold text-slate-500">
+              Thời gian ở bình quân (ALOS)
+            </span>
             <div className="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 flex items-center justify-center">
               <Sparkles className="w-4 h-4" />
             </div>
           </div>
           <div>
             <div className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
-              {current.alos} <span className="text-base font-medium text-slate-400">đêm/lượt</span>
+              {current.alos}{" "}
+              <span className="text-base font-medium text-slate-400">
+                đêm/lượt
+              </span>
             </div>
             <div className="text-xs text-slate-500 mt-1">
-              Tỷ lệ hủy phòng: <strong className="text-slate-700 dark:text-slate-300">{current.cancel_rate}%</strong> ({current.cancellations} lượt)
+              Tỷ lệ hủy phòng:{" "}
+              <strong className="text-slate-700 dark:text-slate-300">
+                {current.cancel_rate}%
+              </strong>{" "}
+              ({current.cancellations} lượt)
             </div>
           </div>
           <div className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            Khách mới kỳ này: {current.new_guests} ({100 - current.returning_rate}%)
+            Khách mới kỳ này: {current.new_guests} (
+            {100 - current.returning_rate}%)
           </div>
         </div>
       </div>
 
       {/* View 1: Chain Overview & Time Series Chart */}
-      {activeView === 'chain' && (
+      {activeView === "chain" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Trend Chart (2 cols) */}
           <div className="lg:col-span-2 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
@@ -360,7 +433,8 @@ export function DashboardOverview({
                   <span className="w-3 h-3 rounded-full bg-indigo-600" /> Kỳ này
                 </span>
                 <span className="flex items-center gap-1.5 font-semibold text-slate-400">
-                  <span className="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-700" /> Cùng kỳ năm trước
+                  <span className="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-700" />{" "}
+                  Cùng kỳ năm trước
                 </span>
               </div>
             </div>
@@ -372,11 +446,14 @@ export function DashboardOverview({
                 const cmpH = Math.min(point.cmp?.occupancy || 0, 100);
 
                 return (
-                  <div key={idx} className="flex-1 min-w-[20px] flex flex-col items-center gap-1 h-full justify-end group relative">
+                  <div
+                    key={idx}
+                    className="flex-1 min-w-[20px] flex flex-col items-center gap-1 h-full justify-end group relative"
+                  >
                     {/* Tooltip */}
                     <div className="absolute -top-12 bg-slate-900 text-white text-[10px] py-1 px-2 rounded-lg opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-20">
-                      {new Date(point.bucket).toLocaleDateString('vi-VN')}: {curH}%
-                      {cmpH > 0 && ` (Cùng kỳ: ${cmpH}%)`}
+                      {new Date(point.bucket).toLocaleDateString("vi-VN")}:{" "}
+                      {curH}%{cmpH > 0 && ` (Cùng kỳ: ${cmpH}%)`}
                     </div>
 
                     <div className="w-full flex items-end gap-0.5 h-full">
@@ -414,15 +491,17 @@ export function DashboardOverview({
                     className="p-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between"
                   >
                     <div className="flex items-center gap-3">
-                      <span className={`w-6 h-6 rounded-lg text-xs font-bold flex items-center justify-center ${
-                        idx === 0
-                          ? 'bg-amber-500 text-white'
-                          : idx === 1
-                          ? 'bg-slate-400 text-white'
-                          : idx === 2
-                          ? 'bg-amber-700 text-white'
-                          : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
-                      }`}>
+                      <span
+                        className={`w-6 h-6 rounded-lg text-xs font-bold flex items-center justify-center ${
+                          idx === 0
+                            ? "bg-amber-500 text-white"
+                            : idx === 1
+                              ? "bg-slate-400 text-white"
+                              : idx === 2
+                                ? "bg-amber-700 text-white"
+                                : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+                        }`}
+                      >
                         {idx + 1}
                       </span>
                       <div>
@@ -452,14 +531,15 @@ export function DashboardOverview({
       )}
 
       {/* View 2: Branches Comparison Table */}
-      {activeView === 'branches' && (
+      {activeView === "branches" && (
         <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
           <div className="p-5 border-b border-slate-200 dark:border-slate-800">
             <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
               Bảng so sánh chi tiết hiệu quả kinh doanh 8 khách sạn
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
-              So sánh công suất, số đêm phòng, tỷ lệ khách quen và tỷ lệ hủy theo từng cơ sở
+              So sánh công suất, số đêm phòng, tỷ lệ khách quen và tỷ lệ hủy
+              theo từng cơ sở
             </p>
           </div>
 
@@ -479,10 +559,15 @@ export function DashboardOverview({
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                 {by_branch.map((b) => {
-                  const diffOcc = b.compare ? (b.current.occupancy - b.compare.occupancy).toFixed(1) : null;
+                  const diffOcc = b.compare
+                    ? (b.current.occupancy - b.compare.occupancy).toFixed(1)
+                    : null;
 
                   return (
-                    <tr key={b.branch_id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
+                    <tr
+                      key={b.branch_id}
+                      className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition"
+                    >
                       <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">
                         {b.branch}
                       </td>
@@ -494,7 +579,9 @@ export function DashboardOverview({
                       <td className="py-3.5 px-4 text-xs font-semibold">
                         {diffOcc !== null ? (
                           Number(diffOcc) >= 0 ? (
-                            <span className="text-emerald-600">+{diffOcc}%</span>
+                            <span className="text-emerald-600">
+                              +{diffOcc}%
+                            </span>
                           ) : (
                             <span className="text-rose-600">{diffOcc}%</span>
                           )
@@ -527,7 +614,7 @@ export function DashboardOverview({
       )}
 
       {/* View 3: Channels & Nationalities */}
-      {activeView === 'channels' && (
+      {activeView === "channels" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Channels */}
           <div className="p-6 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
@@ -594,7 +681,9 @@ export function DashboardOverview({
                         {nat.nationality}
                       </span>
                       <span className="font-bold text-xs text-slate-800 dark:text-slate-200">
-                        {nat.nationality === 'VN' ? 'Việt Nam' : nat.nationality}
+                        {nat.nationality === "VN"
+                          ? "Việt Nam"
+                          : nat.nationality}
                       </span>
                     </div>
                     <div className="font-extrabold text-sm text-slate-800 dark:text-slate-200">

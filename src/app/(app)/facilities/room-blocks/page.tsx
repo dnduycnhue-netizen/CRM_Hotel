@@ -1,18 +1,18 @@
-import { Metadata } from 'next';
-import { requirePermission, getSession } from '@/shared/auth/server';
-import { redirect } from 'next/navigation';
-import { getActiveBranches } from '@/features/admin/data/branches';
-import { getRooms } from '@/features/admin/data/rooms';
-import { getRoomBlocks, RoomBlocksTable } from '@/features/facilities';
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { getActiveBranches } from "@/features/admin/data/branches";
+import { getRooms } from "@/features/admin/data/rooms";
+import { getRoomBlocks, RoomBlocksTable } from "@/features/facilities";
+import { getSession, requirePermission } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
-  title: 'Khóa phòng ngừng bán | CRM Khách Sạn',
+  title: "Khóa phòng ngừng bán | CRM Khách Sạn",
 };
 
 export default async function RoomBlocksPage() {
-  const hasPerm = await requirePermission('stay.view');
+  const hasPerm = await requirePermission("stay.view");
   if (!hasPerm.ok) {
-    redirect('/');
+    redirect("/");
   }
 
   const session = await getSession();
@@ -26,7 +26,12 @@ export default async function RoomBlocksPage() {
     <RoomBlocksTable
       initialBlocks={blocks}
       branches={branches}
-      rooms={rooms.map((r) => ({ id: r.id, number: r.number, type: r.roomType || 'Standard', branch_id: r.branchId }))}
+      rooms={rooms.map((r) => ({
+        id: r.id,
+        number: r.number,
+        type: r.roomType || "Standard",
+        branch_id: r.branchId,
+      }))}
       currentBranchId={session?.currentBranchId || null}
     />
   );

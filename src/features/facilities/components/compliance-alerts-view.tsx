@@ -1,17 +1,18 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { ComplianceAlertItem } from '../data/alerts';
 import {
   AlertTriangle,
-  ShieldAlert,
   Building2,
   Calendar,
-  FileText,
-  Clock,
   CheckCircle2,
+  Clock,
   ExternalLink,
-} from 'lucide-react';
+  FileText,
+  ShieldAlert,
+} from "lucide-react";
+import React, { useState } from "react";
+import { formatDateVN } from "@/shared/utils/date";
+import type { ComplianceAlertItem } from "../data/alerts";
 
 interface Props {
   alerts: ComplianceAlertItem[];
@@ -19,18 +20,19 @@ interface Props {
 }
 
 export function ComplianceAlertsView({ alerts, branches }: Props) {
-  const [selectedBranch, setSelectedBranch] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [selectedBranch, setSelectedBranch] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
 
   const filtered = alerts.filter((a) => {
-    if (selectedBranch !== 'all' && a.branch_id !== selectedBranch) return false;
-    if (filterStatus !== 'all' && a.status !== filterStatus) return false;
+    if (selectedBranch !== "all" && a.branch_id !== selectedBranch)
+      return false;
+    if (filterStatus !== "all" && a.status !== filterStatus) return false;
     return true;
   });
 
-  const expiredCount = alerts.filter((a) => a.status === 'expired').length;
-  const urgentCount = alerts.filter((a) => a.status === 'urgent').length;
-  const warningCount = alerts.filter((a) => a.status === 'warning').length;
+  const expiredCount = alerts.filter((a) => a.status === "expired").length;
+  const urgentCount = alerts.filter((a) => a.status === "urgent").length;
+  const warningCount = alerts.filter((a) => a.status === "warning").length;
 
   return (
     <div className="space-y-6">
@@ -39,7 +41,9 @@ export function ComplianceAlertsView({ alerts, branches }: Props) {
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
           <div>
             <p className="text-xs font-medium text-slate-400">Đã hết hạn</p>
-            <p className="text-2xl font-bold text-rose-400 mt-1">{expiredCount}</p>
+            <p className="text-2xl font-bold text-rose-400 mt-1">
+              {expiredCount}
+            </p>
           </div>
           <span className="p-3 rounded-xl bg-rose-500/10 text-rose-400">
             <ShieldAlert className="w-5 h-5" />
@@ -48,8 +52,12 @@ export function ComplianceAlertsView({ alerts, branches }: Props) {
 
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-400">Khẩn cấp (&le; 15 ngày)</p>
-            <p className="text-2xl font-bold text-amber-400 mt-1">{urgentCount}</p>
+            <p className="text-xs font-medium text-slate-400">
+              Khẩn cấp (&le; 15 ngày)
+            </p>
+            <p className="text-2xl font-bold text-amber-400 mt-1">
+              {urgentCount}
+            </p>
           </div>
           <span className="p-3 rounded-xl bg-amber-500/10 text-amber-400">
             <AlertTriangle className="w-5 h-5" />
@@ -58,8 +66,12 @@ export function ComplianceAlertsView({ alerts, branches }: Props) {
 
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-400">Sắp hết hạn (&le; 30 ngày)</p>
-            <p className="text-2xl font-bold text-yellow-400 mt-1">{warningCount}</p>
+            <p className="text-xs font-medium text-slate-400">
+              Sắp hết hạn (&le; 30 ngày)
+            </p>
+            <p className="text-2xl font-bold text-yellow-400 mt-1">
+              {warningCount}
+            </p>
           </div>
           <span className="p-3 rounded-xl bg-yellow-500/10 text-yellow-400">
             <Clock className="w-5 h-5" />
@@ -70,7 +82,9 @@ export function ComplianceAlertsView({ alerts, branches }: Props) {
       {/* Filter toolbar */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap items-center gap-3">
         <div className="w-52">
-          <label className="text-xs font-medium text-slate-400 block mb-1">Cơ sở:</label>
+          <label className="text-xs font-medium text-slate-400 block mb-1">
+            Cơ sở:
+          </label>
           <select
             value={selectedBranch}
             onChange={(e) => setSelectedBranch(e.target.value)}
@@ -86,7 +100,9 @@ export function ComplianceAlertsView({ alerts, branches }: Props) {
         </div>
 
         <div className="w-48">
-          <label className="text-xs font-medium text-slate-400 block mb-1">Mức độ cảnh báo:</label>
+          <label className="text-xs font-medium text-slate-400 block mb-1">
+            Mức độ cảnh báo:
+          </label>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
@@ -122,22 +138,33 @@ export function ComplianceAlertsView({ alerts, branches }: Props) {
             <tbody className="divide-y divide-slate-800/60">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-400 text-xs">
+                  <td
+                    colSpan={6}
+                    className="py-8 text-center text-slate-400 text-xs"
+                  >
                     <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-                    Tất cả hồ sơ pháp lý, bảo hiểm PCCC và kiểm định thiết bị đang trong hạn an toàn!
+                    Tất cả hồ sơ pháp lý, bảo hiểm PCCC và kiểm định thiết bị
+                    đang trong hạn an toàn!
                   </td>
                 </tr>
               ) : (
                 filtered.map((item) => {
                   return (
-                    <tr key={item.id} className="hover:bg-slate-800/30 transition-colors">
+                    <tr
+                      key={item.id}
+                      className="hover:bg-slate-800/30 transition-colors"
+                    >
                       <td className="py-3 px-4">
                         <span className="font-semibold text-slate-200 block">
                           {item.doc_type_name}
                         </span>
                         <div className="text-xs text-slate-400 mt-0.5 space-x-2">
-                          {item.doc_number && <span>Số: {item.doc_number}</span>}
-                          {item.asset_name && <span>• Thiết bị: {item.asset_name}</span>}
+                          {item.doc_number && (
+                            <span>Số: {item.doc_number}</span>
+                          )}
+                          {item.asset_name && (
+                            <span>• Thiết bị: {item.asset_name}</span>
+                          )}
                         </div>
                       </td>
 
@@ -149,12 +176,16 @@ export function ComplianceAlertsView({ alerts, branches }: Props) {
                       </td>
 
                       <td className="py-3 px-4 text-xs text-slate-400">
-                        <div>{item.issuer || '-'}</div>
-                        {item.note && <div className="text-slate-500 italic mt-0.5">{item.note}</div>}
+                        <div>{item.issuer || "-"}</div>
+                        {item.note && (
+                          <div className="text-slate-500 italic mt-0.5">
+                            {item.note}
+                          </div>
+                        )}
                       </td>
 
                       <td className="py-3 px-4 text-xs font-semibold text-slate-200 whitespace-nowrap">
-                        {item.expires_on}
+                        {formatDateVN(item.expires_on)}
                       </td>
 
                       <td className="py-3 px-4 whitespace-nowrap">
@@ -166,10 +197,10 @@ export function ComplianceAlertsView({ alerts, branches }: Props) {
                           <span
                             className={`text-xs font-bold ${
                               item.days_remaining <= 15
-                                ? 'text-amber-400'
+                                ? "text-amber-400"
                                 : item.days_remaining <= 30
-                                  ? 'text-yellow-400'
-                                  : 'text-emerald-400'
+                                  ? "text-yellow-400"
+                                  : "text-emerald-400"
                             }`}
                           >
                             Còn {item.days_remaining} ngày
@@ -178,22 +209,22 @@ export function ComplianceAlertsView({ alerts, branches }: Props) {
                       </td>
 
                       <td className="py-3 px-4">
-                        {item.status === 'expired' && (
+                        {item.status === "expired" && (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
                             <ShieldAlert className="w-3.5 h-3.5" /> Hết hạn
                           </span>
                         )}
-                        {item.status === 'urgent' && (
+                        {item.status === "urgent" && (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
                             <AlertTriangle className="w-3.5 h-3.5" /> Khẩn cấp
                           </span>
                         )}
-                        {item.status === 'warning' && (
+                        {item.status === "warning" && (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
                             <Clock className="w-3.5 h-3.5" /> Sắp hết hạn
                           </span>
                         )}
-                        {item.status === 'good' && (
+                        {item.status === "good" && (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                             <CheckCircle2 className="w-3.5 h-3.5" /> An toàn
                           </span>

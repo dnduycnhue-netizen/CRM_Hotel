@@ -1,13 +1,13 @@
-import { createClient } from '@/lib/supabase/server';
-import { AuditFilterParams, AuditLogItem } from '../types';
+import { createClient } from "@/lib/supabase/server";
+import type { AuditFilterParams, AuditLogItem } from "../types";
 
 export async function getAuditLogs(
-  params: AuditFilterParams = {}
+  params: AuditFilterParams = {},
 ): Promise<AuditLogItem[]> {
   const supabase = await createClient();
 
   let query = supabase
-    .from('audit_logs')
+    .from("audit_logs")
     .select(`
       id,
       occurred_at,
@@ -22,29 +22,31 @@ export async function getAuditLogs(
       actor:profiles!audit_logs_actor_id_fkey(full_name),
       branch:branches!audit_logs_branch_id_fkey(name)
     `)
-    .order('occurred_at', { ascending: false })
+    .order("occurred_at", { ascending: false })
     .limit(params.limit || 100);
 
   if (params.branchId) {
-    query = query.eq('branch_id', params.branchId);
+    query = query.eq("branch_id", params.branchId);
   }
   if (params.actorId) {
-    query = query.eq('actor_id', params.actorId);
+    query = query.eq("actor_id", params.actorId);
   }
   if (params.entity) {
-    query = query.eq('entity', params.entity);
+    query = query.eq("entity", params.entity);
   }
   if (params.action) {
-    query = query.eq('action', params.action);
+    query = query.eq("action", params.action);
   }
 
   const { data, error } = await query;
   if (error || !data) {
     // If foreign key relationship alias fails, fallback to simple select
     const { data: fallbackData } = await supabase
-      .from('audit_logs')
-      .select('id, occurred_at, actor_id, branch_id, action, entity, entity_id, before, after, meta')
-      .order('occurred_at', { ascending: false })
+      .from("audit_logs")
+      .select(
+        "id, occurred_at, actor_id, branch_id, action, entity, entity_id, before, after, meta",
+      )
+      .order("occurred_at", { ascending: false })
       .limit(params.limit || 100);
 
     return (fallbackData || []).map((row: any) => ({
@@ -78,4 +80,3 @@ export async function getAuditLogs(
     meta: row.meta,
   }));
 }
-

@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from "@/lib/supabase/server";
+import { getVnDateString } from "@/shared/utils/date";
 
 export interface ComplianceAlertItem {
   id: string;
@@ -11,16 +12,18 @@ export interface ComplianceAlertItem {
   issued_on?: string | null;
   expires_on: string;
   days_remaining: number;
-  status: 'expired' | 'urgent' | 'warning' | 'good';
+  status: "expired" | "urgent" | "warning" | "good";
   file_paths: string[];
   note?: string | null;
 }
 
-export async function getComplianceAlerts(branchId?: string): Promise<ComplianceAlertItem[]> {
+export async function getComplianceAlerts(
+  branchId?: string,
+): Promise<ComplianceAlertItem[]> {
   const supabase = await createClient();
 
   let query = supabase
-    .from('compliance_docs')
+    .from("compliance_docs")
     .select(`
       id,
       branch_id,
@@ -35,40 +38,38 @@ export async function getComplianceAlerts(branchId?: string): Promise<Compliance
       doc_type:compliance_doc_types(name, remind_days),
       asset:assets(name)
     `)
-    .eq('is_current', true)
-    .not('expires_on', 'is', null)
-    .order('expires_on', { ascending: true });
+    .eq("is_current", true)
+    .not("expires_on", "is", null)
+    .order("expires_on", { ascending: true });
 
   if (branchId) {
-    query = query.eq('branch_id', branchId);
+    query = query.eq("branch_id", branchId);
   }
 
   const { data, error } = await query;
   if (error || !data) return [];
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const todayStr = getVnDateString();
+  const todayMs = new Date(todayStr).getTime();
 
   return data.map((row: any) => {
-    const expDate = new Date(row.expires_on);
-    expDate.setHours(0, 0, 0, 0);
-    const diffTime = expDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const expMs = new Date(row.expires_on).getTime();
+    const diffDays = Math.round((expMs - todayMs) / 86400000);
 
-    let status: ComplianceAlertItem['status'] = 'good';
+    let status: ComplianceAlertItem["status"] = "good";
     if (diffDays < 0) {
-      status = 'expired';
+      status = "expired";
     } else if (diffDays <= 15) {
-      status = 'urgent';
+      status = "urgent";
     } else if (diffDays <= (row.doc_type?.remind_days || 30)) {
-      status = 'warning';
+      status = "warning";
     }
 
     return {
       id: row.id,
       branch_id: row.branch_id,
-      branch_name: row.branch?.name || '',
-      doc_type_name: row.doc_type?.name || 'Hồ sơ pháp lý',
+      branch_name: row.branch?.name || "",
+      doc_type_name: row.doc_type?.name || "Hồ sơ pháp lý",
       doc_number: row.number,
       issuer: row.issuer,
       asset_name: row.asset?.name || null,

@@ -1,25 +1,25 @@
-import { Metadata } from 'next';
-import { requirePermission } from '@/shared/auth/server';
-import { redirect } from 'next/navigation';
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import {
-  getPendingMergeRequests,
-  getPendingFlags,
-  getActiveBlacklist,
   ApprovalsHub,
-} from '@/features/approvals';
+  getActiveBlacklist,
+  getPendingFlags,
+  getPendingMergeRequests,
+} from "@/features/approvals";
+import { requirePermission } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
-  title: 'Trung tâm Phê duyệt & Hợp nhất | CRM Khách Sạn',
+  title: "Trung tâm Phê duyệt & Hợp nhất | CRM Khách Sạn",
 };
 
 export default async function ApprovalsPage() {
   const [hasMergePerm, hasFlagPerm] = await Promise.all([
-    requirePermission('merge.approve'),
-    requirePermission('blacklist.approve'),
+    requirePermission("merge.approve"),
+    requirePermission("blacklist.approve"),
   ]);
 
   if (!hasMergePerm.ok && !hasFlagPerm.ok) {
-    redirect('/');
+    redirect("/");
   }
 
   const [mergeRequests, pendingFlags, activeFlags] = await Promise.all([
@@ -35,7 +35,8 @@ export default async function ApprovalsPage() {
           Trung tâm Phê duyệt & Hợp nhất
         </h1>
         <p className="text-sm text-slate-400 mt-1">
-          Kiểm duyệt các đề xuất hợp nhất hồ sơ khách trùng lặp và phê duyệt danh sách đen (Blacklist) toàn chuỗi.
+          Kiểm duyệt các đề xuất hợp nhất hồ sơ khách trùng lặp và phê duyệt
+          danh sách đen (Blacklist) toàn chuỗi.
         </p>
       </div>
 

@@ -1,15 +1,25 @@
-'use client';
+"use client";
 
-import { useState, useTransition } from 'react';
-import Link from 'next/link';
-import { Search, Loader2, User, Phone, Award, ShieldAlert, Calendar, Building2, ArrowRight } from 'lucide-react';
-import { Button } from '@/shared/ui';
-import { searchGuestsAction } from '../actions';
-import { SearchGuestResult, SearchGuestMode } from '../types';
+import {
+  ArrowRight,
+  Award,
+  Building2,
+  Calendar,
+  Loader2,
+  Phone,
+  Search,
+  ShieldAlert,
+  User,
+} from "lucide-react";
+import Link from "next/link";
+import { useState, useTransition } from "react";
+import { Button } from "@/shared/ui";
+import { searchGuestsAction } from "../actions";
+import type { SearchGuestMode, SearchGuestResult } from "../types";
 
 export function SearchView() {
-  const [query, setQuery] = useState('');
-  const [mode, setMode] = useState<SearchGuestMode | 'auto'>('auto');
+  const [query, setQuery] = useState("");
+  const [mode, setMode] = useState<SearchGuestMode | "auto">("auto");
   const [results, setResults] = useState<SearchGuestResult[]>([]);
   const [isPending, startTransition] = useTransition();
   const [searched, setSearched] = useState(false);
@@ -20,7 +30,7 @@ export function SearchView() {
     if (!trimmed) return;
 
     startTransition(async () => {
-      const explicitMode = mode === 'auto' ? undefined : mode;
+      const explicitMode = mode === "auto" ? undefined : mode;
       const res = await searchGuestsAction(trimmed, explicitMode);
       setSearched(true);
       if (res.ok) {
@@ -38,7 +48,8 @@ export function SearchView() {
           Tra cứu khách hàng toàn chuỗi
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Tìm kiếm nhanh chóng qua 8 khách sạn (Boutique, Grand, Xavia, Eco, Ngô Mây, Aloha, Sun, Bãi Xếp)
+          Tìm kiếm nhanh chóng qua 8 khách sạn (Boutique, Grand, Xavia, Eco, Ngô
+          Mây, Aloha, Sun, Bãi Xếp)
         </p>
       </div>
 
@@ -73,11 +84,11 @@ export function SearchView() {
           <span className="text-slate-400 font-medium mr-1">Chế độ tìm:</span>
           {(
             [
-              { id: 'auto', label: 'Tự động nhận diện' },
-              { id: 'phone', label: 'Số điện thoại' },
-              { id: 'cccd', label: 'CCCD / CMND' },
-              { id: 'name', label: 'Họ tên' },
-              { id: 'email', label: 'Email' },
+              { id: "auto", label: "Tự động nhận diện" },
+              { id: "phone", label: "Số điện thoại" },
+              { id: "cccd", label: "CCCD / CMND" },
+              { id: "name", label: "Họ tên" },
+              { id: "email", label: "Email" },
             ] as const
           ).map((item) => (
             <button
@@ -86,8 +97,8 @@ export function SearchView() {
               onClick={() => setMode(item.id)}
               className={`px-3 py-1 rounded-lg border transition ${
                 mode === item.id
-                  ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-medium'
-                  : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                  ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-medium"
+                  : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
               }`}
             >
               {item.label}
@@ -127,7 +138,9 @@ export function SearchView() {
                           {guest.full_name}
                         </Link>
                         {guest.birth_year && (
-                          <span className="text-xs text-slate-400">({guest.birth_year})</span>
+                          <span className="text-xs text-slate-400">
+                            ({guest.birth_year})
+                          </span>
                         )}
                         {guest.tier && (
                           <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40">
@@ -152,7 +165,10 @@ export function SearchView() {
                         )}
                         {guest.doc_masked && (
                           <span>
-                            Giấy tờ: <code className="font-mono text-slate-700 dark:text-slate-300">{guest.doc_masked}</code>
+                            Giấy tờ:{" "}
+                            <code className="font-mono text-slate-700 dark:text-slate-300">
+                              {guest.doc_masked}
+                            </code>
                           </span>
                         )}
                         {guest.last_branch_name && (
@@ -175,7 +191,11 @@ export function SearchView() {
                       </div>
                     </div>
                     <Link href={`/guests/${guest.id}`}>
-                      <Button variant="outline" size="sm" className="rounded-xl">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-xl"
+                      >
                         Xem hồ sơ
                         <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
                       </Button>

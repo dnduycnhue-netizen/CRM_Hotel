@@ -1,26 +1,27 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
 import {
-  User,
-  Phone,
-  Calendar,
-  Building2,
-  Award,
-  ShieldAlert,
-  Plus,
   ArrowRight,
-  Filter,
+  Award,
+  Building2,
+  Calendar,
   CheckCircle2,
+  Download,
+  FileSpreadsheet,
+  Filter,
+  Loader2,
+  Phone,
+  Plus,
+  ShieldAlert,
   Tag,
-} from 'lucide-react';
-import { Button } from '@/shared/ui';
-import { GuestListItem, SalesUser } from '../types';
-import { exportGuestsAction } from '../actions';
-import { FileSpreadsheet, Download, Loader2 } from 'lucide-react';
-
-import { toast } from 'sonner';
+  User,
+} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/shared/ui";
+import { exportGuestsAction } from "../actions";
+import type { GuestListItem, SalesUser } from "../types";
 
 interface GuestListTableProps {
   initialGuests: GuestListItem[];
@@ -28,10 +29,14 @@ interface GuestListTableProps {
   canExport?: boolean;
 }
 
-export function GuestListTable({ initialGuests, salesUsers, canExport = false }: GuestListTableProps) {
-  const [filterOwner, setFilterOwner] = useState<string>('all');
-  const [filterTier, setFilterTier] = useState<string>('all');
-  const [searchFilter, setSearchFilter] = useState('');
+export function GuestListTable({
+  initialGuests,
+  salesUsers,
+  canExport = false,
+}: GuestListTableProps) {
+  const [filterOwner, setFilterOwner] = useState<string>("all");
+  const [filterTier, setFilterTier] = useState<string>("all");
+  const [searchFilter, setSearchFilter] = useState("");
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExportExcel = async () => {
@@ -39,7 +44,9 @@ export function GuestListTable({ initialGuests, salesUsers, canExport = false }:
       setIsExporting(true);
       const res = await exportGuestsAction();
       if (!res.ok) {
-        toast.error(`Không thể xuất Excel: ${res.error.message || res.error.code}`);
+        toast.error(
+          `Không thể xuất Excel: ${res.error.message || res.error.code}`,
+        );
         return;
       }
 
@@ -51,34 +58,35 @@ export function GuestListTable({ initialGuests, salesUsers, canExport = false }:
       }
       const byteArray = new Uint8Array(byteNumbers);
       const blob = new Blob([byteArray], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = res.data.filename;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      toast.success('Xuất file Excel thành công!');
+      toast.success("Xuất file Excel thành công!");
     } catch (err) {
-      toast.error('Đã xảy ra lỗi khi tạo tệp Excel');
+      toast.error("Đã xảy ra lỗi khi tạo tệp Excel");
     } finally {
       setIsExporting(false);
     }
   };
 
   const filtered = initialGuests.filter((g) => {
-    if (filterOwner !== 'all') {
-      if (filterOwner === 'unassigned' && g.sales_owner_name) return false;
-      if (filterOwner !== 'unassigned' && g.sales_owner_name !== filterOwner) return false;
+    if (filterOwner !== "all") {
+      if (filterOwner === "unassigned" && g.sales_owner_name) return false;
+      if (filterOwner !== "unassigned" && g.sales_owner_name !== filterOwner)
+        return false;
     }
 
-    if (filterTier !== 'all') {
-      if (filterTier === 'potential' && g.total_stays > 0) return false;
-      if (filterTier === 'stayed' && g.total_stays === 0) return false;
+    if (filterTier !== "all") {
+      if (filterTier === "potential" && g.total_stays > 0) return false;
+      if (filterTier === "stayed" && g.total_stays === 0) return false;
     }
 
     if (searchFilter.trim()) {
@@ -100,7 +108,8 @@ export function GuestListTable({ initialGuests, salesUsers, canExport = false }:
             Hồ sơ khách hàng & Trung tâm Sales
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Quản lý khách hàng toàn chuỗi 8 khách sạn, phân công chăm sóc và lịch sử lưu trú
+            Quản lý khách hàng toàn chuỗi 8 khách sạn, phân công chăm sóc và
+            lịch sử lưu trú
           </p>
         </div>
 
@@ -118,7 +127,7 @@ export function GuestListTable({ initialGuests, salesUsers, canExport = false }:
               ) : (
                 <FileSpreadsheet className="w-4 h-4 mr-1.5 text-emerald-400" />
               )}
-              {isExporting ? 'Đang xuất...' : 'Xuất Excel'}
+              {isExporting ? "Đang xuất..." : "Xuất Excel"}
             </Button>
           )}
 
@@ -194,7 +203,10 @@ export function GuestListTable({ initialGuests, salesUsers, canExport = false }:
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400 text-xs">
+                  <td
+                    colSpan={6}
+                    className="py-12 text-center text-slate-400 text-xs"
+                  >
                     Không tìm thấy hồ sơ khách hàng nào phù hợp bộ lọc.
                   </td>
                 </tr>
@@ -219,7 +231,9 @@ export function GuestListTable({ initialGuests, salesUsers, canExport = false }:
                               {g.full_name}
                             </Link>
                             {g.birth_year && (
-                              <span className="text-[11px] text-slate-400">({g.birth_year})</span>
+                              <span className="text-[11px] text-slate-400">
+                                ({g.birth_year})
+                              </span>
                             )}
                             {g.total_stays === 0 && (
                               <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50">
@@ -244,7 +258,7 @@ export function GuestListTable({ initialGuests, salesUsers, canExport = false }:
                     </td>
 
                     <td className="py-3.5 px-4 text-xs text-slate-600 dark:text-slate-400">
-                      <div>{g.phone || '—'}</div>
+                      <div>{g.phone || "—"}</div>
                       {g.doc_masked && (
                         <div className="font-mono text-[11px] text-slate-400 mt-0.5">
                           {g.doc_masked}
@@ -264,7 +278,11 @@ export function GuestListTable({ initialGuests, salesUsers, canExport = false }:
                     <td className="py-3.5 px-4 text-xs text-slate-500">
                       {g.last_stay_at ? (
                         <div>
-                          <div>{new Date(g.last_stay_at).toLocaleDateString('vi-VN')}</div>
+                          <div>
+                            {new Date(g.last_stay_at).toLocaleDateString(
+                              "vi-VN",
+                            )}
+                          </div>
                           {g.last_branch_name && (
                             <div className="text-[11px] text-slate-400 mt-0.5">
                               {g.last_branch_name}

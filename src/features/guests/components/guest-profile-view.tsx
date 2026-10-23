@@ -1,46 +1,47 @@
-'use client';
+"use client";
 
-import { useState, useTransition } from 'react';
-import Link from 'next/link';
-import { useCan } from '@/shared/auth';
 import {
-  User,
-  Phone,
+  AlertTriangle,
+  Award,
+  Building2,
+  Calendar,
+  CheckCircle2,
+  ChevronRight,
+  Clock,
+  ExternalLink,
+  GitMerge,
+  Loader2,
+  Lock,
   Mail,
   MapPin,
-  Calendar,
-  Building2,
-  Award,
+  MessageSquare,
+  Phone,
+  Plus,
+  Search,
+  Send,
   ShieldAlert,
   Tag,
-  MessageSquare,
-  Users,
-  CheckCircle2,
-  Clock,
-  Plus,
   Trash2,
-  Lock,
   Unlock,
-  AlertTriangle,
-  Send,
-  Loader2,
-  ChevronRight,
-  ExternalLink,
-} from 'lucide-react';
-import { Button } from '@/shared/ui';
-import { toast } from 'sonner';
-import {
-  GuestProfile,
-  SalesUser,
-} from '../types';
+  User,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { useCan } from "@/shared/auth";
+import { Button } from "@/shared/ui";
 import {
   addGuestNoteAction,
-  deleteGuestNoteAction,
-  setGuestTagsAction,
   assignSalesOwnerAction,
-  setGuestConsentAction,
+  deleteGuestNoteAction,
   proposeGuestFlagAction,
-} from '../actions';
+  proposeGuestMergeAction,
+  searchCandidateGuestsAction,
+  setGuestConsentAction,
+  setGuestTagsAction,
+} from "../actions";
+import type { GuestProfile, SalesUser } from "../types";
 
 interface GuestProfileViewProps {
   profile: GuestProfile;
@@ -48,29 +49,108 @@ interface GuestProfileViewProps {
   branches: Array<{ id: string; name: string; code: string }>;
 }
 
-export function GuestProfileView({ profile, salesUsers, branches }: GuestProfileViewProps) {
+export function GuestProfileView({
+  profile,
+  salesUsers,
+  branches,
+}: GuestProfileViewProps) {
   const canPerm = useCan();
-  const [activeTab, setActiveTab] = useState<'stays' | 'notes' | 'companions' | 'flags' | 'consents'>('stays');
+  const [activeTab, setActiveTab] = useState<
+    "stays" | "notes" | "companions" | "flags" | "consents"
+  >("stays");
   const [isPending, startTransition] = useTransition();
 
   // Note form state
-  const [noteKind, setNoteKind] = useState<'general' | 'preference' | 'allergy' | 'complaint' | 'incident'>('general');
-  const [noteBranch, setNoteBranch] = useState<string>('');
-  const [noteBody, setNoteBody] = useState('');
+  const [noteKind, setNoteKind] = useState<
+    "general" | "preference" | "allergy" | "complaint" | "incident"
+  >("general");
+  const [noteBranch, setNoteBranch] = useState<string>("");
+  const [noteBody, setNoteBody] = useState("");
   const [noteSuccess, setNoteSuccess] = useState(false);
 
   // Propose flag state
   const [showProposeFlag, setShowProposeFlag] = useState(false);
-  const [flagType, setFlagType] = useState<'blacklist' | 'attention'>('blacklist');
-  const [flagBranch, setFlagBranch] = useState<string>(branches[0]?.id || '');
-  const [flagReason, setFlagReason] = useState('');
-  const [flagMsg, setFlagMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [flagType, setFlagType] = useState<"blacklist" | "attention">(
+    "blacklist",
+  );
+  const [flagBranch, setFlagBranch] = useState<string>(branches[0]?.id || "");
+  const [flagReason, setFlagReason] = useState("");
+  const [flagMsg, setFlagMsg] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   // Tags state
-  const [tagInput, setTagInput] = useState('');
+  const [tagInput, setTagInput] = useState("");
   const [isAddingTag, setIsAddingTag] = useState(false);
 
-  const { guest, tier, stats, stays, companions, notes, flags, consents, can } = profile;
+  // Propose merge modal state
+  const [showMergeModal, setShowMergeModal] = useState(false);
+  const [mergeSearch, setMergeSearch] = useState("");
+  const [mergeCandidates, setMergeCandidates] = useState<
+    Array<{
+      id: string;
+      full_name: string;
+      phone: string | null;
+      email: string | null;
+      dob: string | null;
+      nationality: string;
+    }>
+  >([]);
+  const [selectedCandidate, setSelectedCandidate] = useState<{
+    id: string;
+    full_name: string;
+    phone: string | null;
+  } | null>(null);
+  const [mergeReason, setMergeReason] = useState(
+    "Trùng số điện thoại hoặc hồ sơ tạo nhầm",
+  );
+  const [isSearchingMerge, setIsSearchingMerge] = useState(false);
+
+  const handleSearchCandidates = async (query: string) => {
+    setMergeSearch(query);
+    if (query.trim().length < 2) {
+      setMergeCandidates([]);
+      return;
+    }
+    setIsSearchingMerge(true);
+    const res = await searchCandidateGuestsAction(query, profile.guest.id);
+    setIsSearchingMerge(false);
+    if (res.ok) {
+      setMergeCandidates(res.data);
+    }
+  };
+
+  const handleProposeMerge = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCandidate) {
+      toast.error("Vui lòng chọn hồ sơ trùng cần gộp vào hồ sơ này");
+      return;
+    }
+
+    startTransition(async () => {
+      const res = await proposeGuestMergeAction({
+        keepGuestId: profile.guest.id,
+        dropGuestId: selectedCandidate.id,
+        reason: mergeReason.trim() || "Thủ công",
+      });
+
+      if (res.ok) {
+        toast.success(
+          `Đã gửi yêu cầu gộp hồ sơ của "${selectedCandidate.full_name}" lên ban quản lý phê duyệt!`,
+        );
+        setShowMergeModal(false);
+        setSelectedCandidate(null);
+        setMergeSearch("");
+        setMergeCandidates([]);
+      } else {
+        toast.error(res.error.message || "Không thể tạo đề xuất gộp hồ sơ");
+      }
+    });
+  };
+
+  const { guest, tier, stats, stays, companions, notes, flags, consents, can } =
+    profile;
 
   const handleAddNote = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,9 +164,9 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
         body: noteBody.trim(),
       });
       if (res.ok) {
-        setNoteBody('');
+        setNoteBody("");
         setNoteSuccess(true);
-        toast.success('Đã lưu ghi chú khách hàng thành công');
+        toast.success("Đã lưu ghi chú khách hàng thành công");
         setTimeout(() => setNoteSuccess(false), 2000);
       } else {
         toast.error(res.error.message);
@@ -98,7 +178,7 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
     startTransition(async () => {
       const res = await deleteGuestNoteAction(noteId, guest.id);
       if (res.ok) {
-        toast.success('Đã xóa ghi chú');
+        toast.success("Đã xóa ghi chú");
       } else {
         toast.error(res.error.message);
       }
@@ -110,7 +190,7 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
     if (!trimmed) return;
     const currentTags = guest.tags || [];
     if (currentTags.includes(trimmed)) {
-      setTagInput('');
+      setTagInput("");
       setIsAddingTag(false);
       return;
     }
@@ -122,7 +202,7 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
       } else {
         toast.error(res.error.message);
       }
-      setTagInput('');
+      setTagInput("");
       setIsAddingTag(false);
     });
   };
@@ -142,9 +222,16 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
 
   const handleAssignSales = (userId: string) => {
     startTransition(async () => {
-      const res = await assignSalesOwnerAction(guest.id, userId === 'none' ? null : userId);
+      const res = await assignSalesOwnerAction(
+        guest.id,
+        userId === "none" ? null : userId,
+      );
       if (res.ok) {
-        toast.success(userId === 'none' ? 'Đã hủy phân công Sales' : 'Đã phân công Sales phụ trách');
+        toast.success(
+          userId === "none"
+            ? "Đã hủy phân công Sales"
+            : "Đã phân công Sales phụ trách",
+        );
       } else {
         toast.error(res.error.message);
       }
@@ -175,6 +262,17 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
         </div>
 
         <div className="flex items-center gap-2">
+          {can.propose_merge && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowMergeModal(true)}
+              className="rounded-xl border-amber-200 dark:border-amber-900/50 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 font-medium"
+            >
+              <GitMerge className="w-3.5 h-3.5 mr-1.5" />
+              Đề xuất gộp hồ sơ
+            </Button>
+          )}
           {can.update && (
             <Link href={`/guests/${guest.id}/edit`}>
               <Button variant="outline" size="sm" className="rounded-xl">
@@ -182,9 +280,14 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
               </Button>
             </Link>
           )}
-          {canPerm('stay.create') && (
-            <Link href={`/check-in?lookup=${encodeURIComponent(guest.phone || '')}`}>
-              <Button size="sm" className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium">
+          {canPerm("stay.create") && (
+            <Link
+              href={`/check-in?lookup=${encodeURIComponent(guest.phone || "")}`}
+            >
+              <Button
+                size="sm"
+                className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium"
+              >
                 <Plus className="w-4 h-4 mr-1.5" />
                 Tạo lượt ở mới
               </Button>
@@ -218,7 +321,9 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
                   </span>
                 )}
 
-                {flags.some((f) => f.type === 'blacklist' && f.status === 'approved') && (
+                {flags.some(
+                  (f) => f.type === "blacklist" && f.status === "approved",
+                ) && (
                   <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-rose-500/10 text-rose-600 border border-rose-500/30">
                     <ShieldAlert className="w-3.5 h-3.5" />
                     Blacklist toàn chuỗi
@@ -237,16 +342,24 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
 
                 {profile.documents.length > 0 && (
                   <span className="flex items-center gap-1">
-                    <span className="uppercase text-slate-400 font-semibold">{profile.documents[0].type}:</span>
+                    <span className="uppercase text-slate-400 font-semibold">
+                      {profile.documents[0].type}:
+                    </span>
                     <code className="font-mono text-slate-700 dark:text-slate-300">
                       {profile.documents[0].number}
                     </code>
                     {can.view_full ? (
-                      <span title="Dữ liệu đầy đủ (đã ghi audit log)" className="inline-flex text-emerald-600">
+                      <span
+                        title="Dữ liệu đầy đủ (đã ghi audit log)"
+                        className="inline-flex text-emerald-600"
+                      >
                         <Unlock className="w-3 h-3 ml-0.5" />
                       </span>
                     ) : (
-                      <span title="Dữ liệu được che bảo mật" className="inline-flex text-slate-400">
+                      <span
+                        title="Dữ liệu được che bảo mật"
+                        className="inline-flex text-slate-400"
+                      >
                         <Lock className="w-3 h-3 ml-0.5" />
                       </span>
                     )}
@@ -262,7 +375,10 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
 
                 {guest.nationality && (
                   <span className="text-slate-400">
-                    Quốc tịch: <strong className="text-slate-700 dark:text-slate-300 uppercase">{guest.nationality}</strong>
+                    Quốc tịch:{" "}
+                    <strong className="text-slate-700 dark:text-slate-300 uppercase">
+                      {guest.nationality}
+                    </strong>
                   </span>
                 )}
               </div>
@@ -287,8 +403,8 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
                   </span>
                 ))}
 
-                {can.tag && (
-                  isAddingTag ? (
+                {can.tag &&
+                  (isAddingTag ? (
                     <div className="flex items-center gap-1">
                       <input
                         type="text"
@@ -297,8 +413,8 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
                         placeholder="Thêm tag..."
                         className="text-[11px] px-2 py-0.5 rounded-md border border-slate-300 dark:border-slate-700 bg-transparent outline-none w-24"
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleAddTag();
-                          if (e.key === 'Escape') setIsAddingTag(false);
+                          if (e.key === "Enter") handleAddTag();
+                          if (e.key === "Escape") setIsAddingTag(false);
                         }}
                       />
                       <button
@@ -315,8 +431,7 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
                     >
                       + Thêm nhãn
                     </button>
-                  )
-                )}
+                  ))}
               </div>
             </div>
           </div>
@@ -328,7 +443,7 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
             </div>
             {can.assign_owner ? (
               <select
-                value={guest.sales_owner?.id || 'none'}
+                value={guest.sales_owner?.id || "none"}
                 onChange={(e) => handleAssignSales(e.target.value)}
                 disabled={isPending}
                 className="w-full text-xs font-semibold py-1 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 outline-none"
@@ -343,7 +458,7 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
             ) : (
               <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                 <User className="w-3.5 h-3.5 text-indigo-500" />
-                {guest.sales_owner?.name || 'Chưa phân công'}
+                {guest.sales_owner?.name || "Chưa phân công"}
               </div>
             )}
             <div className="text-[11px] text-slate-400 mt-2">
@@ -355,27 +470,35 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
         {/* 4 Stat KPIs */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
           <div className="space-y-0.5">
-            <span className="text-[11px] font-medium text-slate-400">Tổng lượt ở</span>
+            <span className="text-[11px] font-medium text-slate-400">
+              Tổng lượt ở
+            </span>
             <div className="text-xl font-bold text-slate-900 dark:text-slate-100">
               {stats?.total_stays || 0}
             </div>
           </div>
           <div className="space-y-0.5">
-            <span className="text-[11px] font-medium text-slate-400">Tổng số đêm</span>
+            <span className="text-[11px] font-medium text-slate-400">
+              Tổng số đêm
+            </span>
             <div className="text-xl font-bold text-slate-900 dark:text-slate-100">
               {stats?.total_nights || 0}
             </div>
           </div>
           <div className="space-y-0.5">
-            <span className="text-[11px] font-medium text-slate-400">Lượt ở gần nhất</span>
+            <span className="text-[11px] font-medium text-slate-400">
+              Lượt ở gần nhất
+            </span>
             <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 pt-1">
               {stats?.last_stay_at
-                ? new Date(stats.last_stay_at).toLocaleDateString('vi-VN')
-                : 'Chưa có'}
+                ? new Date(stats.last_stay_at).toLocaleDateString("vi-VN")
+                : "Chưa có"}
             </div>
           </div>
           <div className="space-y-0.5">
-            <span className="text-[11px] font-medium text-slate-400">Tình trạng hồ sơ</span>
+            <span className="text-[11px] font-medium text-slate-400">
+              Tình trạng hồ sơ
+            </span>
             <div className="text-xs font-semibold text-emerald-600 flex items-center gap-1 pt-1">
               <CheckCircle2 className="w-3.5 h-3.5" />
               Đang hoạt động
@@ -387,87 +510,88 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
       {/* Tabs Navigation */}
       <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6 text-sm font-semibold">
         <button
-          onClick={() => setActiveTab('stays')}
+          onClick={() => setActiveTab("stays")}
           className={`pb-3 relative transition flex items-center gap-2 ${
-            activeTab === 'stays'
-              ? 'text-indigo-600 dark:text-indigo-400'
-              : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+            activeTab === "stays"
+              ? "text-indigo-600 dark:text-indigo-400"
+              : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
           }`}
         >
           <Building2 className="w-4 h-4" />
           Lịch sử lưu trú ({stays.length})
-          {activeTab === 'stays' && (
+          {activeTab === "stays" && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
           )}
         </button>
 
         <button
-          onClick={() => setActiveTab('notes')}
+          onClick={() => setActiveTab("notes")}
           className={`pb-3 relative transition flex items-center gap-2 ${
-            activeTab === 'notes'
-              ? 'text-indigo-600 dark:text-indigo-400'
-              : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+            activeTab === "notes"
+              ? "text-indigo-600 dark:text-indigo-400"
+              : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
           }`}
         >
           <MessageSquare className="w-4 h-4" />
           Ghi chú & CSKH ({notes.length})
-          {activeTab === 'notes' && (
+          {activeTab === "notes" && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
           )}
         </button>
 
         <button
-          onClick={() => setActiveTab('companions')}
+          onClick={() => setActiveTab("companions")}
           className={`pb-3 relative transition flex items-center gap-2 ${
-            activeTab === 'companions'
-              ? 'text-indigo-600 dark:text-indigo-400'
-              : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+            activeTab === "companions"
+              ? "text-indigo-600 dark:text-indigo-400"
+              : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
           }`}
         >
           <Users className="w-4 h-4" />
           Người đi cùng ({companions.length})
-          {activeTab === 'companions' && (
+          {activeTab === "companions" && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
           )}
         </button>
 
         <button
-          onClick={() => setActiveTab('flags')}
+          onClick={() => setActiveTab("flags")}
           className={`pb-3 relative transition flex items-center gap-2 ${
-            activeTab === 'flags'
-              ? 'text-indigo-600 dark:text-indigo-400'
-              : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+            activeTab === "flags"
+              ? "text-indigo-600 dark:text-indigo-400"
+              : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
           }`}
         >
           <ShieldAlert className="w-4 h-4" />
           Cảnh báo ({flags.length})
-          {activeTab === 'flags' && (
+          {activeTab === "flags" && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
           )}
         </button>
 
         <button
-          onClick={() => setActiveTab('consents')}
+          onClick={() => setActiveTab("consents")}
           className={`pb-3 relative transition flex items-center gap-2 ${
-            activeTab === 'consents'
-              ? 'text-indigo-600 dark:text-indigo-400'
-              : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+            activeTab === "consents"
+              ? "text-indigo-600 dark:text-indigo-400"
+              : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
           }`}
         >
           <Send className="w-4 h-4" />
           Kênh liên lạc
-          {activeTab === 'consents' && (
+          {activeTab === "consents" && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
           )}
         </button>
       </div>
 
       {/* Tab 1: Stays Timeline */}
-      {activeTab === 'stays' && (
+      {activeTab === "stays" && (
         <div className="space-y-4">
           {stays.length === 0 ? (
             <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400">
-              Khách hàng chưa có lượt lưu trú nào trong hệ thống (Hồ sơ tiềm năng)
+              Khách hàng chưa có lượt lưu trú nào trong hệ thống (Hồ sơ tiềm
+              năng)
             </div>
           ) : (
             <div className="grid gap-3">
@@ -485,21 +609,32 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
                         <span className="font-bold text-slate-900 dark:text-slate-100">
                           {stay.branch}
                         </span>
-                        <span className="text-xs text-slate-400">· Phòng {stay.room}</span>
+                        <span className="text-xs text-slate-400">
+                          · Phòng {stay.room}
+                        </span>
                         <span
                           className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                            stay.status === 'active'
-                              ? 'bg-emerald-50 text-emerald-600'
-                              : stay.status === 'completed'
-                              ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
-                              : 'bg-rose-50 text-rose-600'
+                            stay.status === "active"
+                              ? "bg-emerald-50 text-emerald-600"
+                              : stay.status === "completed"
+                                ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                                : "bg-rose-50 text-rose-600"
                           }`}
                         >
-                          {stay.status === 'active' ? 'Đang ở' : stay.status === 'completed' ? 'Đã trả' : 'Đã hủy'}
+                          {stay.status === "active"
+                            ? "Đang ở"
+                            : stay.status === "completed"
+                              ? "Đã trả"
+                              : "Đã hủy"}
                         </span>
                       </div>
                       <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
-                        <span>Check-in: {new Date(stay.check_in_at).toLocaleDateString('vi-VN')}</span>
+                        <span>
+                          Check-in:{" "}
+                          {new Date(stay.check_in_at).toLocaleDateString(
+                            "vi-VN",
+                          )}
+                        </span>
                         <span>· {stay.nights} đêm</span>
                         <span>· Nguồn: {stay.source}</span>
                       </div>
@@ -507,8 +642,12 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
                   </div>
 
                   <div className="text-right text-xs text-slate-400">
-                    <div>{stay.is_primary ? 'Khách đại diện' : 'Khách đi cùng'}</div>
-                    <div className="text-[11px] text-slate-400 mt-0.5">Phương thức: {stay.entry_mode}</div>
+                    <div>
+                      {stay.is_primary ? "Khách đại diện" : "Khách đi cùng"}
+                    </div>
+                    <div className="text-[11px] text-slate-400 mt-0.5">
+                      Phương thức: {stay.entry_mode}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -518,7 +657,7 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
       )}
 
       {/* Tab 2: Notes & CRM */}
-      {activeTab === 'notes' && (
+      {activeTab === "notes" && (
         <div className="space-y-6">
           {/* Note Add Form */}
           {can.note && (
@@ -539,7 +678,9 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-slate-500 block mb-1">Phân loại ghi chú</label>
+                  <label className="text-xs text-slate-500 block mb-1">
+                    Phân loại ghi chú
+                  </label>
                   <select
                     value={noteKind}
                     onChange={(e: any) => setNoteKind(e.target.value)}
@@ -554,13 +695,17 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
                 </div>
 
                 <div>
-                  <label className="text-xs text-slate-500 block mb-1">Cơ sở áp dụng</label>
+                  <label className="text-xs text-slate-500 block mb-1">
+                    Cơ sở áp dụng
+                  </label>
                   <select
                     value={noteBranch}
                     onChange={(e) => setNoteBranch(e.target.value)}
                     className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 outline-none"
                   >
-                    <option value="">Toàn chuỗi (Mọi khách sạn đều thấy)</option>
+                    <option value="">
+                      Toàn chuỗi (Mọi khách sạn đều thấy)
+                    </option>
                     {branches.map((b) => (
                       <option key={b.id} value={b.id}>
                         Chỉ tại {b.name}
@@ -587,7 +732,11 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
                   disabled={isPending || !noteBody.trim()}
                   className="rounded-xl px-5 font-medium"
                 >
-                  {isPending ? <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> : <Plus className="w-4 h-4 mr-1.5" />}
+                  {isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                  ) : (
+                    <Plus className="w-4 h-4 mr-1.5" />
+                  )}
                   Lưu ghi chú
                 </Button>
               </div>
@@ -610,30 +759,38 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
                     <div className="flex items-center gap-2 flex-wrap">
                       <span
                         className={`text-[11px] font-bold uppercase px-2 py-0.5 rounded ${
-                          n.kind === 'allergy'
-                            ? 'bg-rose-100 text-rose-700'
-                            : n.kind === 'preference'
-                            ? 'bg-indigo-100 text-indigo-700'
-                            : n.kind === 'complaint'
-                            ? 'bg-amber-100 text-amber-700'
-                            : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                          n.kind === "allergy"
+                            ? "bg-rose-100 text-rose-700"
+                            : n.kind === "preference"
+                              ? "bg-indigo-100 text-indigo-700"
+                              : n.kind === "complaint"
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
                         }`}
                       >
-                        {n.kind === 'allergy'
-                          ? 'Dị ứng'
-                          : n.kind === 'preference'
-                          ? 'Sở thích'
-                          : n.kind === 'complaint'
-                          ? 'Khiếu nại'
-                          : 'Ghi chú'}
+                        {n.kind === "allergy"
+                          ? "Dị ứng"
+                          : n.kind === "preference"
+                            ? "Sở thích"
+                            : n.kind === "complaint"
+                              ? "Khiếu nại"
+                              : "Ghi chú"}
                       </span>
                       {n.branch ? (
-                        <span className="text-xs text-slate-400">tại {n.branch}</span>
+                        <span className="text-xs text-slate-400">
+                          tại {n.branch}
+                        </span>
                       ) : (
-                        <span className="text-xs font-medium text-indigo-500">Toàn chuỗi</span>
+                        <span className="text-xs font-medium text-indigo-500">
+                          Toàn chuỗi
+                        </span>
                       )}
-                      <span className="text-xs text-slate-400">· {n.author}</span>
-                      <span className="text-xs text-slate-400">· {new Date(n.at).toLocaleDateString('vi-VN')}</span>
+                      <span className="text-xs text-slate-400">
+                        · {n.author}
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        · {new Date(n.at).toLocaleDateString("vi-VN")}
+                      </span>
                     </div>
 
                     <p className="text-sm text-slate-800 dark:text-slate-200 pt-1 leading-relaxed">
@@ -656,11 +813,12 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
       )}
 
       {/* Tab 3: Companions */}
-      {activeTab === 'companions' && (
+      {activeTab === "companions" && (
         <div className="space-y-4">
           {companions.length === 0 ? (
             <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400">
-              Khách chưa có người đi cùng nào được ghi nhận qua các lượt lưu trú.
+              Khách chưa có người đi cùng nào được ghi nhận qua các lượt lưu
+              trú.
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -692,7 +850,7 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
       )}
 
       {/* Tab 4: Flags & Warnings */}
-      {activeTab === 'flags' && (
+      {activeTab === "flags" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
             <div>
@@ -700,7 +858,8 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
                 Danh sách cờ cảnh báo & Blacklist
               </h3>
               <p className="text-xs text-slate-400">
-                Cờ đã duyệt sẽ cảnh báo đỏ tại quầy lễ tân toàn chuỗi khi check-in
+                Cờ đã duyệt sẽ cảnh báo đỏ tại quầy lễ tân toàn chuỗi khi
+                check-in
               </p>
             </div>
 
@@ -714,16 +873,16 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
               className="text-xs rounded-xl border-rose-500/30 text-rose-500 hover:bg-rose-500/10"
             >
               <ShieldAlert className="w-4 h-4 mr-1.5" />
-              {showProposeFlag ? 'Đóng đề xuất' : 'Đề xuất gắn cờ'}
+              {showProposeFlag ? "Đóng đề xuất" : "Đề xuất gắn cờ"}
             </Button>
           </div>
 
           {flagMsg && (
             <div
               className={`p-3 rounded-xl text-xs font-medium ${
-                flagMsg.type === 'success'
-                  ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                  : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                flagMsg.type === "success"
+                  ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                  : "bg-rose-500/10 text-rose-500 border border-rose-500/20"
               }`}
             >
               {flagMsg.text}
@@ -738,19 +897,27 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-medium text-slate-400 block mb-1">Loại cờ:</label>
+                  <label className="text-xs font-medium text-slate-400 block mb-1">
+                    Loại cờ:
+                  </label>
                   <select
                     value={flagType}
                     onChange={(e) => setFlagType(e.target.value as any)}
                     className="w-full text-xs p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-200 outline-none"
                   >
-                    <option value="blacklist">Blacklist toàn chuỗi (Nghiêm trọng)</option>
-                    <option value="attention">Cần chú ý đặc biệt (Attention)</option>
+                    <option value="blacklist">
+                      Blacklist toàn chuỗi (Nghiêm trọng)
+                    </option>
+                    <option value="attention">
+                      Cần chú ý đặc biệt (Attention)
+                    </option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-slate-400 block mb-1">Cơ sở ghi nhận:</label>
+                  <label className="text-xs font-medium text-slate-400 block mb-1">
+                    Cơ sở ghi nhận:
+                  </label>
                   <select
                     value={flagBranch}
                     onChange={(e) => setFlagBranch(e.target.value)}
@@ -801,14 +968,14 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
                       });
                       if (res.ok) {
                         setFlagMsg({
-                          type: 'success',
-                          text: 'Đã gửi đề xuất gắn cờ tới Giám đốc/Quản lý phê duyệt thành công!',
+                          type: "success",
+                          text: "Đã gửi đề xuất gắn cờ tới Giám đốc/Quản lý phê duyệt thành công!",
                         });
-                        setFlagReason('');
+                        setFlagReason("");
                         setShowProposeFlag(false);
                       } else {
                         setFlagMsg({
-                          type: 'error',
+                          type: "error",
                           text: `Lỗi đề xuất: ${res.error.code}`,
                         });
                       }
@@ -816,7 +983,9 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
                   }}
                   className="text-xs rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold disabled:opacity-50"
                 >
-                  {isPending ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : null}
+                  {isPending ? (
+                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  ) : null}
                   Gửi đề xuất duyệt cờ
                 </Button>
               </div>
@@ -838,14 +1007,18 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-rose-700 dark:text-rose-400 text-sm uppercase">
-                        {f.type === 'blacklist' ? 'Cờ Blacklist toàn chuỗi' : 'Cần lưu ý đặc biệt'}
+                        {f.type === "blacklist"
+                          ? "Cờ Blacklist toàn chuỗi"
+                          : "Cần lưu ý đặc biệt"}
                       </span>
-                      <span className="text-xs text-slate-400">· Đề xuất tại {f.branch}</span>
                       <span className="text-xs text-slate-400">
-                        · {new Date(f.proposed_at).toLocaleDateString('vi-VN')}
+                        · Đề xuất tại {f.branch}
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        · {new Date(f.proposed_at).toLocaleDateString("vi-VN")}
                       </span>
                       <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-rose-100 text-rose-800">
-                        {f.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}
+                        {f.status === "approved" ? "Đã duyệt" : "Chờ duyệt"}
                       </span>
                     </div>
                     <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
@@ -860,23 +1033,40 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
       )}
 
       {/* Tab 5: Consents */}
-      {activeTab === 'consents' && (
+      {activeTab === "consents" && (
         <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
           <div>
             <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
               Đồng thuận tiếp thị & Chăm sóc khách hàng
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
-              Quy định bảo mật: Chỉ gửi tin nhắn chăm sóc qua các kênh khách đã đồng ý nhận.
+              Quy định bảo mật: Chỉ gửi tin nhắn chăm sóc qua các kênh khách đã
+              đồng ý nhận.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
             {[
-              { id: 'zalo', label: 'Zalo ZNS / Quan tâm', desc: 'Gửi voucher sinh nhật, xác nhận đặt phòng qua Zalo' },
-              { id: 'sms', label: 'Tin nhắn SMS Brandname', desc: 'Thông báo mã xác thực và ưu đãi đặc biệt' },
-              { id: 'email', label: 'Email Marketing', desc: 'Bản tin khuyến mại và báo cáo ưu đãi thành viên' },
-              { id: 'phone', label: 'Cuộc gọi chăm sóc (Telesales)', desc: 'Nhân viên sales gọi điện hỗ trợ trực tiếp' },
+              {
+                id: "zalo",
+                label: "Zalo ZNS / Quan tâm",
+                desc: "Gửi voucher sinh nhật, xác nhận đặt phòng qua Zalo",
+              },
+              {
+                id: "sms",
+                label: "Tin nhắn SMS Brandname",
+                desc: "Thông báo mã xác thực và ưu đãi đặc biệt",
+              },
+              {
+                id: "email",
+                label: "Email Marketing",
+                desc: "Bản tin khuyến mại và báo cáo ưu đãi thành viên",
+              },
+              {
+                id: "phone",
+                label: "Cuộc gọi chăm sóc (Telesales)",
+                desc: "Nhân viên sales gọi điện hỗ trợ trực tiếp",
+              },
             ].map((channel) => {
               const isGranted = !!consents[channel.id];
               return (
@@ -888,7 +1078,9 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
                     <div className="font-semibold text-sm text-slate-800 dark:text-slate-200">
                       {channel.label}
                     </div>
-                    <div className="text-xs text-slate-400 mt-0.5">{channel.desc}</div>
+                    <div className="text-xs text-slate-400 mt-0.5">
+                      {channel.desc}
+                    </div>
                   </div>
                   <input
                     type="checkbox"
@@ -900,6 +1092,151 @@ export function GuestProfileView({ profile, salesUsers, branches }: GuestProfile
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Propose Merge Modal */}
+      {showMergeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+          <div className="w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b pb-3 border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                  <GitMerge className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                    Đề xuất gộp hồ sơ trùng lặp
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    Hồ sơ giữ lại chính:{" "}
+                    <strong className="text-slate-700 dark:text-slate-300">
+                      {guest.full_name}
+                    </strong>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMergeModal(false)}
+                className="text-slate-400 hover:text-slate-600 text-sm font-semibold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleProposeMerge} className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  1. Tìm hồ sơ khách trùng lặp (theo SĐT, họ tên, email):
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={mergeSearch}
+                    onChange={(e) => handleSearchCandidates(e.target.value)}
+                    placeholder="Gõ số điện thoại hoặc tên khách hàng cần gộp..."
+                    className="w-full text-xs pl-8 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 outline-none"
+                  />
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-3" />
+                  {isSearchingMerge && (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-500 absolute right-3 top-3" />
+                  )}
+                </div>
+
+                {/* Candidate List */}
+                {mergeCandidates.length > 0 && !selectedCandidate && (
+                  <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-slate-900">
+                    {mergeCandidates.map((c) => (
+                      <div
+                        key={c.id}
+                        onClick={() => setSelectedCandidate(c)}
+                        className="p-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer flex items-center justify-between text-xs"
+                      >
+                        <div>
+                          <div className="font-semibold text-slate-900 dark:text-slate-100">
+                            {c.full_name}
+                          </div>
+                          <div className="text-[11px] text-slate-400 mt-0.5">
+                            SĐT: {c.phone || "Chưa có"} • Email:{" "}
+                            {c.email || "Chưa có"}
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs rounded-lg"
+                        >
+                          Chọn gộp
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Selected Candidate Badge */}
+                {selectedCandidate && (
+                  <div className="mt-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-bold text-amber-900 dark:text-amber-300">
+                        Hồ sơ sẽ bị gộp: {selectedCandidate.full_name}
+                      </div>
+                      <div className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5">
+                        SĐT: {selectedCandidate.phone || "Chưa có"} • ID:{" "}
+                        {selectedCandidate.id.slice(0, 8)}...
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setSelectedCandidate(null)}
+                      className="text-xs text-slate-500 hover:text-slate-800 h-7"
+                    >
+                      Chọn lại
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  2. Lý do gộp hồ sơ:
+                </label>
+                <input
+                  type="text"
+                  value={mergeReason}
+                  onChange={(e) => setMergeReason(e.target.value)}
+                  placeholder="VD: Trùng SĐT nhưng gõ nhầm tên; Khách dùng 2 số điện thoại..."
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 outline-none"
+                />
+              </div>
+
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 text-[11px] text-slate-500 leading-relaxed">
+                ℹ️ Yêu cầu gộp sẽ được chuyển tới Cấp quản lý tại màn hình{" "}
+                <strong>Duyệt yêu cầu (/approvals)</strong> để so khớp từng
+                trường (SĐT, Email, CCCD, Lượt ở) trước khi gộp thực tế.
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowMergeModal(false)}
+                  className="rounded-xl"
+                >
+                  Hủy
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isPending || !selectedCandidate}
+                  className="rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium"
+                >
+                  {isPending ? "Đang gửi..." : "Gửi đề xuất gộp"}
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}

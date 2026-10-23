@@ -1,9 +1,11 @@
-import { createClient } from '@/lib/supabase/server';
-import { GuestProfile, GuestListItem, SalesUser } from '../types';
+import { createClient } from "@/lib/supabase/server";
+import type { GuestListItem, GuestProfile, SalesUser } from "../types";
 
-export async function getGuestProfile(id: string): Promise<GuestProfile | null> {
+export async function getGuestProfile(
+  id: string,
+): Promise<GuestProfile | null> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc('get_guest_profile', {
+  const { data, error } = await supabase.rpc("get_guest_profile", {
     p_guest_id: id,
   });
 
@@ -28,7 +30,7 @@ export async function getGuestsList(options?: {
   const supabase = await createClient();
   const limit = options?.limit || 50;
 
-  const { data, error } = await (supabase.rpc as any)('get_guests_list', {
+  const { data, error } = await (supabase.rpc as any)("get_guests_list", {
     p_limit: limit,
     p_sales_owner_id: options?.salesOwnerId || null,
     p_tag: options?.tag || null,
@@ -61,10 +63,10 @@ export async function getGuestsList(options?: {
 export async function getSalesUsers(): Promise<SalesUser[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from('profiles')
-    .select('id, full_name, email')
-    .eq('is_active', true)
-    .order('full_name');
+    .from("profiles")
+    .select("id, full_name, email")
+    .eq("is_active", true)
+    .order("full_name");
 
   if (error || !data) return [];
   return data as unknown as SalesUser[];

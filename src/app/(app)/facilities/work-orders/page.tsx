@@ -1,17 +1,17 @@
-import { Metadata } from 'next';
-import { requirePermission, getSession } from '@/shared/auth/server';
-import { redirect } from 'next/navigation';
-import { getActiveBranches } from '@/features/admin/data/branches';
-import { getWorkOrders, WorkOrdersTable } from '@/features/facilities';
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { getActiveBranches } from "@/features/admin/data/branches";
+import { getWorkOrders, WorkOrdersTable } from "@/features/facilities";
+import { getSession, requirePermission } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
-  title: 'Phiếu sự cố & Bảo trì | CRM Khách Sạn',
+  title: "Phiếu sự cố & Bảo trì | CRM Khách Sạn",
 };
 
 export default async function WorkOrdersPage() {
-  const hasPerm = await requirePermission('wo.view');
+  const hasPerm = await requirePermission("wo.view");
   if (!hasPerm.ok) {
-    redirect('/');
+    redirect("/");
   }
 
   const session = await getSession();

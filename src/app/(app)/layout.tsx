@@ -1,10 +1,9 @@
-import { getSession } from '@/shared/auth/server';
-import { AccessProvider } from '@/shared/auth';
-import { AppSidebar } from '@/components/layout/app-sidebar';
-import { AppHeader } from '@/components/layout/app-header';
-import { getActiveBranches } from '@/features/admin/data/branches';
-
-import { NetworkStatusBanner } from '@/components/pwa/network-status-banner';
+import { AppHeader } from "@/components/layout/app-header";
+import { AppSidebar } from "@/components/layout/app-sidebar";
+import { NetworkStatusBanner } from "@/components/pwa/network-status-banner";
+import { getActiveBranches } from "@/features/admin/data/branches";
+import { AccessProvider } from "@/shared/auth";
+import { getSession } from "@/shared/auth/server";
 
 export default async function AppLayout({
   children,
@@ -28,10 +27,10 @@ export default async function AppLayout({
             branches={branches}
             currentBranchId={currentBranchId}
             userEmail={session?.email}
-            canManageUsers={session?.can('settings.users') ?? false}
-            canViewRoles={session?.can('settings.roles') ?? false}
-            canCreateStay={session?.can('stay.create') ?? false}
-            canReportFacility={session?.can('wo.create') ?? false}
+            canManageUsers={session?.can("settings.users") ?? false}
+            canViewRoles={session?.can("settings.roles") ?? false}
+            canCreateStay={session?.can("stay.create") ?? false}
+            canReportFacility={session?.can("wo.create") ?? false}
           />
           <main className="flex-1 p-6 overflow-y-auto">{children}</main>
         </div>

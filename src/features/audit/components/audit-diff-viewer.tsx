@@ -1,7 +1,13 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { ArrowRight, Info, PlusCircle, MinusCircle, RefreshCw } from 'lucide-react';
+import {
+  ArrowRight,
+  Info,
+  MinusCircle,
+  PlusCircle,
+  RefreshCw,
+} from "lucide-react";
+import React from "react";
 
 interface Props {
   action: string;
@@ -37,7 +43,10 @@ export function AuditDiffViewer({ action, before, after, meta }: Props) {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]">
           {keys.map((k) => (
-            <div key={k} className="p-1.5 rounded bg-emerald-950/20 border border-emerald-900/40">
+            <div
+              key={k}
+              className="p-1.5 rounded bg-emerald-950/20 border border-emerald-900/40"
+            >
               <span className="font-semibold text-slate-400">{k}: </span>
               <span className="text-emerald-300">{formatValue(after[k])}</span>
             </div>
@@ -58,7 +67,10 @@ export function AuditDiffViewer({ action, before, after, meta }: Props) {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]">
           {keys.map((k) => (
-            <div key={k} className="p-1.5 rounded bg-rose-950/20 border border-rose-900/40">
+            <div
+              key={k}
+              className="p-1.5 rounded bg-rose-950/20 border border-rose-900/40"
+            >
               <span className="font-semibold text-slate-400">{k}: </span>
               <span className="text-rose-300">{formatValue(before[k])}</span>
             </div>
@@ -70,9 +82,11 @@ export function AuditDiffViewer({ action, before, after, meta }: Props) {
 
   // Update: compare before and after
   if (before && after) {
-    const allKeys = Array.from(new Set([...Object.keys(before), ...Object.keys(after)]));
+    const allKeys = Array.from(
+      new Set([...Object.keys(before), ...Object.keys(after)]),
+    );
     const changedKeys = allKeys.filter(
-      (k) => JSON.stringify(before[k]) !== JSON.stringify(after[k])
+      (k) => JSON.stringify(before[k]) !== JSON.stringify(after[k]),
     );
 
     if (changedKeys.length === 0) {
@@ -95,7 +109,9 @@ export function AuditDiffViewer({ action, before, after, meta }: Props) {
               key={k}
               className="p-2 rounded bg-slate-900 border border-slate-800 flex flex-wrap items-center justify-between gap-2 text-[11px]"
             >
-              <span className="font-semibold text-slate-300 w-32 shrink-0">{k}:</span>
+              <span className="font-semibold text-slate-300 w-32 shrink-0">
+                {k}:
+              </span>
               <div className="flex items-center gap-2 flex-1 flex-wrap">
                 <span className="px-1.5 py-0.5 rounded bg-rose-950/40 text-rose-400 border border-rose-900/40 line-through">
                   {formatValue(before[k])}
@@ -120,7 +136,7 @@ export function AuditDiffViewer({ action, before, after, meta }: Props) {
 }
 
 function formatValue(val: unknown): string {
-  if (val === null || val === undefined) return 'null';
-  if (typeof val === 'object') return JSON.stringify(val);
+  if (val === null || val === undefined) return "null";
+  if (typeof val === "object") return JSON.stringify(val);
   return String(val);
 }

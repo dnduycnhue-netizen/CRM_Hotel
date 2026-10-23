@@ -144,6 +144,24 @@ vercel --prod --yes
 - **P2.5 (Phê duyệt & Gỡ cờ Blacklist)**:
   - Khắc phục lỗi in `[object Object]` khi gỡ cờ Blacklist thất bại trong `active-flags-table.tsx` và `flags-approval-table.tsx`, ánh xạ `res.error.message` rõ ràng.
 
+### Phase P3: Kiểm thử CSVC, Gộp hồ sơ & Báo cáo nâng cao (Nhánh `phase/p3-advanced`) - ĐÃ HOÀN THÀNH
+- **P3.1 (Kiểm thử & Nâng cấp CSVC - Facilities)**:
+  - Bổ sung `createAssetSchema`, `updateAssetStatusSchema` vào `src/features/facilities/schemas.ts` và bộ unit test Vitest (`schemas.test.ts`).
+  - Viết Server Actions `createAssetAction`, `updateAssetStatusAction` hỗ trợ luân chuyển trạng thái tài sản (`in_use`, `under_repair`, `broken`, `in_storage`, `disposed`), tự động ghi nhận ngày thanh lý `disposed_on`.
+  - Loại bỏ hoàn toàn `alert()` và `confirm()` native trong `work-orders-table.tsx` (nghiệm thu hoàn tất) và `room-blocks-table.tsx` (mở khóa buồng phòng OOO), thay bằng Dialog shadcn và Toast feedback Sonner.
+  - Cập nhật `assets-table.tsx` với modal thay đổi trạng thái thiết bị trực tiếp và format ngày `formatDateVN`.
+  - Khắc phục độ trễ múi giờ trong `src/features/facilities/data/alerts.ts` bằng `getVnDateString()`, tính toán hạn PCCC/ATTP chuẩn theo ngày kinh doanh Việt Nam.
+- **P3.2 (Gộp hồ sơ khách hàng - Guest Merge)**:
+  - Bổ sung `searchCandidateGuestsAction` và `proposeGuestMergeAction` trong `src/features/guests/actions.ts` kết nối an toàn với RPC `propose_merge`.
+  - Tích hợp Modal "Đề xuất gộp hồ sơ" (`ProposeMergeModal`) vào `guest-profile-view.tsx` kèm nút kích hoạt bảo vệ theo quyền `merge.propose`, cho phép tìm kiếm hồ sơ trùng theo Tên/SĐT/Email và nhập lý do gộp.
+  - Chuẩn hóa `merge-approval-card.tsx` với Toast thông báo, hiển thị ngày sinh `formatDateVN`, ngày tạo `formatDateTimeVN`, và xử lý thân thiện lỗi bảo mật MFA/AAL2 (`UNAUTHENTICATED`).
+- **P3.3 (Báo cáo nâng cao CSVC & Kỹ thuật)**:
+  - Xây dựng component `FacilitiesReportView` (`src/features/reports/components/facilities-report-view.tsx`) với 6 thẻ KPI (Sự cố phát sinh, Đúng hạn SLA %, MTTR thời gian khắc phục, Tổng chi phí bảo trì VNĐ, Hoàn thành định kỳ PM %, Đêm phòng OOO) và bảng phân tích cơ cấu chi phí kèm thanh tỷ trọng %.
+  - Xây dựng route mỏng `src/app/(app)/reports/facilities/page.tsx` tuân thủ Luật 1 và Luật 2 của `AGENTS.md`, kết nối RPC `report_facilities` và bảo vệ phân quyền `facility.view` / `report.view_branch`.
+  - Đồng bộ thanh Tab chuyển đổi module báo cáo (Tổng quan KPI | Doanh thu 12 tháng | CSVC & Kỹ thuật) và Filter Toolbar trên cả 3 trang báo cáo.
+- **P3.4 (Chất lượng & Build Sản phẩm)**:
+  - Vượt qua toàn bộ kiểm thử TypeScript `tsc --noEmit` (0 lỗi), 22/22 unit tests Vitest (100% pass), và Next.js Turbopack `next build` thành công cho 30 routes.
+
 ---
 
 ## 6. Lưu ý cho người bảo trì tiếp theo (Caveats & Best Practices)

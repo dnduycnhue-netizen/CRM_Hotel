@@ -24,8 +24,8 @@ export type Database = {
           created_at: string;
           updated_at: string;
         };
-        Insert: Partial<Database['public']['Tables']['branches']['Row']>;
-        Update: Partial<Database['public']['Tables']['branches']['Row']>;
+        Insert: Partial<Database["public"]["Tables"]["branches"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["branches"]["Row"]>;
       };
       rooms: {
         Row: {
@@ -39,8 +39,8 @@ export type Database = {
           is_active: boolean;
           created_at: string;
         };
-        Insert: Partial<Database['public']['Tables']['rooms']['Row']>;
-        Update: Partial<Database['public']['Tables']['rooms']['Row']>;
+        Insert: Partial<Database["public"]["Tables"]["rooms"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["rooms"]["Row"]>;
       };
       [key: string]: any;
     };

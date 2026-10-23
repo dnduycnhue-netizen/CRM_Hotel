@@ -1,34 +1,41 @@
-'use client';
+"use client";
 
-import { useState, useTransition, useEffect, lazy, Suspense } from 'react';
-import { Button } from '@/shared/ui';
-import { Input } from '@/shared/ui';
-import { Label } from '@/shared/ui';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui';
-import { loginAction } from '../actions';
 import {
-  Hotel,
-  KeyRound,
-  Mail,
-  Loader2,
-  Sparkles,
-  ShieldCheck,
   Building2,
   Eye,
   EyeOff,
-} from 'lucide-react';
+  Hotel,
+  KeyRound,
+  Loader2,
+  Mail,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
+import { lazy, Suspense, useEffect, useState, useTransition } from "react";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+} from "@/shared/ui";
+import { loginAction } from "../actions";
 
 // Only load dev accounts picker in local development environment
-const DevAccountPicker = process.env.NODE_ENV === 'development'
-  ? lazy(() => import('./dev-account-picker'))
-  : null;
+const DevAccountPicker =
+  process.env.NODE_ENV === "development"
+    ? lazy(() => import("./dev-account-picker"))
+    : null;
 
 export function LoginForm() {
   const [isPending, startTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [emailValue, setEmailValue] = useState('');
-  const [passwordValue, setPasswordValue] = useState('');
+  const [emailValue, setEmailValue] = useState("");
+  const [passwordValue, setPasswordValue] = useState("");
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -38,14 +45,16 @@ export function LoginForm() {
     startTransition(async () => {
       const res = await loginAction(formData);
       if (res && !res.ok) {
-        setErrorMessage(res.error.message || 'Email hoặc mật khẩu không chính xác.');
+        setErrorMessage(
+          res.error.message || "Email hoặc mật khẩu không chính xác.",
+        );
       }
     });
   };
 
   const handleQuickFill = (email: string) => {
     setEmailValue(email);
-    setPasswordValue('');
+    setPasswordValue("");
     setErrorMessage(null);
   };
 
@@ -93,7 +102,10 @@ export function LoginForm() {
             )}
 
             <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-xs font-semibold text-slate-300">
+              <Label
+                htmlFor="email"
+                className="text-xs font-semibold text-slate-300"
+              >
                 Email nhân viên
               </Label>
               <div className="relative">
@@ -114,7 +126,10 @@ export function LoginForm() {
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-xs font-semibold text-slate-300">
+                <Label
+                  htmlFor="password"
+                  className="text-xs font-semibold text-slate-300"
+                >
                   Mật khẩu
                 </Label>
               </div>
@@ -123,7 +138,7 @@ export function LoginForm() {
                 <Input
                   id="password"
                   name="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={passwordValue}
                   onChange={(e) => setPasswordValue(e.target.value)}
                   required
@@ -156,7 +171,7 @@ export function LoginForm() {
                   Đang đăng nhập...
                 </>
               ) : (
-                'Đăng Nhập Hệ Thống'
+                "Đăng Nhập Hệ Thống"
               )}
             </Button>
           </form>

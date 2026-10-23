@@ -1,14 +1,23 @@
-export type AssetStatus = 'in_use' | 'in_storage' | 'broken' | 'under_repair' | 'disposed';
-export type WorkOrderKind = 'corrective' | 'preventive' | 'inspection' | 'request';
-export type WorkOrderPriority = 'urgent' | 'high' | 'normal' | 'low';
+export type AssetStatus =
+  | "in_use"
+  | "in_storage"
+  | "broken"
+  | "under_repair"
+  | "disposed";
+export type WorkOrderKind =
+  | "corrective"
+  | "preventive"
+  | "inspection"
+  | "request";
+export type WorkOrderPriority = "urgent" | "high" | "normal" | "low";
 export type WorkOrderStatus =
-  | 'new'
-  | 'assigned'
-  | 'in_progress'
-  | 'on_hold'
-  | 'done'
-  | 'closed'
-  | 'cancelled';
+  | "new"
+  | "assigned"
+  | "in_progress"
+  | "on_hold"
+  | "done"
+  | "closed"
+  | "cancelled";
 
 export interface AssetCategory {
   id: string;
@@ -22,7 +31,7 @@ export interface FacilityLocation {
   id: string;
   branch_id: string;
   name: string;
-  kind: 'area' | 'floor' | 'technical' | 'outdoor' | 'storage' | 'other';
+  kind: "area" | "floor" | "technical" | "outdoor" | "storage" | "other";
   is_active: boolean;
 }
 

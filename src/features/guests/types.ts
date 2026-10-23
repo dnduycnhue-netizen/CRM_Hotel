@@ -1,5 +1,5 @@
 export interface GuestDocument {
-  type: 'cccd' | 'cmnd' | 'passport' | 'other';
+  type: "cccd" | "cmnd" | "passport" | "other";
   country: string;
   number: string;
 }
@@ -28,7 +28,7 @@ export interface GuestStayItem {
   id: string;
   branch: string;
   room: string;
-  status: 'active' | 'completed' | 'cancelled';
+  status: "active" | "completed" | "cancelled";
   check_in_at: string;
   check_out_at: string;
   nights: number;
@@ -46,7 +46,7 @@ export interface GuestCompanionItem {
 
 export interface GuestNoteItem {
   id: string;
-  kind: 'general' | 'preference' | 'allergy' | 'complaint' | 'incident';
+  kind: "general" | "preference" | "allergy" | "complaint" | "incident";
   body: string;
   branch?: string | null;
   author: string;
@@ -56,8 +56,8 @@ export interface GuestNoteItem {
 
 export interface GuestFlagItem {
   id: string;
-  type: 'blacklist' | 'attention';
-  status: 'proposed' | 'approved' | 'removed';
+  type: "blacklist" | "attention";
+  status: "proposed" | "approved" | "removed";
   reason: string;
   branch: string;
   proposed_at: string;
@@ -78,7 +78,7 @@ export interface GuestProfile {
   guest: {
     id: string;
     full_name: string;
-    gender: 'male' | 'female' | 'other';
+    gender: "male" | "female" | "other";
     dob?: string | null;
     birth_year?: number | null;
     nationality: string;
@@ -111,7 +111,7 @@ export interface GuestProfile {
 export interface GuestListItem {
   id: string;
   full_name: string;
-  gender: 'male' | 'female' | 'other';
+  gender: "male" | "female" | "other";
   birth_year: number | null;
   phone: string | null;
   doc_masked: string | null;

@@ -1,34 +1,40 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import type { SystemModule, Branch } from '../domain/types';
+import { RotateCcw, Save, Settings } from "lucide-react";
+import React, { useState } from "react";
+import { toast } from "sonner";
 import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/ui';
-import { Badge } from '@/shared/ui';
-import { Button } from '@/shared/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui';
-import { Settings, Save, RotateCcw } from 'lucide-react';
-import { toast } from 'sonner';
+} from "@/shared/ui";
+import type { Branch, SystemModule } from "../domain/types";
 
 interface ModuleMatrixTableProps {
   modules: SystemModule[];
   branches: Branch[];
 }
 
-type ModuleState = 'off' | 'readonly' | 'on';
+type ModuleState = "off" | "readonly" | "on";
 
 export function ModuleMatrixTable({
   modules,
   branches,
 }: ModuleMatrixTableProps) {
   // State: moduleKey -> branchId -> state ('off' | 'readonly' | 'on')
-  const [moduleStates, setModuleStates] = useState<Record<string, Record<string, ModuleState>>>(() => {
+  const [moduleStates, setModuleStates] = useState<
+    Record<string, Record<string, ModuleState>>
+  >(() => {
     const map: Record<string, Record<string, ModuleState>> = {};
     modules.forEach((m) => {
       map[m.key] = {};
@@ -41,7 +47,11 @@ export function ModuleMatrixTable({
 
   const [hasChanges, setHasChanges] = useState(false);
 
-  const setBranchModuleState = (moduleKey: string, branchId: string, state: ModuleState) => {
+  const setBranchModuleState = (
+    moduleKey: string,
+    branchId: string,
+    state: ModuleState,
+  ) => {
     const mod = modules.find((m) => m.key === moduleKey);
     if (mod?.isCore) return; // Core module cannot be disabled
 
@@ -56,7 +66,7 @@ export function ModuleMatrixTable({
   };
 
   const handleSave = () => {
-    toast.success('Đã lưu cấu hình bật/tắt module thành công!');
+    toast.success("Đã lưu cấu hình bật/tắt module thành công!");
     setHasChanges(false);
   };
 
@@ -70,12 +80,17 @@ export function ModuleMatrixTable({
               Ma Trận Bật/Tắt Module Tính Năng Theo Cơ Sở
             </CardTitle>
             <CardDescription className="text-xs">
-              Mỗi cơ sở có thể cấu hình trạng thái: Tắt (off) / Chỉ xem (readonly) / Bật (on)
+              Mỗi cơ sở có thể cấu hình trạng thái: Tắt (off) / Chỉ xem
+              (readonly) / Bật (on)
             </CardDescription>
           </div>
           {hasChanges && (
             <div className="flex items-center gap-2">
-              <Button size="sm" onClick={handleSave} className="h-8 text-xs font-bold">
+              <Button
+                size="sm"
+                onClick={handleSave}
+                className="h-8 text-xs font-bold"
+              >
                 <Save className="h-3.5 w-3.5 mr-1" />
                 Lưu cấu hình module
               </Button>
@@ -88,9 +103,14 @@ export function ModuleMatrixTable({
         <Table>
           <TableHeader className="sticky top-0 bg-background z-20 shadow-sm">
             <TableRow className="text-xs bg-muted/50">
-              <TableHead className="w-[260px] font-semibold">Tên Module</TableHead>
+              <TableHead className="w-[260px] font-semibold">
+                Tên Module
+              </TableHead>
               {branches.map((b) => (
-                <TableHead key={b.id} className="text-center font-bold min-w-[120px]">
+                <TableHead
+                  key={b.id}
+                  className="text-center font-bold min-w-[120px]"
+                >
                   <span className="block text-foreground">{b.name}</span>
                   <span className="text-[10px] text-muted-foreground block font-mono">
                     ({b.code})
@@ -101,18 +121,29 @@ export function ModuleMatrixTable({
           </TableHeader>
           <TableBody>
             {modules.map((m) => (
-              <TableRow key={m.key} className="text-xs hover:bg-muted/40 transition-colors">
+              <TableRow
+                key={m.key}
+                className="text-xs hover:bg-muted/40 transition-colors"
+              >
                 <TableCell className="py-2.5">
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-foreground">{m.name}</span>
+                      <span className="font-semibold text-foreground">
+                        {m.name}
+                      </span>
                       {m.isCore && (
-                        <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-bold">
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] py-0 px-1.5 font-bold"
+                        >
                           Lõi
                         </Badge>
                       )}
                       {!m.isAvailable && (
-                        <Badge variant="outline" className="text-[10px] py-0 px-1.5 text-muted-foreground">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] py-0 px-1.5 text-muted-foreground"
+                        >
                           Sắp có
                         </Badge>
                       )}
@@ -128,40 +159,49 @@ export function ModuleMatrixTable({
                   return (
                     <TableCell key={b.id} className="text-center py-2.5">
                       {m.isCore ? (
-                        <Badge variant="default" className="text-[10px] bg-primary/20 text-primary hover:bg-primary/20">
+                        <Badge
+                          variant="default"
+                          className="text-[10px] bg-primary/20 text-primary hover:bg-primary/20"
+                        >
                           Luôn bật
                         </Badge>
                       ) : (
                         <div className="inline-flex rounded-md border border-input p-0.5 bg-background shadow-xs">
                           <button
                             type="button"
-                            onClick={() => setBranchModuleState(m.key, b.id, 'off')}
+                            onClick={() =>
+                              setBranchModuleState(m.key, b.id, "off")
+                            }
                             className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
-                              state === 'off'
-                                ? 'bg-destructive text-destructive-foreground font-bold'
-                                : 'text-muted-foreground hover:text-foreground'
+                              state === "off"
+                                ? "bg-destructive text-destructive-foreground font-bold"
+                                : "text-muted-foreground hover:text-foreground"
                             }`}
                           >
                             Tắt
                           </button>
                           <button
                             type="button"
-                            onClick={() => setBranchModuleState(m.key, b.id, 'readonly')}
+                            onClick={() =>
+                              setBranchModuleState(m.key, b.id, "readonly")
+                            }
                             className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
-                              state === 'readonly'
-                                ? 'bg-amber-500 text-white font-bold'
-                                : 'text-muted-foreground hover:text-foreground'
+                              state === "readonly"
+                                ? "bg-amber-500 text-white font-bold"
+                                : "text-muted-foreground hover:text-foreground"
                             }`}
                           >
                             Xem
                           </button>
                           <button
                             type="button"
-                            onClick={() => setBranchModuleState(m.key, b.id, 'on')}
+                            onClick={() =>
+                              setBranchModuleState(m.key, b.id, "on")
+                            }
                             className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
-                              state === 'on'
-                                ? 'bg-emerald-600 text-white font-bold'
-                                : 'text-muted-foreground hover:text-foreground'
+                              state === "on"
+                                ? "bg-emerald-600 text-white font-bold"
+                                : "text-muted-foreground hover:text-foreground"
                             }`}
                           >
                             Bật

@@ -30,7 +30,7 @@ export interface SystemModule {
   name: string;
   groupName: string;
   dependsOn: string[];
-  defaultState: 'off' | 'readonly' | 'on';
+  defaultState: "off" | "readonly" | "on";
   isCore: boolean;
   isAvailable: boolean;
   sort: number;
@@ -49,7 +49,7 @@ export interface SystemPermission {
   key: string;
   moduleKey: string;
   groupName: string;
-  kind: 'view' | 'write';
+  kind: "view" | "write";
   label: string;
   description: string | null;
   sort: number;

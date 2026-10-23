@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { MergeRequestItem, PendingFlagItem } from '../types';
-import { MergeApprovalCard } from './merge-approval-card';
-import { FlagsApprovalTable } from './flags-approval-table';
-import { ActiveFlagsTable } from './active-flags-table';
-import { GitMerge, ShieldAlert, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, GitMerge, ShieldAlert, ShieldCheck } from "lucide-react";
+import React, { useState } from "react";
+import type { MergeRequestItem, PendingFlagItem } from "../types";
+import { ActiveFlagsTable } from "./active-flags-table";
+import { FlagsApprovalTable } from "./flags-approval-table";
+import { MergeApprovalCard } from "./merge-approval-card";
 
 interface Props {
   mergeRequests: MergeRequestItem[];
@@ -13,8 +13,14 @@ interface Props {
   activeFlags?: PendingFlagItem[];
 }
 
-export function ApprovalsHub({ mergeRequests, pendingFlags, activeFlags = [] }: Props) {
-  const [activeTab, setActiveTab] = useState<'merges' | 'flags' | 'active_flags'>('merges');
+export function ApprovalsHub({
+  mergeRequests,
+  pendingFlags,
+  activeFlags = [],
+}: Props) {
+  const [activeTab, setActiveTab] = useState<
+    "merges" | "flags" | "active_flags"
+  >("merges");
 
   return (
     <div className="space-y-6">
@@ -22,8 +28,12 @@ export function ApprovalsHub({ mergeRequests, pendingFlags, activeFlags = [] }: 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-400">Hồ sơ trùng cần gộp</p>
-            <p className="text-2xl font-bold text-indigo-400 mt-1">{mergeRequests.length}</p>
+            <p className="text-xs font-medium text-slate-400">
+              Hồ sơ trùng cần gộp
+            </p>
+            <p className="text-2xl font-bold text-indigo-400 mt-1">
+              {mergeRequests.length}
+            </p>
           </div>
           <span className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400">
             <GitMerge className="w-6 h-6" />
@@ -32,8 +42,12 @@ export function ApprovalsHub({ mergeRequests, pendingFlags, activeFlags = [] }: 
 
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-400">Cờ Blacklist chờ duyệt</p>
-            <p className="text-2xl font-bold text-rose-400 mt-1">{pendingFlags.length}</p>
+            <p className="text-xs font-medium text-slate-400">
+              Cờ Blacklist chờ duyệt
+            </p>
+            <p className="text-2xl font-bold text-rose-400 mt-1">
+              {pendingFlags.length}
+            </p>
           </div>
           <span className="p-3 rounded-xl bg-rose-500/10 text-rose-400">
             <ShieldAlert className="w-6 h-6" />
@@ -42,8 +56,12 @@ export function ApprovalsHub({ mergeRequests, pendingFlags, activeFlags = [] }: 
 
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-400">Cờ Blacklist đang hiệu lực</p>
-            <p className="text-2xl font-bold text-emerald-400 mt-1">{activeFlags.length}</p>
+            <p className="text-xs font-medium text-slate-400">
+              Cờ Blacklist đang hiệu lực
+            </p>
+            <p className="text-2xl font-bold text-emerald-400 mt-1">
+              {activeFlags.length}
+            </p>
           </div>
           <span className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400">
             <ShieldCheck className="w-6 h-6" />
@@ -55,11 +73,11 @@ export function ApprovalsHub({ mergeRequests, pendingFlags, activeFlags = [] }: 
       <div className="flex border-b border-slate-800 space-x-6">
         <button
           type="button"
-          onClick={() => setActiveTab('merges')}
+          onClick={() => setActiveTab("merges")}
           className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
-            activeTab === 'merges'
-              ? 'border-indigo-500 text-indigo-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+            activeTab === "merges"
+              ? "border-indigo-500 text-indigo-400"
+              : "border-transparent text-slate-400 hover:text-slate-200"
           }`}
         >
           <GitMerge className="w-4 h-4" />
@@ -73,11 +91,11 @@ export function ApprovalsHub({ mergeRequests, pendingFlags, activeFlags = [] }: 
 
         <button
           type="button"
-          onClick={() => setActiveTab('flags')}
+          onClick={() => setActiveTab("flags")}
           className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
-            activeTab === 'flags'
-              ? 'border-rose-500 text-rose-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+            activeTab === "flags"
+              ? "border-rose-500 text-rose-400"
+              : "border-transparent text-slate-400 hover:text-slate-200"
           }`}
         >
           <ShieldAlert className="w-4 h-4" />
@@ -91,11 +109,11 @@ export function ApprovalsHub({ mergeRequests, pendingFlags, activeFlags = [] }: 
 
         <button
           type="button"
-          onClick={() => setActiveTab('active_flags')}
+          onClick={() => setActiveTab("active_flags")}
           className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
-            activeTab === 'active_flags'
-              ? 'border-emerald-500 text-emerald-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+            activeTab === "active_flags"
+              ? "border-emerald-500 text-emerald-400"
+              : "border-transparent text-slate-400 hover:text-slate-200"
           }`}
         >
           <ShieldCheck className="w-4 h-4" />
@@ -109,21 +127,26 @@ export function ApprovalsHub({ mergeRequests, pendingFlags, activeFlags = [] }: 
       </div>
 
       {/* Tab Contents */}
-      {activeTab === 'merges' ? (
+      {activeTab === "merges" ? (
         <div className="space-y-4">
           {mergeRequests.length === 0 ? (
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-10 text-center text-slate-400">
               <GitMerge className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-              <p className="text-base font-medium text-slate-300">Không có yêu cầu gộp hồ sơ nào đang chờ duyệt</p>
+              <p className="text-base font-medium text-slate-300">
+                Không có yêu cầu gộp hồ sơ nào đang chờ duyệt
+              </p>
               <p className="text-xs text-slate-500 mt-1">
-                Hệ thống tự động phát hiện trùng CCCD/SĐT hoặc đề xuất thủ công từ Lễ tân sẽ hiển thị tại đây.
+                Hệ thống tự động phát hiện trùng CCCD/SĐT hoặc đề xuất thủ công
+                từ Lễ tân sẽ hiển thị tại đây.
               </p>
             </div>
           ) : (
-            mergeRequests.map((req) => <MergeApprovalCard key={req.id} request={req} />)
+            mergeRequests.map((req) => (
+              <MergeApprovalCard key={req.id} request={req} />
+            ))
           )}
         </div>
-      ) : activeTab === 'flags' ? (
+      ) : activeTab === "flags" ? (
         <FlagsApprovalTable flags={pendingFlags} />
       ) : (
         <ActiveFlagsTable flags={activeFlags} />

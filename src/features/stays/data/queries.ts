@@ -1,12 +1,14 @@
-import 'server-only';
-import { createClient } from '@/lib/supabase/server';
-import type { InHouseStay } from '../domain/types';
+import "server-only";
+import { createClient } from "@/lib/supabase/server";
+import type { InHouseStay } from "../domain/types";
 
-export async function getInHouseStays(branchId?: string): Promise<InHouseStay[]> {
+export async function getInHouseStays(
+  branchId?: string,
+): Promise<InHouseStay[]> {
   try {
     const supabase = await createClient();
     let query = supabase
-      .from('stays')
+      .from("stays")
       .select(`
         id,
         branch_id,
@@ -22,11 +24,11 @@ export async function getInHouseStays(branchId?: string): Promise<InHouseStay[]>
           guests (id, full_name, phone)
         )
       `)
-      .eq('status', 'in_house')
-      .order('expected_check_out_at', { ascending: true });
+      .eq("status", "in_house")
+      .order("expected_check_out_at", { ascending: true });
 
     if (branchId) {
-      query = query.eq('branch_id', branchId);
+      query = query.eq("branch_id", branchId);
     }
 
     const { data, error } = await query;
@@ -37,22 +39,24 @@ export async function getInHouseStays(branchId?: string): Promise<InHouseStay[]>
         const primary = s.stay_guests?.find((sg: any) => sg.is_primary)?.guests;
         const branch = Array.isArray(s.branches) ? s.branches[0] : s.branches;
         const room = Array.isArray(s.rooms) ? s.rooms[0] : s.rooms;
-        const channel = Array.isArray(s.source_channels) ? s.source_channels[0] : s.source_channels;
+        const channel = Array.isArray(s.source_channels)
+          ? s.source_channels[0]
+          : s.source_channels;
         return {
           id: s.id,
           branchId: s.branch_id,
-          branchName: branch?.name || '',
+          branchName: branch?.name || "",
           roomId: s.room_id,
-          roomNumber: room?.number || '',
-          roomType: room?.room_type || 'Standard',
-          primaryGuestId: primary?.id || '',
-          primaryGuestName: primary?.full_name || 'Khách lưu trú',
+          roomNumber: room?.number || "",
+          roomType: room?.room_type || "Standard",
+          primaryGuestId: primary?.id || "",
+          primaryGuestName: primary?.full_name || "Khách lưu trú",
           primaryGuestPhone: primary?.phone || null,
           guestCount: s.stay_guests?.length || 1,
           checkInAt: s.check_in_at,
           expectedCheckOutAt: s.expected_check_out_at,
           isOverdue: s.expected_check_out_at < now,
-          sourceChannelName: channel?.name || 'Khách vãng lai (Quầy)',
+          sourceChannelName: channel?.name || "Khách vãng lai (Quầy)",
         };
       });
     }

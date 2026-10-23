@@ -1,12 +1,22 @@
-'use client';
+"use client";
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { User, Phone, Mail, MapPin, Tag, FileText, ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
-import { Button } from '@/shared/ui';
-import { createGuestAction } from '../actions';
-import { CreateGuestInput } from '../schemas';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  FileText,
+  Loader2,
+  Mail,
+  MapPin,
+  Phone,
+  Tag,
+  User,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { Button } from "@/shared/ui";
+import { createGuestAction } from "../actions";
+import type { CreateGuestInput } from "../schemas";
 
 export function GuestForm() {
   const router = useRouter();
@@ -14,33 +24,33 @@ export function GuestForm() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<CreateGuestInput>({
-    full_name: '',
-    gender: 'other',
-    nationality: 'VN',
-    phone: '',
-    email: '',
-    address_line: '',
+    full_name: "",
+    gender: "other",
+    nationality: "VN",
+    phone: "",
+    email: "",
+    address_line: "",
     tags: [],
     document: {
-      type: 'cccd',
-      number: '',
-      country: 'VN',
+      type: "cccd",
+      number: "",
+      country: "VN",
     },
   });
 
-  const [rawTag, setRawTag] = useState('');
+  const [rawTag, setRawTag] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
 
     if (!formData.full_name.trim()) {
-      setErrorMsg('Vui lòng nhập họ tên khách hàng');
+      setErrorMsg("Vui lòng nhập họ tên khách hàng");
       return;
     }
 
     if (!formData.phone?.trim() && !formData.document?.number?.trim()) {
-      setErrorMsg('Cần cung cấp ít nhất Số điện thoại hoặc Số giấy tờ');
+      setErrorMsg("Cần cung cấp ít nhất Số điện thoại hoặc Số giấy tờ");
       return;
     }
 
@@ -53,7 +63,7 @@ export function GuestForm() {
           ? {
               type: formData.document.type,
               number: formData.document.number.trim(),
-              country: formData.document.country || 'VN',
+              country: formData.document.country || "VN",
             }
           : null,
       });
@@ -72,7 +82,7 @@ export function GuestForm() {
     if (!formData.tags.includes(t)) {
       setFormData((prev) => ({ ...prev, tags: [...prev.tags, t] }));
     }
-    setRawTag('');
+    setRawTag("");
   };
 
   const handleRemoveTag = (tag: string) => {
@@ -95,7 +105,8 @@ export function GuestForm() {
             Thêm hồ sơ khách tiềm năng
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Dành cho Sales tạo hồ sơ tiếp cận, khách đoàn hoặc khách đặt trực tiếp
+            Dành cho Sales tạo hồ sơ tiếp cận, khách đoàn hoặc khách đặt trực
+            tiếp
           </p>
         </div>
       </div>
@@ -118,7 +129,10 @@ export function GuestForm() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
-              <label htmlFor="full_name" className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              <label
+                htmlFor="full_name"
+                className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1"
+              >
                 Họ và tên <span className="text-rose-500">*</span>
               </label>
               <input
@@ -127,21 +141,28 @@ export function GuestForm() {
                 type="text"
                 required
                 value={formData.full_name}
-                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, full_name: e.target.value })
+                }
                 placeholder="VD: NGUYỄN VĂN AN"
                 className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none uppercase font-semibold"
               />
             </div>
 
             <div>
-              <label htmlFor="gender" className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              <label
+                htmlFor="gender"
+                className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1"
+              >
                 Giới tính
               </label>
               <select
                 id="gender"
                 name="gender"
                 value={formData.gender}
-                onChange={(e: any) => setFormData({ ...formData, gender: e.target.value })}
+                onChange={(e: any) =>
+                  setFormData({ ...formData, gender: e.target.value })
+                }
                 className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
               >
                 <option value="male">Nam</option>
@@ -151,7 +172,10 @@ export function GuestForm() {
             </div>
 
             <div>
-              <label htmlFor="nationality" className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              <label
+                htmlFor="nationality"
+                className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1"
+              >
                 Quốc tịch (Mã 2 chữ cái)
               </label>
               <input
@@ -160,7 +184,12 @@ export function GuestForm() {
                 type="text"
                 value={formData.nationality}
                 maxLength={2}
-                onChange={(e) => setFormData({ ...formData, nationality: e.target.value.toUpperCase() })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    nationality: e.target.value.toUpperCase(),
+                  })
+                }
                 placeholder="VN"
                 className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none uppercase font-semibold"
               />
@@ -176,45 +205,60 @@ export function GuestForm() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="phone" className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              <label
+                htmlFor="phone"
+                className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1"
+              >
                 Số điện thoại
               </label>
               <input
                 id="phone"
                 name="phone"
                 type="text"
-                value={formData.phone || ''}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                value={formData.phone || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
                 placeholder="0912345678"
                 className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none font-medium"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              <label
+                htmlFor="email"
+                className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1"
+              >
                 Email
               </label>
               <input
                 id="email"
                 name="email"
                 type="email"
-                value={formData.email || ''}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                value={formData.email || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
                 placeholder="khachhang@gmail.com"
                 className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label htmlFor="address_line" className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              <label
+                htmlFor="address_line"
+                className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1"
+              >
                 Địa chỉ cư trú
               </label>
               <input
                 id="address_line"
                 name="address_line"
                 type="text"
-                value={formData.address_line || ''}
-                onChange={(e) => setFormData({ ...formData, address_line: e.target.value })}
+                value={formData.address_line || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, address_line: e.target.value })
+                }
                 placeholder="Số nhà, đường phố, quận huyện..."
                 className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
               />
@@ -234,12 +278,12 @@ export function GuestForm() {
                 Loại giấy tờ
               </label>
               <select
-                value={formData.document?.type || 'cccd'}
+                value={formData.document?.type || "cccd"}
                 onChange={(e: any) =>
                   setFormData({
                     ...formData,
                     document: {
-                      ...(formData.document || { country: 'VN', number: '' }),
+                      ...(formData.document || { country: "VN", number: "" }),
                       type: e.target.value,
                     },
                   })
@@ -259,12 +303,12 @@ export function GuestForm() {
               </label>
               <input
                 type="text"
-                value={formData.document?.number || ''}
+                value={formData.document?.number || ""}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
                     document: {
-                      ...(formData.document || { type: 'cccd', country: 'VN' }),
+                      ...(formData.document || { type: "cccd", country: "VN" }),
                       number: e.target.value,
                     },
                   })
@@ -290,7 +334,7 @@ export function GuestForm() {
               placeholder="VD: Doanh nghiệp, Khách đoàn, Du lịch..."
               className="flex-1 text-xs px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === "Enter") {
                   e.preventDefault();
                   handleAddTag();
                 }
@@ -329,7 +373,11 @@ export function GuestForm() {
         {/* Submit button */}
         <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800">
           <Link href="/guests">
-            <Button variant="ghost" type="button" className="rounded-xl text-xs">
+            <Button
+              variant="ghost"
+              type="button"
+              className="rounded-xl text-xs"
+            >
               Hủy bỏ
             </Button>
           </Link>

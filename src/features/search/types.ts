@@ -1,16 +1,16 @@
 export type SearchGuestMode =
-  | 'phone'
-  | 'phone_suffix'
-  | 'cccd'
-  | 'passport'
-  | 'doc_suffix'
-  | 'email'
-  | 'name';
+  | "phone"
+  | "phone_suffix"
+  | "cccd"
+  | "passport"
+  | "doc_suffix"
+  | "email"
+  | "name";
 
 export interface SearchGuestResult {
   id: string;
   full_name: string;
-  gender: 'male' | 'female' | 'other';
+  gender: "male" | "female" | "other";
   birth_year: number | null;
   nationality: string | null;
   phone: string | null;

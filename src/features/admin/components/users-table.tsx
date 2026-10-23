@@ -1,33 +1,40 @@
-'use client';
+"use client";
 
-import React, { useState, useTransition } from 'react';
-import type { AdminUserItem } from '../data/users';
-import type { SystemRole } from '../domain/types';
 import {
-  Users,
-  Shield,
   Building2,
-  Phone,
   CheckCircle2,
-  XCircle,
-  Search,
-  UserPlus,
-  Edit3,
-  Mail,
-  KeyRound,
-  ShieldAlert,
-  Loader2,
-  X,
   Crown,
+  Edit3,
+  KeyRound,
+  Loader2,
+  Mail,
+  Phone,
+  Search,
+  Shield,
+  ShieldAlert,
   Sparkles,
-} from 'lucide-react';
-import { Button } from '@/shared/ui';
-import { Input } from '@/shared/ui';
-import { Label } from '@/shared/ui';
-import { Badge } from '@/shared/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui';
-import { createUserAction, updateUserAction } from '../actions';
-import { toast } from 'sonner';
+  UserPlus,
+  Users,
+  X,
+  XCircle,
+} from "lucide-react";
+import type React from "react";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+} from "@/shared/ui";
+import { createUserAction, updateUserAction } from "../actions";
+import type { AdminUserItem } from "../data/users";
+import type { SystemRole } from "../domain/types";
 
 interface Props {
   initialUsers: AdminUserItem[];
@@ -37,9 +44,9 @@ interface Props {
 
 export function UsersTable({ initialUsers, branches, roles }: Props) {
   const [userList, setUserList] = useState<AdminUserItem[]>(initialUsers);
-  const [filterRole, setFilterRole] = useState<string>('all');
-  const [filterBranch, setFilterBranch] = useState<string>('all');
-  const [search, setSearch] = useState('');
+  const [filterRole, setFilterRole] = useState<string>("all");
+  const [filterBranch, setFilterBranch] = useState<string>("all");
+  const [search, setSearch] = useState("");
 
   // Modals state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -47,26 +54,26 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
   const [isPending, startTransition] = useTransition();
 
   // Create Form State
-  const [createEmail, setCreateEmail] = useState('');
-  const [createPassword, setCreatePassword] = useState('Hotel@123456');
-  const [createFullName, setCreateFullName] = useState('');
-  const [createPhone, setCreatePhone] = useState('');
-  const [createRoleId, setCreateRoleId] = useState(roles[0]?.id || '');
-  const [createBranchId, setCreateBranchId] = useState('');
+  const [createEmail, setCreateEmail] = useState("");
+  const [createPassword, setCreatePassword] = useState("Hotel@123456");
+  const [createFullName, setCreateFullName] = useState("");
+  const [createPhone, setCreatePhone] = useState("");
+  const [createRoleId, setCreateRoleId] = useState(roles[0]?.id || "");
+  const [createBranchId, setCreateBranchId] = useState("");
 
   // Edit Form State
-  const [editFullName, setEditFullName] = useState('');
-  const [editPhone, setEditPhone] = useState('');
-  const [editRoleId, setEditRoleId] = useState('');
-  const [editBranchId, setEditBranchId] = useState('');
+  const [editFullName, setEditFullName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editRoleId, setEditRoleId] = useState("");
+  const [editBranchId, setEditBranchId] = useState("");
   const [editIsActive, setEditIsActive] = useState(true);
 
   const openEditModal = (u: AdminUserItem) => {
     setEditingUser(u);
     setEditFullName(u.full_name);
-    setEditPhone(u.phone || '');
-    setEditRoleId(u.roles[0]?.role_id || roles[0]?.id || '');
-    setEditBranchId(u.default_branch_id || '');
+    setEditPhone(u.phone || "");
+    setEditRoleId(u.roles[0]?.role_id || roles[0]?.id || "");
+    setEditBranchId(u.default_branch_id || "");
     setEditIsActive(u.is_active);
   };
 
@@ -74,12 +81,12 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append('email', createEmail);
-    formData.append('password', createPassword);
-    formData.append('fullName', createFullName);
-    formData.append('phone', createPhone);
-    formData.append('roleId', createRoleId);
-    formData.append('branchId', createBranchId);
+    formData.append("email", createEmail);
+    formData.append("password", createPassword);
+    formData.append("fullName", createFullName);
+    formData.append("phone", createPhone);
+    formData.append("roleId", createRoleId);
+    formData.append("branchId", createBranchId);
 
     startTransition(async () => {
       const res = await createUserAction(formData);
@@ -87,9 +94,9 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
         toast.success(`Đã tạo tài khoản cho nhân sự ${createFullName}!`);
         setIsCreateOpen(false);
         // Reset form
-        setCreateEmail('');
-        setCreateFullName('');
-        setCreatePhone('');
+        setCreateEmail("");
+        setCreateFullName("");
+        setCreatePhone("");
 
         const selectedRole = roles.find((r) => r.id === createRoleId);
         const selectedBranch = branches.find((b) => b.id === createBranchId);
@@ -106,16 +113,16 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
           roles: [
             {
               role_id: createRoleId,
-              role_name: selectedRole?.name || 'Lễ tân',
-              role_key: selectedRole?.key || 'receptionist',
+              role_name: selectedRole?.name || "Lễ tân",
+              role_key: selectedRole?.key || "receptionist",
               branch_id: createBranchId || null,
-              branch_name: selectedBranch ? selectedBranch.name : 'Toàn chuỗi',
+              branch_name: selectedBranch ? selectedBranch.name : "Toàn chuỗi",
             },
           ],
         };
         setUserList((prev) => [newUser, ...prev]);
       } else {
-        toast.error(res.error.message || 'Lỗi khi tạo tài khoản');
+        toast.error(res.error.message || "Lỗi khi tạo tài khoản");
       }
     });
   };
@@ -125,12 +132,12 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
     if (!editingUser) return;
 
     const formData = new FormData();
-    formData.append('userId', editingUser.id);
-    formData.append('fullName', editFullName);
-    formData.append('phone', editPhone);
-    formData.append('roleId', editRoleId);
-    formData.append('branchId', editBranchId);
-    formData.append('isActive', editIsActive ? 'true' : 'false');
+    formData.append("userId", editingUser.id);
+    formData.append("fullName", editFullName);
+    formData.append("phone", editPhone);
+    formData.append("roleId", editRoleId);
+    formData.append("branchId", editBranchId);
+    formData.append("isActive", editIsActive ? "true" : "false");
 
     startTransition(async () => {
       const res = await updateUserAction(formData);
@@ -149,32 +156,39 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
                 full_name: editFullName,
                 phone: editPhone || null,
                 default_branch_id: editBranchId || null,
-                default_branch_name: selectedBranch ? selectedBranch.name : null,
+                default_branch_name: selectedBranch
+                  ? selectedBranch.name
+                  : null,
                 is_active: editIsActive,
                 roles: [
                   {
                     role_id: editRoleId,
-                    role_name: selectedRole?.name || 'Nhân viên',
-                    role_key: selectedRole?.key || '',
+                    role_name: selectedRole?.name || "Nhân viên",
+                    role_key: selectedRole?.key || "",
                     branch_id: editBranchId || null,
-                    branch_name: selectedBranch ? selectedBranch.name : 'Toàn chuỗi',
+                    branch_name: selectedBranch
+                      ? selectedBranch.name
+                      : "Toàn chuỗi",
                   },
                 ],
               };
             }
             return u;
-          })
+          }),
         );
       } else {
-        toast.error(res.error.message || 'Lỗi khi cập nhật tài khoản');
+        toast.error(res.error.message || "Lỗi khi cập nhật tài khoản");
       }
     });
   };
 
   const filtered = userList.filter((u) => {
-    if (filterBranch !== 'all' && u.default_branch_id !== filterBranch) return false;
-    if (filterRole !== 'all') {
-      const hasRole = u.roles.some((r) => r.role_key === filterRole || r.role_id === filterRole);
+    if (filterBranch !== "all" && u.default_branch_id !== filterBranch)
+      return false;
+    if (filterRole !== "all") {
+      const hasRole = u.roles.some(
+        (r) => r.role_key === filterRole || r.role_id === filterRole,
+      );
       if (!hasRole) return false;
     }
     if (search.trim()) {
@@ -204,7 +218,8 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Thêm tài khoản, gán vai trò nhân sự (Lễ tân, Quản lý, Sales, Kỹ thuật) và chỉ định cơ sở làm việc
+              Thêm tài khoản, gán vai trò nhân sự (Lễ tân, Quản lý, Sales, Kỹ
+              thuật) và chỉ định cơ sở làm việc
             </p>
           </div>
         </div>
@@ -226,7 +241,9 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Tổng số tài khoản
             </p>
-            <p className="text-2xl font-black text-foreground mt-1">{userList.length} nhân sự</p>
+            <p className="text-2xl font-black text-foreground mt-1">
+              {userList.length} nhân sự
+            </p>
           </div>
           <span className="p-3 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
             <Users className="w-5 h-5" />
@@ -252,7 +269,9 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Cơ sở chuỗi
             </p>
-            <p className="text-2xl font-black text-primary mt-1">{branches.length} cơ sở</p>
+            <p className="text-2xl font-black text-primary mt-1">
+              {branches.length} cơ sở
+            </p>
           </div>
           <span className="p-3 rounded-xl bg-blue-500/10 text-blue-600">
             <Building2 className="w-5 h-5" />
@@ -325,24 +344,37 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
             <tbody className="divide-y divide-border/40">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-xs text-muted-foreground">
-                    <p className="font-semibold text-foreground text-sm">Chưa tìm thấy nhân sự phù hợp</p>
+                  <td
+                    colSpan={6}
+                    className="py-12 text-center text-xs text-muted-foreground"
+                  >
+                    <p className="font-semibold text-foreground text-sm">
+                      Chưa tìm thấy nhân sự phù hợp
+                    </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Bấm nút "+ Thêm tài khoản nhân sự mới" để cấp tài khoản đầu tiên.
+                      Bấm nút "+ Thêm tài khoản nhân sự mới" để cấp tài khoản
+                      đầu tiên.
                     </p>
                   </td>
                 </tr>
               ) : (
                 filtered.map((user) => (
-                  <tr key={user.id} className="hover:bg-muted/30 transition-colors">
+                  <tr
+                    key={user.id}
+                    className="hover:bg-muted/30 transition-colors"
+                  >
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-2.5">
                         <div className="h-8 w-8 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-xs shrink-0">
                           {user.full_name.slice(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <span className="font-bold text-foreground text-xs block">{user.full_name}</span>
-                          <span className="text-[10px] text-muted-foreground font-mono">{user.id.substring(0, 8)}...</span>
+                          <span className="font-bold text-foreground text-xs block">
+                            {user.full_name}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground font-mono">
+                            {user.id.substring(0, 8)}...
+                          </span>
                         </div>
                       </div>
                     </td>
@@ -354,7 +386,9 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
                           {user.phone}
                         </span>
                       ) : (
-                        <span className="text-muted-foreground italic">Chưa có SĐT</span>
+                        <span className="text-muted-foreground italic">
+                          Chưa có SĐT
+                        </span>
                       )}
                     </td>
 
@@ -365,11 +399,11 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
                             <span
                               key={i}
                               className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border ${
-                                r.role_key === 'owner'
-                                  ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30'
-                                  : r.role_key === 'branch_manager'
-                                  ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30'
-                                  : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
+                                r.role_key === "owner"
+                                  ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                                  : r.role_key === "branch_manager"
+                                    ? "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30"
+                                    : "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
                               }`}
                             >
                               <Shield className="w-3 h-3" />
@@ -377,7 +411,9 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
                             </span>
                           ))
                         ) : (
-                          <span className="text-xs text-muted-foreground italic">Chưa phân vai trò</span>
+                          <span className="text-xs text-muted-foreground italic">
+                            Chưa phân vai trò
+                          </span>
                         )}
                       </div>
                     </td>
@@ -389,7 +425,9 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
                           {user.default_branch_name}
                         </span>
                       ) : (
-                        <span className="text-amber-700 dark:text-amber-400 font-bold">Toàn chuỗi (8 KS)</span>
+                        <span className="text-amber-700 dark:text-amber-400 font-bold">
+                          Toàn chuỗi (8 KS)
+                        </span>
                       )}
                     </td>
 
@@ -439,7 +477,8 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
                     Thêm Tài Khoản Nhân Sự Mới
                   </h3>
                   <p className="text-xs text-muted-foreground">
-                    Tạo tài khoản đăng nhập và gán vai trò trực tiếp vào chuỗi khách sạn
+                    Tạo tài khoản đăng nhập và gán vai trò trực tiếp vào chuỗi
+                    khách sạn
                   </p>
                 </div>
               </div>
@@ -455,7 +494,9 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
             <form onSubmit={handleCreateSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-foreground">Họ và tên nhân sự *</Label>
+                  <Label className="text-xs font-bold text-foreground">
+                    Họ và tên nhân sự *
+                  </Label>
                   <Input
                     required
                     value={createFullName}
@@ -466,7 +507,9 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-foreground">Số điện thoại</Label>
+                  <Label className="text-xs font-bold text-foreground">
+                    Số điện thoại
+                  </Label>
                   <Input
                     value={createPhone}
                     onChange={(e) => setCreatePhone(e.target.value)}
@@ -477,7 +520,9 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-foreground">Email đăng nhập *</Label>
+                <Label className="text-xs font-bold text-foreground">
+                  Email đăng nhập *
+                </Label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
                   <Input
@@ -492,7 +537,9 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-foreground">Mật khẩu khởi tạo *</Label>
+                <Label className="text-xs font-bold text-foreground">
+                  Mật khẩu khởi tạo *
+                </Label>
                 <div className="relative">
                   <KeyRound className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
                   <Input
@@ -507,7 +554,9 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-foreground">Vai trò đảm nhiệm *</Label>
+                  <Label className="text-xs font-bold text-foreground">
+                    Vai trò đảm nhiệm *
+                  </Label>
                   <select
                     value={createRoleId}
                     onChange={(e) => setCreateRoleId(e.target.value)}
@@ -523,7 +572,9 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-foreground">Cơ sở công tác *</Label>
+                  <Label className="text-xs font-bold text-foreground">
+                    Cơ sở công tác *
+                  </Label>
                   <select
                     value={createBranchId}
                     onChange={(e) => setCreateBranchId(e.target.value)}
@@ -559,7 +610,7 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
                       Đang khởi tạo...
                     </>
                   ) : (
-                    'Tạo Tài Khoản & Gán Quyền'
+                    "Tạo Tài Khoản & Gán Quyền"
                   )}
                 </Button>
               </div>
@@ -583,7 +634,8 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
                     Cấp Quyền & Sửa Nhân Sự: {editingUser.full_name}
                   </h3>
                   <p className="text-xs text-muted-foreground">
-                    Điều chỉnh vai trò đảm nhiệm, cơ sở công tác hoặc trạng thái khóa tài khoản
+                    Điều chỉnh vai trò đảm nhiệm, cơ sở công tác hoặc trạng thái
+                    khóa tài khoản
                   </p>
                 </div>
               </div>
@@ -599,7 +651,9 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
             <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-foreground">Họ và tên nhân sự *</Label>
+                  <Label className="text-xs font-bold text-foreground">
+                    Họ và tên nhân sự *
+                  </Label>
                   <Input
                     required
                     value={editFullName}
@@ -609,7 +663,9 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-foreground">Số điện thoại</Label>
+                  <Label className="text-xs font-bold text-foreground">
+                    Số điện thoại
+                  </Label>
                   <Input
                     value={editPhone}
                     onChange={(e) => setEditPhone(e.target.value)}
@@ -620,7 +676,9 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-foreground">Vai trò đảm nhiệm *</Label>
+                  <Label className="text-xs font-bold text-foreground">
+                    Vai trò đảm nhiệm *
+                  </Label>
                   <select
                     value={editRoleId}
                     onChange={(e) => setEditRoleId(e.target.value)}
@@ -636,7 +694,9 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-foreground">Cơ sở làm việc *</Label>
+                  <Label className="text-xs font-bold text-foreground">
+                    Cơ sở làm việc *
+                  </Label>
                   <select
                     value={editBranchId}
                     onChange={(e) => setEditBranchId(e.target.value)}
@@ -700,7 +760,7 @@ export function UsersTable({ initialUsers, branches, roles }: Props) {
                       Đang lưu...
                     </>
                   ) : (
-                    'Lưu Thay Đổi & Cập Nhật Quyền'
+                    "Lưu Thay Đổi & Cập Nhật Quyền"
                   )}
                 </Button>
               </div>

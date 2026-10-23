@@ -1,26 +1,28 @@
-'use client';
+"use client";
 
-import { useState, useTransition } from 'react';
-import Link from 'next/link';
 import {
-  Wrench,
   AlertTriangle,
-  Clock,
-  DoorOpen,
   Building2,
   CheckCircle2,
-  ShieldAlert,
-  Plus,
-  Play,
   CheckSquare,
+  Clock,
+  DoorOpen,
+  Filter,
   Lock,
+  Play,
+  Plus,
+  ShieldAlert,
   Unlock,
   User,
-  Filter,
-} from 'lucide-react';
-import { Button } from '@/shared/ui';
-import { WorkOrder, WorkOrderStatus } from '../types';
-import { transitionWorkOrderAction } from '../actions';
+  Wrench,
+} from "lucide-react";
+import Link from "next/link";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { Button } from "@/shared/ui";
+import { formatDateTimeVN } from "@/shared/utils/date";
+import { transitionWorkOrderAction } from "../actions";
+import type { WorkOrder, WorkOrderStatus } from "../types";
 
 interface WorkOrdersTableProps {
   initialOrders: WorkOrder[];
@@ -33,35 +35,49 @@ export function WorkOrdersTable({
   branches,
   currentBranchId,
 }: WorkOrdersTableProps) {
-  const [selectedBranch, setSelectedBranch] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedBranch, setSelectedBranch] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isPending, startTransition] = useTransition();
 
   // Action modal state
   const [activeOrder, setActiveOrder] = useState<WorkOrder | null>(null);
-  const [actionType, setActionType] = useState<'done' | 'close' | null>(null);
-  const [resolution, setResolution] = useState('');
-  const [laborCost, setLaborCost] = useState('0');
-  const [partsCost, setPartsCost] = useState('0');
+  const [actionType, setActionType] = useState<"done" | "close" | null>(null);
+  const [resolution, setResolution] = useState("");
+  const [laborCost, setLaborCost] = useState("0");
+  const [partsCost, setPartsCost] = useState("0");
+
+  const [confirmCloseOrder, setConfirmCloseOrder] = useState<WorkOrder | null>(
+    null,
+  );
 
   const filtered = initialOrders.filter((wo) => {
-    if (selectedBranch !== 'all' && wo.branch_id !== selectedBranch) return false;
-    if (statusFilter !== 'all') {
-      if (statusFilter === 'open' && ['closed', 'cancelled'].includes(wo.status)) return false;
-      if (statusFilter === 'urgent' && wo.priority !== 'urgent') return false;
-      if (statusFilter === 'blocked' && !wo.blocks_room) return false;
-      if (statusFilter === 'done' && wo.status !== 'done') return false;
+    if (selectedBranch !== "all" && wo.branch_id !== selectedBranch)
+      return false;
+    if (statusFilter !== "all") {
+      if (
+        statusFilter === "open" &&
+        ["closed", "cancelled"].includes(wo.status)
+      )
+        return false;
+      if (statusFilter === "urgent" && wo.priority !== "urgent") return false;
+      if (statusFilter === "blocked" && !wo.blocks_room) return false;
+      if (statusFilter === "done" && wo.status !== "done") return false;
     }
     return true;
   });
 
   const handleStartWork = (order: WorkOrder) => {
     startTransition(async () => {
-      await transitionWorkOrderAction({
+      const res = await transitionWorkOrderAction({
         id: order.id,
-        to: 'in_progress',
+        to: "in_progress",
         expected_status: order.status,
       });
+      if (res.ok) {
+        toast.success(`Đã chuyển phiếu #${order.number} sang Đang xử lý`);
+      } else {
+        toast.error(res.error.message || "Không thể cập nhật trạng thái");
+      }
     });
   };
 
@@ -70,9 +86,9 @@ export function WorkOrdersTable({
     if (!activeOrder || !resolution.trim()) return;
 
     startTransition(async () => {
-      await transitionWorkOrderAction({
+      const res = await transitionWorkOrderAction({
         id: activeOrder.id,
-        to: 'done',
+        to: "done",
         expected_status: activeOrder.status,
         patch: {
           resolution: resolution.trim(),
@@ -80,53 +96,108 @@ export function WorkOrdersTable({
           parts_cost: Number(partsCost) || 0,
         },
       });
-      setActiveOrder(null);
-      setActionType(null);
-      setResolution('');
+      if (res.ok) {
+        toast.success(
+          `Đã hoàn thành và chuyển phiếu #${activeOrder.number} sang chờ nghiệm thu`,
+        );
+        setActiveOrder(null);
+        setActionType(null);
+        setResolution("");
+      } else {
+        toast.error(res.error.message || "Không thể gửi nghiệm thu");
+      }
     });
   };
 
-  const handleCloseWorkOrder = (order: WorkOrder) => {
-    if (!confirm(`Nghiệm thu đạt phiếu #${order.number}? Phòng sẽ được tự động mở bán lại.`)) return;
-
+  const handleExecuteClose = (order: WorkOrder) => {
     startTransition(async () => {
-      await transitionWorkOrderAction({
+      const res = await transitionWorkOrderAction({
         id: order.id,
-        to: 'closed',
+        to: "closed",
         expected_status: order.status,
       });
+      if (res.ok) {
+        toast.success(`Đã nghiệm thu đạt và đóng phiếu #${order.number}`);
+        setConfirmCloseOrder(null);
+      } else {
+        toast.error(res.error.message || "Không thể đóng phiếu");
+      }
     });
   };
 
   const getPriorityBadge = (p: string) => {
     switch (p) {
-      case 'urgent':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700">Khẩn cấp (4h)</span>;
-      case 'high':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">Cao (24h)</span>;
-      case 'normal':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-indigo-50 text-indigo-700">Bình thường</span>;
+      case "urgent":
+        return (
+          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700">
+            Khẩn cấp (4h)
+          </span>
+        );
+      case "high":
+        return (
+          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">
+            Cao (24h)
+          </span>
+        );
+      case "normal":
+        return (
+          <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-indigo-50 text-indigo-700">
+            Bình thường
+          </span>
+        );
       default:
-        return <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600">Thấp</span>;
+        return (
+          <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600">
+            Thấp
+          </span>
+        );
     }
   };
 
   const getStatusBadge = (s: WorkOrderStatus) => {
     switch (s) {
-      case 'new':
-        return <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">Mới tạo</span>;
-      case 'assigned':
-        return <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">Đã giao</span>;
-      case 'in_progress':
-        return <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">Đang xử lý</span>;
-      case 'done':
-        return <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Chờ nghiệm thu</span>;
-      case 'closed':
-        return <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">Đã đóng</span>;
-      case 'cancelled':
-        return <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-600">Đã hủy</span>;
+      case "new":
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+            Mới tạo
+          </span>
+        );
+      case "assigned":
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+            Đã giao
+          </span>
+        );
+      case "in_progress":
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">
+            Đang xử lý
+          </span>
+        );
+      case "done":
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+            Chờ nghiệm thu
+          </span>
+        );
+      case "closed":
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
+            Đã đóng
+          </span>
+        );
+      case "cancelled":
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-600">
+            Đã hủy
+          </span>
+        );
       default:
-        return <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">{s}</span>;
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
+            {s}
+          </span>
+        );
     }
   };
 
@@ -140,7 +211,8 @@ export function WorkOrdersTable({
             Phiếu sự cố & Sửa chữa thiết bị
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Quản lý quy trình xử lý sự cố buồng phòng, SLA và nghiệm thu mở phòng
+            Quản lý quy trình xử lý sự cố buồng phòng, SLA và nghiệm thu mở
+            phòng
           </p>
         </div>
 
@@ -172,11 +244,11 @@ export function WorkOrdersTable({
 
         <div className="flex items-center gap-2 flex-wrap text-xs">
           {[
-            { id: 'all', label: 'Tất cả' },
-            { id: 'open', label: 'Đang mở (chưa đóng)' },
-            { id: 'urgent', label: 'Khẩn cấp' },
-            { id: 'blocked', label: 'Phòng đang khóa' },
-            { id: 'done', label: 'Chờ nghiệm thu' },
+            { id: "all", label: "Tất cả" },
+            { id: "open", label: "Đang mở (chưa đóng)" },
+            { id: "urgent", label: "Khẩn cấp" },
+            { id: "blocked", label: "Phòng đang khóa" },
+            { id: "done", label: "Chờ nghiệm thu" },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -184,8 +256,8 @@ export function WorkOrdersTable({
               onClick={() => setStatusFilter(tab.id)}
               className={`px-3 py-1.5 rounded-lg border text-xs transition ${
                 statusFilter === tab.id
-                  ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-semibold'
-                  : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
+                  ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-semibold"
+                  : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50"
               }`}
             >
               {tab.label}
@@ -211,13 +283,19 @@ export function WorkOrdersTable({
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400 text-xs">
+                  <td
+                    colSpan={6}
+                    className="py-12 text-center text-slate-400 text-xs"
+                  >
                     Không có phiếu sự cố nào phù hợp bộ lọc.
                   </td>
                 </tr>
               ) : (
                 filtered.map((wo) => {
-                  const isOverdue = wo.due_at && new Date(wo.due_at) < new Date() && !['done', 'closed', 'cancelled'].includes(wo.status);
+                  const isOverdue =
+                    wo.due_at &&
+                    new Date(wo.due_at) < new Date() &&
+                    !["done", "closed", "cancelled"].includes(wo.status);
 
                   return (
                     <tr
@@ -234,8 +312,15 @@ export function WorkOrdersTable({
                               {wo.title}
                             </div>
                             <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
-                              <span>Báo lúc: {new Date(wo.reported_at).toLocaleString('vi-VN')}</span>
-                              {wo.reporter_name && <span>bởi {wo.reporter_name}</span>}
+                              <span>
+                                Báo lúc:{" "}
+                                {new Date(wo.reported_at).toLocaleString(
+                                  "vi-VN",
+                                )}
+                              </span>
+                              {wo.reporter_name && (
+                                <span>bởi {wo.reporter_name}</span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -268,17 +353,21 @@ export function WorkOrdersTable({
                         {wo.due_at && (
                           <div
                             className={`text-[11px] flex items-center gap-1 mt-1 font-medium ${
-                              isOverdue ? 'text-rose-600 font-bold' : 'text-slate-400'
+                              isOverdue
+                                ? "text-rose-600 font-bold"
+                                : "text-slate-400"
                             }`}
                           >
                             <Clock className="w-3 h-3" />
-                            {isOverdue ? 'Quá hạn: ' : 'Hạn: '}
-                            {new Date(wo.due_at).toLocaleDateString('vi-VN')}
+                            {isOverdue ? "Quá hạn: " : "Hạn: "}
+                            {formatDateTimeVN(wo.due_at)}
                           </div>
                         )}
                       </td>
 
-                      <td className="py-3.5 px-4">{getStatusBadge(wo.status)}</td>
+                      <td className="py-3.5 px-4">
+                        {getStatusBadge(wo.status)}
+                      </td>
 
                       <td className="py-3.5 px-4 text-xs">
                         {wo.assignee_name ? (
@@ -287,13 +376,15 @@ export function WorkOrdersTable({
                             {wo.assignee_name}
                           </span>
                         ) : (
-                          <span className="text-slate-400 italic">Chưa phân công</span>
+                          <span className="text-slate-400 italic">
+                            Chưa phân công
+                          </span>
                         )}
                       </td>
 
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
-                          {wo.status === 'new' && (
+                          {wo.status === "new" && (
                             <Button
                               size="sm"
                               variant="outline"
@@ -306,12 +397,14 @@ export function WorkOrdersTable({
                             </Button>
                           )}
 
-                          {['assigned', 'in_progress', 'on_hold'].includes(wo.status) && (
+                          {["assigned", "in_progress", "on_hold"].includes(
+                            wo.status,
+                          ) && (
                             <Button
                               size="sm"
                               onClick={() => {
                                 setActiveOrder(wo);
-                                setActionType('done');
+                                setActionType("done");
                               }}
                               disabled={isPending}
                               className="h-8 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -321,10 +414,10 @@ export function WorkOrdersTable({
                             </Button>
                           )}
 
-                          {wo.status === 'done' && (
+                          {wo.status === "done" && (
                             <Button
                               size="sm"
-                              onClick={() => handleCloseWorkOrder(wo)}
+                              onClick={() => setConfirmCloseOrder(wo)}
                               disabled={isPending}
                               className="h-8 text-xs font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white"
                             >
@@ -344,7 +437,7 @@ export function WorkOrdersTable({
       </div>
 
       {/* Done Modal: Nhập kết quả xử lý và chi phí */}
-      {actionType === 'done' && activeOrder && (
+      {actionType === "done" && activeOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
           <div className="w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b pb-3">
@@ -365,7 +458,8 @@ export function WorkOrdersTable({
             <form onSubmit={handleCompleteWork} className="space-y-4">
               <div>
                 <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                  Nội dung khắc phục / Kết quả sửa chữa <span className="text-rose-500">*</span>
+                  Nội dung khắc phục / Kết quả sửa chữa{" "}
+                  <span className="text-rose-500">*</span>
                 </label>
                 <textarea
                   required
@@ -425,6 +519,52 @@ export function WorkOrdersTable({
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Close Confirm Modal: Thay thế browser confirm native */}
+      {confirmCloseOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                  Nghiệm thu đạt phiếu #{confirmCloseOrder.number}?
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {confirmCloseOrder.title} ({confirmCloseOrder.branch_name})
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              Sau khi xác nhận nghiệm thu đạt, phiếu sẽ được đóng lại. Nếu có
+              phòng bị khóa ngừng bán (OOO), phòng sẽ tự động được mở bán trở
+              lại.
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setConfirmCloseOrder(null)}
+                className="rounded-xl"
+              >
+                Hủy bỏ
+              </Button>
+              <Button
+                type="button"
+                disabled={isPending}
+                onClick={() => handleExecuteClose(confirmCloseOrder)}
+                className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium"
+              >
+                {isPending ? "Đang đóng..." : "Xác nhận nghiệm thu"}
+              </Button>
+            </div>
           </div>
         </div>
       )}

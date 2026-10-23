@@ -1,17 +1,20 @@
-import { Metadata } from 'next';
-import { requirePermission } from '@/shared/auth/server';
-import { redirect } from 'next/navigation';
-import { getActiveBranches } from '@/features/admin';
-import { getComplianceAlerts, ComplianceAlertsView } from '@/features/facilities';
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { getActiveBranches } from "@/features/admin";
+import {
+  ComplianceAlertsView,
+  getComplianceAlerts,
+} from "@/features/facilities";
+import { requirePermission } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
-  title: 'Cảnh báo hết hạn pháp lý & PCCC | CRM Khách Sạn',
+  title: "Cảnh báo hết hạn pháp lý & PCCC | CRM Khách Sạn",
 };
 
 export default async function ComplianceAlertsPage() {
-  const hasPerm = await requirePermission('facility.view');
+  const hasPerm = await requirePermission("facility.view");
   if (!hasPerm.ok) {
-    redirect('/');
+    redirect("/");
   }
 
   const [alerts, branches] = await Promise.all([
@@ -26,7 +29,8 @@ export default async function ComplianceAlertsPage() {
           Cảnh báo hết hạn hồ sơ & PCCC
         </h1>
         <p className="text-sm text-slate-400 mt-1">
-          Theo dõi hạn định kỳ của bảo hiểm cháy nổ, kiểm định thang máy, PCCC và bảo hành thiết bị toàn chuỗi (US-32)
+          Theo dõi hạn định kỳ của bảo hiểm cháy nổ, kiểm định thang máy, PCCC
+          và bảo hành thiết bị toàn chuỗi (US-32)
         </p>
       </div>
 

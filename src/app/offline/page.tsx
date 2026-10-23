@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 export default function OfflinePage() {
   return (
@@ -8,8 +8,8 @@ export default function OfflinePage() {
           Mất kết nối mạng
         </h1>
         <p className="text-sm text-muted-foreground">
-          Hệ thống đang hoạt động ở chế độ ngoại tuyến. Vui lòng kiểm tra lại kết
-          nối Internet của bạn để tiếp tục đồng bộ dữ liệu.
+          Hệ thống đang hoạt động ở chế độ ngoại tuyến. Vui lòng kiểm tra lại
+          kết nối Internet của bạn để tiếp tục đồng bộ dữ liệu.
         </p>
         <button
           onClick={() => window.location.reload()}

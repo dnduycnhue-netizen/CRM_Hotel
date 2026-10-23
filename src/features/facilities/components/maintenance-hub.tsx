@@ -1,24 +1,35 @@
-'use client';
+"use client";
 
-import React, { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import { PmPlanItem, InspectionItem } from '../data/maintenance';
-import { createPmPlanAction } from '../actions';
 import {
-  Wrench,
-  ClipboardCheck,
-  Calendar,
-  Building2,
-  CheckCircle2,
   AlertCircle,
-  FileCheck,
+  Building2,
+  Calendar,
+  CheckCircle2,
+  ClipboardCheck,
   Clock,
-  User,
-  Plus,
+  FileCheck,
   Loader2,
-} from 'lucide-react';
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, Input, Label } from '@/shared/ui';
-import { toast } from 'sonner';
+  Plus,
+  User,
+  Wrench,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
+} from "@/shared/ui";
+import { createPmPlanAction } from "../actions";
+import type { InspectionItem, PmPlanItem } from "../data/maintenance";
 
 interface Props {
   plans: PmPlanItem[];
@@ -29,26 +40,28 @@ interface Props {
 export function MaintenanceHub({ plans, inspections, branches }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [activeTab, setActiveTab] = useState<'plans' | 'inspections'>('plans');
-  const [selectedBranch, setSelectedBranch] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<"plans" | "inspections">("plans");
+  const [selectedBranch, setSelectedBranch] = useState<string>("all");
 
   // Create plan dialog state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [planBranch, setPlanBranch] = useState(branches[0]?.id || '');
-  const [planName, setPlanName] = useState('');
-  const [planInterval, setPlanInterval] = useState('30');
-  const [planChecklistText, setPlanChecklistText] = useState('Kiểm tra vận hành kỹ thuật\nVệ sinh lọc gió và bề mặt\nSiết ốc và kiểm tra an toàn');
+  const [planBranch, setPlanBranch] = useState(branches[0]?.id || "");
+  const [planName, setPlanName] = useState("");
+  const [planInterval, setPlanInterval] = useState("30");
+  const [planChecklistText, setPlanChecklistText] = useState(
+    "Kiểm tra vận hành kỹ thuật\nVệ sinh lọc gió và bề mặt\nSiết ốc và kiểm tra an toàn",
+  );
 
   const handleCreatePlan = (e: React.FormEvent) => {
     e.preventDefault();
     if (!planName.trim()) {
-      toast.error('Vui lòng nhập tên kế hoạch bảo trì');
+      toast.error("Vui lòng nhập tên kế hoạch bảo trì");
       return;
     }
 
     startTransition(async () => {
       const checklistItems = planChecklistText
-        .split('\n')
+        .split("\n")
         .map((s) => s.trim())
         .filter(Boolean);
 
@@ -62,7 +75,7 @@ export function MaintenanceHub({ plans, inspections, branches }: Props) {
       if (res.ok) {
         toast.success(`Đã tạo kế hoạch bảo trì: ${planName}`);
         setIsCreateOpen(false);
-        setPlanName('');
+        setPlanName("");
         router.refresh();
       } else {
         toast.error(`Không thể tạo kế hoạch: ${res.error}`);
@@ -71,12 +84,14 @@ export function MaintenanceHub({ plans, inspections, branches }: Props) {
   };
 
   const filteredPlans = plans.filter((p) => {
-    if (selectedBranch !== 'all' && p.branch_id !== selectedBranch) return false;
+    if (selectedBranch !== "all" && p.branch_id !== selectedBranch)
+      return false;
     return true;
   });
 
   const filteredInspections = inspections.filter((ins) => {
-    if (selectedBranch !== 'all' && ins.branch_id !== selectedBranch) return false;
+    if (selectedBranch !== "all" && ins.branch_id !== selectedBranch)
+      return false;
     return true;
   });
 
@@ -86,8 +101,12 @@ export function MaintenanceHub({ plans, inspections, branches }: Props) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-400">Kế hoạch bảo trì định kỳ</p>
-            <p className="text-2xl font-bold text-indigo-400 mt-1">{plans.length}</p>
+            <p className="text-xs font-medium text-slate-400">
+              Kế hoạch bảo trì định kỳ
+            </p>
+            <p className="text-2xl font-bold text-indigo-400 mt-1">
+              {plans.length}
+            </p>
           </div>
           <span className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400">
             <Wrench className="w-5 h-5" />
@@ -96,8 +115,12 @@ export function MaintenanceHub({ plans, inspections, branches }: Props) {
 
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-400">Lượt kiểm tra đã thực hiện</p>
-            <p className="text-2xl font-bold text-emerald-400 mt-1">{inspections.length}</p>
+            <p className="text-xs font-medium text-slate-400">
+              Lượt kiểm tra đã thực hiện
+            </p>
+            <p className="text-2xl font-bold text-emerald-400 mt-1">
+              {inspections.length}
+            </p>
           </div>
           <span className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400">
             <ClipboardCheck className="w-5 h-5" />
@@ -106,7 +129,9 @@ export function MaintenanceHub({ plans, inspections, branches }: Props) {
 
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-400">Tự động sinh phiếu (Cron)</p>
+            <p className="text-xs font-medium text-slate-400">
+              Tự động sinh phiếu (Cron)
+            </p>
             <p className="text-sm font-semibold text-emerald-400 mt-1 flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4" /> Báo trước 7 ngày
             </p>
@@ -122,11 +147,11 @@ export function MaintenanceHub({ plans, inspections, branches }: Props) {
         <div className="flex space-x-6">
           <button
             type="button"
-            onClick={() => setActiveTab('plans')}
+            onClick={() => setActiveTab("plans")}
             className={`pb-2 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
-              activeTab === 'plans'
-                ? 'border-indigo-500 text-indigo-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+              activeTab === "plans"
+                ? "border-indigo-500 text-indigo-400"
+                : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
             <Wrench className="w-4 h-4" />
@@ -135,11 +160,11 @@ export function MaintenanceHub({ plans, inspections, branches }: Props) {
 
           <button
             type="button"
-            onClick={() => setActiveTab('inspections')}
+            onClick={() => setActiveTab("inspections")}
             className={`pb-2 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
-              activeTab === 'inspections'
-                ? 'border-emerald-500 text-emerald-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+              activeTab === "inspections"
+                ? "border-emerald-500 text-emerald-400"
+                : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
             <ClipboardCheck className="w-4 h-4" />
@@ -175,7 +200,7 @@ export function MaintenanceHub({ plans, inspections, branches }: Props) {
       </div>
 
       {/* Tab 1: Maintenance Plans */}
-      {activeTab === 'plans' ? (
+      {activeTab === "plans" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredPlans.length === 0 ? (
             <div className="col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-8 text-center text-slate-400">
@@ -190,13 +215,17 @@ export function MaintenanceHub({ plans, inspections, branches }: Props) {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h3 className="font-semibold text-slate-200 text-sm">{plan.name}</h3>
+                    <h3 className="font-semibold text-slate-200 text-sm">
+                      {plan.name}
+                    </h3>
                     <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
                       <span className="flex items-center gap-1">
                         <Building2 className="w-3 h-3 text-slate-500" />
                         {plan.branch_name}
                       </span>
-                      {plan.asset_name && <span>• Thiết bị: {plan.asset_name}</span>}
+                      {plan.asset_name && (
+                        <span>• Thiết bị: {plan.asset_name}</span>
+                      )}
                     </div>
                   </div>
                   <span className="px-2 py-0.5 rounded text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 whitespace-nowrap">
@@ -206,12 +235,16 @@ export function MaintenanceHub({ plans, inspections, branches }: Props) {
 
                 <div className="grid grid-cols-2 gap-2 text-xs text-slate-300 pt-1 border-t border-slate-800/80">
                   <div>
-                    <span className="text-slate-500">Hạn kế tiếp:</span>{' '}
-                    <strong className="text-amber-400">{plan.next_due_date}</strong>
+                    <span className="text-slate-500">Hạn kế tiếp:</span>{" "}
+                    <strong className="text-amber-400">
+                      {plan.next_due_date}
+                    </strong>
                   </div>
                   <div>
-                    <span className="text-slate-500">Đơn vị xử lý:</span>{' '}
-                    <span>{plan.vendor_name || plan.assignee_name || 'Nội bộ KS'}</span>
+                    <span className="text-slate-500">Đơn vị xử lý:</span>{" "}
+                    <span>
+                      {plan.vendor_name || plan.assignee_name || "Nội bộ KS"}
+                    </span>
                   </div>
                 </div>
 
@@ -227,7 +260,9 @@ export function MaintenanceHub({ plans, inspections, branches }: Props) {
                         </li>
                       ))}
                       {plan.checklist.length > 3 && (
-                        <li className="text-slate-500">+{plan.checklist.length - 3} hạng mục khác...</li>
+                        <li className="text-slate-500">
+                          +{plan.checklist.length - 3} hạng mục khác...
+                        </li>
                       )}
                     </ul>
                   </div>
@@ -254,29 +289,41 @@ export function MaintenanceHub({ plans, inspections, branches }: Props) {
               <tbody className="divide-y divide-slate-800/60">
                 {filteredInspections.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-500 text-xs">
+                    <td
+                      colSpan={6}
+                      className="py-8 text-center text-slate-500 text-xs"
+                    >
                       Chưa có biên bản kiểm tra nào được ghi nhận
                     </td>
                   </tr>
                 ) : (
                   filteredInspections.map((ins) => (
-                    <tr key={ins.id} className="hover:bg-slate-800/30 transition-colors">
+                    <tr
+                      key={ins.id}
+                      className="hover:bg-slate-800/30 transition-colors"
+                    >
                       <td className="py-3 px-4 text-xs text-slate-300 whitespace-nowrap">
-                        {new Date(ins.performed_at).toLocaleString('vi-VN')}
+                        {new Date(ins.performed_at).toLocaleString("vi-VN")}
                       </td>
                       <td className="py-3 px-4 text-xs text-slate-200">
                         <div className="font-medium">{ins.branch_name}</div>
                         {ins.room_number && (
-                          <span className="text-slate-400">Phòng {ins.room_number}</span>
+                          <span className="text-slate-400">
+                            Phòng {ins.room_number}
+                          </span>
                         )}
                       </td>
                       <td className="py-3 px-4 text-xs font-medium text-slate-200">
                         {ins.template_name}
                       </td>
-                      <td className="py-3 px-4 text-xs text-slate-300">{ins.inspector_name}</td>
+                      <td className="py-3 px-4 text-xs text-slate-300">
+                        {ins.inspector_name}
+                      </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2 text-xs">
-                          <span className="text-emerald-400 font-semibold">{ins.passed} Đạt</span>
+                          <span className="text-emerald-400 font-semibold">
+                            {ins.passed} Đạt
+                          </span>
                           {ins.failed > 0 && (
                             <span className="text-rose-400 font-semibold">
                               / {ins.failed} Lỗi (Đã sinh sự cố)
@@ -289,10 +336,10 @@ export function MaintenanceHub({ plans, inspections, branches }: Props) {
                           <span
                             className={`px-2 py-0.5 rounded text-xs font-bold ${
                               ins.score >= 90
-                                ? 'bg-emerald-500/10 text-emerald-400'
+                                ? "bg-emerald-500/10 text-emerald-400"
                                 : ins.score >= 75
-                                  ? 'bg-amber-500/10 text-amber-400'
-                                  : 'bg-rose-500/10 text-rose-400'
+                                  ? "bg-amber-500/10 text-amber-400"
+                                  : "bg-rose-500/10 text-rose-400"
                             }`}
                           >
                             {ins.score}%
@@ -319,7 +366,8 @@ export function MaintenanceHub({ plans, inspections, branches }: Props) {
               <span>Thiết lập Kế hoạch Bảo trì Định kỳ</span>
             </DialogTitle>
             <DialogDescription>
-              Tạo chu kỳ kiểm tra, bảo dưỡng tự động sinh phiếu công việc cho kỹ thuật
+              Tạo chu kỳ kiểm tra, bảo dưỡng tự động sinh phiếu công việc cho kỹ
+              thuật
             </DialogDescription>
           </DialogHeader>
 

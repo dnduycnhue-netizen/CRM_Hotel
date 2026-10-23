@@ -1,10 +1,17 @@
-'use client';
+"use client";
 
-import React, { useState, useTransition } from 'react';
-import { PendingFlagItem } from '../types';
-import { decideFlagAction } from '../actions';
-import { ShieldAlert, AlertTriangle, Check, X, FileText, Building2 } from 'lucide-react';
-import Link from 'next/link';
+import {
+  AlertTriangle,
+  Building2,
+  Check,
+  FileText,
+  ShieldAlert,
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import React, { useState, useTransition } from "react";
+import { decideFlagAction } from "../actions";
+import type { PendingFlagItem } from "../types";
 
 interface Props {
   flags: PendingFlagItem[];
@@ -13,8 +20,11 @@ interface Props {
 export function FlagsApprovalTable({ flags }: Props) {
   const [isPending, startTransition] = useTransition();
   const [selectedFlagId, setSelectedFlagId] = useState<string | null>(null);
-  const [rejectNote, setRejectNote] = useState('');
-  const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [rejectNote, setRejectNote] = useState("");
+  const [statusMsg, setStatusMsg] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const handleDecision = (id: string, approve: boolean, note?: string) => {
     setStatusMsg(null);
@@ -27,13 +37,18 @@ export function FlagsApprovalTable({ flags }: Props) {
 
       if (res.ok) {
         setStatusMsg({
-          type: 'success',
-          text: approve ? 'Đã phê duyệt gắn cờ thành công!' : 'Đã từ chối đề xuất gắn cờ.',
+          type: "success",
+          text: approve
+            ? "Đã phê duyệt gắn cờ thành công!"
+            : "Đã từ chối đề xuất gắn cờ.",
         });
         setSelectedFlagId(null);
-        setRejectNote('');
+        setRejectNote("");
       } else {
-        setStatusMsg({ type: 'error', text: `Thao tác thất bại: ${res.error.message || res.error.code}` });
+        setStatusMsg({
+          type: "error",
+          text: `Thao tác thất bại: ${res.error.message || res.error.code}`,
+        });
       }
     });
   };
@@ -42,8 +57,13 @@ export function FlagsApprovalTable({ flags }: Props) {
     return (
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-10 text-center text-slate-400">
         <ShieldAlert className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-        <p className="text-base font-medium text-slate-300">Không có đề xuất gắn cờ nào đang chờ duyệt</p>
-        <p className="text-xs text-slate-500 mt-1">Các đề xuất Blacklist hoặc Chú ý từ Lễ tân các cơ sở sẽ hiển thị tại đây.</p>
+        <p className="text-base font-medium text-slate-300">
+          Không có đề xuất gắn cờ nào đang chờ duyệt
+        </p>
+        <p className="text-xs text-slate-500 mt-1">
+          Các đề xuất Blacklist hoặc Chú ý từ Lễ tân các cơ sở sẽ hiển thị tại
+          đây.
+        </p>
       </div>
     );
   }
@@ -53,9 +73,9 @@ export function FlagsApprovalTable({ flags }: Props) {
       {statusMsg && (
         <div
           className={`p-3 rounded-lg text-sm ${
-            statusMsg.type === 'success'
-              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-              : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+            statusMsg.type === "success"
+              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+              : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
           }`}
         >
           {statusMsg.text}
@@ -77,9 +97,12 @@ export function FlagsApprovalTable({ flags }: Props) {
             </thead>
             <tbody className="divide-y divide-slate-800/60">
               {flags.map((flag) => {
-                const isBlacklist = flag.flag_type === 'blacklist';
+                const isBlacklist = flag.flag_type === "blacklist";
                 return (
-                  <tr key={flag.id} className="hover:bg-slate-800/30 transition-colors">
+                  <tr
+                    key={flag.id}
+                    className="hover:bg-slate-800/30 transition-colors"
+                  >
                     {/* Guest info */}
                     <td className="py-3 px-4">
                       <Link
@@ -90,7 +113,9 @@ export function FlagsApprovalTable({ flags }: Props) {
                       </Link>
                       <div className="text-xs text-slate-400 mt-0.5 space-x-2">
                         {flag.guest_phone && <span>{flag.guest_phone}</span>}
-                        {flag.guest_doc_masked && <span>• CCCD: {flag.guest_doc_masked}</span>}
+                        {flag.guest_doc_masked && (
+                          <span>• CCCD: {flag.guest_doc_masked}</span>
+                        )}
                       </div>
                     </td>
 
@@ -98,11 +123,13 @@ export function FlagsApprovalTable({ flags }: Props) {
                     <td className="py-3 px-4">
                       {isBlacklist ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                          <ShieldAlert className="w-3.5 h-3.5" /> Blacklist toàn chuỗi
+                          <ShieldAlert className="w-3.5 h-3.5" /> Blacklist toàn
+                          chuỗi
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                          <AlertTriangle className="w-3.5 h-3.5" /> Cần chú ý (Attention)
+                          <AlertTriangle className="w-3.5 h-3.5" /> Cần chú ý
+                          (Attention)
                         </span>
                       )}
                     </td>
@@ -114,26 +141,32 @@ export function FlagsApprovalTable({ flags }: Props) {
                         <span>{flag.branch_name}</span>
                       </div>
                       <div className="text-xs text-slate-400 mt-0.5">
-                        Bởi: {flag.proposed_by_name || 'Nhân viên'}
+                        Bởi: {flag.proposed_by_name || "Nhân viên"}
                       </div>
                     </td>
 
                     {/* Reason & Evidences */}
                     <td className="py-3 px-4 max-w-xs">
-                      <p className="text-xs text-slate-300 line-clamp-2" title={flag.reason}>
+                      <p
+                        className="text-xs text-slate-300 line-clamp-2"
+                        title={flag.reason}
+                      >
                         {flag.reason}
                       </p>
-                      {flag.evidence_paths && flag.evidence_paths.length > 0 && (
-                        <div className="flex items-center gap-1 mt-1 text-xs text-indigo-400">
-                          <FileText className="w-3 h-3" />
-                          <span>{flag.evidence_paths.length} tệp đính kèm</span>
-                        </div>
-                      )}
+                      {flag.evidence_paths &&
+                        flag.evidence_paths.length > 0 && (
+                          <div className="flex items-center gap-1 mt-1 text-xs text-indigo-400">
+                            <FileText className="w-3 h-3" />
+                            <span>
+                              {flag.evidence_paths.length} tệp đính kèm
+                            </span>
+                          </div>
+                        )}
                     </td>
 
                     {/* Timestamp */}
                     <td className="py-3 px-4 text-xs text-slate-400 whitespace-nowrap">
-                      {new Date(flag.proposed_at).toLocaleDateString('vi-VN')}
+                      {new Date(flag.proposed_at).toLocaleDateString("vi-VN")}
                     </td>
 
                     {/* Actions */}
@@ -152,7 +185,7 @@ export function FlagsApprovalTable({ flags }: Props) {
                               type="button"
                               onClick={() => {
                                 setSelectedFlagId(null);
-                                setRejectNote('');
+                                setRejectNote("");
                               }}
                               className="px-2 py-0.5 text-xs text-slate-400 hover:text-white"
                             >
@@ -161,7 +194,9 @@ export function FlagsApprovalTable({ flags }: Props) {
                             <button
                               type="button"
                               disabled={isPending}
-                              onClick={() => handleDecision(flag.id, false, rejectNote)}
+                              onClick={() =>
+                                handleDecision(flag.id, false, rejectNote)
+                              }
                               className="px-2 py-0.5 bg-rose-600 hover:bg-rose-500 text-white rounded text-xs font-medium disabled:opacity-50"
                             >
                               Xác nhận từ chối

@@ -1,16 +1,16 @@
-import { getRooms, getActiveBranches, RoomsTable } from '@/features/admin';
-import { requirePermission } from '@/shared/auth/server';
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
+import { getActiveBranches, getRooms, RoomsTable } from "@/features/admin";
+import { requirePermission } from "@/shared/auth/server";
 
 export const metadata = {
-  title: 'Cài đặt phòng | CRM Chuỗi Khách Sạn',
-  description: 'Danh mục 240 phòng kinh doanh của 8 khách sạn',
+  title: "Cài đặt phòng | CRM Chuỗi Khách Sạn",
+  description: "Danh mục 240 phòng kinh doanh của 8 khách sạn",
 };
 
 export default async function SettingsRoomsPage() {
-  const hasPerm = await requirePermission('settings.rooms');
+  const hasPerm = await requirePermission("settings.rooms");
   if (!hasPerm.ok) {
-    redirect('/');
+    redirect("/");
   }
 
   const [rooms, branches] = await Promise.all([

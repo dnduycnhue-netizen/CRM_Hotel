@@ -1,36 +1,36 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useCan } from '@/shared/auth';
 import {
-  Hotel,
-  UserCheck,
-  Users,
-  Search,
-  Wrench,
   AlertTriangle,
-  ClipboardList,
   BarChart3,
+  Boxes,
+  Building,
+  CheckSquare,
+  ChevronRight,
+  ClipboardList,
+  FileSpreadsheet,
+  Hotel,
+  KeyRound,
+  Lock,
+  Search,
   Settings,
   ShieldCheck,
-  CheckSquare,
-  Building,
-  KeyRound,
-  FileSpreadsheet,
-  Boxes,
-  Lock,
   Sparkles,
-  ChevronRight,
-} from 'lucide-react';
+  UserCheck,
+  Users,
+  Wrench,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useCan } from "@/shared/auth";
 
 interface NavItem {
   title: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
-  perm?: import('@/shared/auth').Permission;
+  perm?: import("@/shared/auth").Permission;
   badge?: string;
-  badgeVariant?: 'gold' | 'emerald' | 'amber';
+  badgeVariant?: "gold" | "emerald" | "amber";
 }
 
 interface NavGroup {
@@ -40,143 +40,143 @@ interface NavGroup {
 
 const NAV_GROUPS: NavGroup[] = [
   {
-    group: 'Lễ tân & Vận hành',
+    group: "Lễ tân & Vận hành",
     items: [
       {
-        title: 'Check-in phòng',
-        href: '/check-in',
+        title: "Check-in phòng",
+        href: "/check-in",
         icon: UserCheck,
-        perm: 'stay.create',
-        badge: 'Ưu tiên',
-        badgeVariant: 'emerald',
+        perm: "stay.create",
+        badge: "Ưu tiên",
+        badgeVariant: "emerald",
       },
       {
-        title: 'Khách đang ở',
-        href: '/stays',
+        title: "Khách đang ở",
+        href: "/stays",
         icon: Users,
-        perm: 'stay.view',
+        perm: "stay.view",
       },
       {
-        title: 'Báo sự cố nhanh',
-        href: '/facilities/report',
+        title: "Báo sự cố nhanh",
+        href: "/facilities/report",
         icon: AlertTriangle,
-        perm: 'wo.create',
+        perm: "wo.create",
       },
     ],
   },
   {
-    group: 'Khách hàng & Sales',
+    group: "Khách hàng & Sales",
     items: [
       {
-        title: 'Tra cứu khách',
-        href: '/search',
+        title: "Tra cứu khách",
+        href: "/search",
         icon: Search,
-        perm: 'guest.search',
+        perm: "guest.search",
       },
       {
-        title: 'Hồ sơ khách hàng',
-        href: '/guests',
+        title: "Hồ sơ khách hàng",
+        href: "/guests",
         icon: Users,
-        perm: 'guest.view_summary',
+        perm: "guest.view_summary",
       },
       {
-        title: 'Duyệt gộp hồ sơ',
-        href: '/approvals',
+        title: "Duyệt gộp hồ sơ",
+        href: "/approvals",
         icon: CheckSquare,
-        perm: 'merge.approve',
+        perm: "merge.approve",
       },
     ],
   },
   {
-    group: 'Cơ sở vật chất & CSVC',
+    group: "Cơ sở vật chất & CSVC",
     items: [
       {
-        title: 'Phiếu sự cố / Sửa chữa',
-        href: '/facilities/work-orders',
+        title: "Phiếu sự cố / Sửa chữa",
+        href: "/facilities/work-orders",
         icon: Wrench,
-        perm: 'wo.view',
+        perm: "wo.view",
       },
       {
-        title: 'Khóa phòng ngừng bán',
-        href: '/facilities/room-blocks',
+        title: "Khóa phòng ngừng bán",
+        href: "/facilities/room-blocks",
         icon: Lock,
-        perm: 'stay.view',
+        perm: "stay.view",
       },
       {
-        title: 'Danh mục tài sản',
-        href: '/facilities/assets',
+        title: "Danh mục tài sản",
+        href: "/facilities/assets",
         icon: Boxes,
-        perm: 'facility.view',
+        perm: "facility.view",
       },
       {
-        title: 'Bảo trì & Kiểm tra',
-        href: '/facilities/maintenance',
+        title: "Bảo trì & Kiểm tra",
+        href: "/facilities/maintenance",
         icon: ClipboardList,
-        perm: 'pm.view',
+        perm: "pm.view",
       },
       {
-        title: 'Cảnh báo hết hạn',
-        href: '/facilities/alerts',
+        title: "Cảnh báo hết hạn",
+        href: "/facilities/alerts",
         icon: AlertTriangle,
-        perm: 'facility.view',
+        perm: "facility.view",
       },
     ],
   },
   {
-    group: 'Báo cáo & Doanh thu',
+    group: "Báo cáo & Doanh thu",
     items: [
       {
-        title: 'Công suất & Khách',
-        href: '/reports',
+        title: "Công suất & Khách",
+        href: "/reports",
         icon: BarChart3,
-        perm: 'report.view_branch',
+        perm: "report.view_branch",
       },
       {
-        title: 'Doanh thu & Cùng kỳ',
-        href: '/reports/monthly',
+        title: "Doanh thu & Cùng kỳ",
+        href: "/reports/monthly",
         icon: FileSpreadsheet,
-        perm: 'revenue.view',
+        perm: "revenue.view",
       },
     ],
   },
   {
-    group: 'Hệ thống & Cài đặt',
+    group: "Hệ thống & Cài đặt",
     items: [
       {
-        title: 'Cơ sở & Phòng',
-        href: '/settings/branches',
+        title: "Cơ sở & Phòng",
+        href: "/settings/branches",
         icon: Building,
-        perm: 'settings.branches',
+        perm: "settings.branches",
       },
       {
-        title: 'Người dùng & Tài khoản',
-        href: '/settings/users',
+        title: "Người dùng & Tài khoản",
+        href: "/settings/users",
         icon: KeyRound,
-        perm: 'settings.users',
+        perm: "settings.users",
       },
       {
-        title: 'Ma trận phân quyền',
-        href: '/settings/roles',
+        title: "Ma trận phân quyền",
+        href: "/settings/roles",
         icon: ShieldCheck,
-        perm: 'settings.roles',
+        perm: "settings.roles",
       },
       {
-        title: 'Bật / Tắt Module',
-        href: '/settings/modules',
+        title: "Bật / Tắt Module",
+        href: "/settings/modules",
         icon: Settings,
-        perm: 'settings.modules',
+        perm: "settings.modules",
       },
       {
-        title: 'Nguồn khách & Kênh',
-        href: '/settings/sources',
+        title: "Nguồn khách & Kênh",
+        href: "/settings/sources",
         icon: Users,
-        perm: 'settings.sources',
+        perm: "settings.sources",
       },
       {
-        title: 'Nhật ký thao tác (Audit)',
-        href: '/audit',
+        title: "Nhật ký thao tác (Audit)",
+        href: "/audit",
         icon: ClipboardList,
-        perm: 'audit.view_branch',
+        perm: "audit.view_branch",
       },
     ],
   },
@@ -212,7 +212,9 @@ export function AppSidebar() {
       {/* Nav Menu */}
       <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-6">
         {NAV_GROUPS.map((group) => {
-          const visibleItems = group.items.filter((item) => !item.perm || can(item.perm));
+          const visibleItems = group.items.filter(
+            (item) => !item.perm || can(item.perm),
+          );
           if (visibleItems.length === 0) return null;
 
           return (
@@ -222,7 +224,9 @@ export function AppSidebar() {
               </p>
               <div className="space-y-0.5 pt-1">
                 {visibleItems.map((item) => {
-                  const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href + '/'));
+                  const isActive =
+                    pathname === item.href ||
+                    (item.href !== "/" && pathname.startsWith(item.href + "/"));
                   const Icon = item.icon;
                   return (
                     <Link
@@ -230,25 +234,31 @@ export function AppSidebar() {
                       href={item.href}
                       className={`group relative flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                         isActive
-                          ? 'bg-primary text-primary-foreground shadow-sm font-semibold pl-3.5'
-                          : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground hover:translate-x-0.5'
+                          ? "bg-primary text-primary-foreground shadow-sm font-semibold pl-3.5"
+                          : "text-muted-foreground hover:bg-accent/60 hover:text-foreground hover:translate-x-0.5"
                       }`}
                     >
                       {isActive && (
                         <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r bg-amber-500" />
                       )}
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <Icon className={`h-4 w-4 shrink-0 transition-transform ${
-                          isActive ? 'text-amber-400' : 'text-muted-foreground group-hover:text-foreground'
-                        }`} />
+                        <Icon
+                          className={`h-4 w-4 shrink-0 transition-transform ${
+                            isActive
+                              ? "text-amber-400"
+                              : "text-muted-foreground group-hover:text-foreground"
+                          }`}
+                        />
                         <span className="truncate">{item.title}</span>
                       </div>
                       {item.badge && (
-                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
-                          item.badgeVariant === 'emerald'
-                            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                            : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20'
-                        }`}>
+                        <span
+                          className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+                            item.badgeVariant === "emerald"
+                              ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                              : "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                          }`}
+                        >
                           {item.badge}
                         </span>
                       )}
@@ -266,7 +276,9 @@ export function AppSidebar() {
         <div className="p-2.5 rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[11px] font-medium text-foreground">Hệ thống Live</span>
+            <span className="text-[11px] font-medium text-foreground">
+              Hệ thống Live
+            </span>
           </div>
           <Link
             href="/settings/branches"

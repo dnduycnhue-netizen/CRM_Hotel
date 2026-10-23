@@ -1,7 +1,7 @@
-import 'server-only';
-import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
-import type { Database } from '@/shared/db/types';
+import "server-only";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import type { Database } from "@/shared/db/types";
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -14,13 +14,13 @@ export async function createClient() {
         setAll: (list) => {
           try {
             list.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options),
             );
           } catch {
             // Server Component không ghi được cookie; proxy.ts lo việc làm mới phiên.
           }
         },
       },
-    }
+    },
   );
 }

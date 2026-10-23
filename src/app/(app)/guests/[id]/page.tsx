@@ -1,18 +1,24 @@
-import { Metadata } from 'next';
-import { requirePermission } from '@/shared/auth/server';
-import { notFound, redirect } from 'next/navigation';
-import { getGuestProfile, getSalesUsers, GuestProfileView } from '@/features/guests';
-import { getActiveBranches } from '@/features/admin/data/branches';
+import type { Metadata } from "next";
+import { notFound, redirect } from "next/navigation";
+import { getActiveBranches } from "@/features/admin/data/branches";
+import {
+  GuestProfileView,
+  getGuestProfile,
+  getSalesUsers,
+} from "@/features/guests";
+import { requirePermission } from "@/shared/auth/server";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { id } = await params;
   const profile = await getGuestProfile(id);
   if (!profile) {
-    return { title: 'Không tìm thấy khách hàng' };
+    return { title: "Không tìm thấy khách hàng" };
   }
   return {
     title: `${profile.guest.full_name} | Hồ sơ 360° Khách hàng`,
@@ -20,9 +26,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function GuestDetailPage({ params }: PageProps) {
-  const hasPerm = await requirePermission('guest.view_summary');
+  const hasPerm = await requirePermission("guest.view_summary");
   if (!hasPerm.ok) {
-    redirect('/');
+    redirect("/");
   }
 
   const { id } = await params;

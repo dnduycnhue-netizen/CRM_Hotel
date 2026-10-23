@@ -1,17 +1,21 @@
-import { Metadata } from 'next';
-import { requirePermission } from '@/shared/auth/server';
-import { redirect } from 'next/navigation';
-import { getActiveBranches } from '@/features/admin';
-import { getPmPlans, getInspections, MaintenanceHub } from '@/features/facilities';
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { getActiveBranches } from "@/features/admin";
+import {
+  getInspections,
+  getPmPlans,
+  MaintenanceHub,
+} from "@/features/facilities";
+import { requirePermission } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
-  title: 'Bảo trì định kỳ & Kiểm tra CSVC | CRM Khách Sạn',
+  title: "Bảo trì định kỳ & Kiểm tra CSVC | CRM Khách Sạn",
 };
 
 export default async function MaintenancePage() {
-  const hasPerm = await requirePermission('pm.view');
+  const hasPerm = await requirePermission("pm.view");
   if (!hasPerm.ok) {
-    redirect('/');
+    redirect("/");
   }
 
   const [plans, inspections, branches] = await Promise.all([
@@ -27,7 +31,8 @@ export default async function MaintenancePage() {
           Bảo trì định kỳ & Kiểm tra phòng
         </h1>
         <p className="text-sm text-slate-400 mt-1">
-          Theo dõi lịch bảo trì thiết bị chu kỳ và lịch sử biên bản kiểm tra phòng, khu vực chung
+          Theo dõi lịch bảo trì thiết bị chu kỳ và lịch sử biên bản kiểm tra
+          phòng, khu vực chung
         </p>
       </div>
 

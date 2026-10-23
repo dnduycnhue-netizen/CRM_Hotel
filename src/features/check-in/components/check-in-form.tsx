@@ -1,48 +1,49 @@
-'use client';
+"use client";
 
-import React, { useState, useTransition, useEffect, useMemo } from 'react';
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/shared/ui';
-import { Button } from '@/shared/ui';
-import { Input } from '@/shared/ui';
-import { Label } from '@/shared/ui';
-import { Badge } from '@/shared/ui';
-import { Switch } from '@/shared/ui';
-import { Checkbox } from '@/shared/ui';
-import {
-  lookupGuestAction,
-  checkInGuestAction,
-  type GuestLookupResult,
-} from '../actions';
-import { classifyQuery } from '../domain/query-classifier';
-import { normalizeFullName, normalizeVnPhone } from '../domain/normalize';
-import {
-  UserCheck,
-  Search,
-  Sparkles,
-  Phone,
-  CreditCard,
+  AlertTriangle,
+  BedDouble,
   Building,
   Calendar,
-  AlertTriangle,
-  History,
-  FileText,
-  Percent,
-  CheckCircle2,
-  Loader2,
-  DoorClosed,
-  Crown,
-  ShieldCheck,
   Check,
-  BedDouble,
+  CheckCircle2,
   Clock,
-} from 'lucide-react';
-import { toast } from 'sonner';
+  CreditCard,
+  Crown,
+  DoorClosed,
+  FileText,
+  History,
+  Loader2,
+  Percent,
+  Phone,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  UserCheck,
+} from "lucide-react";
+import type React from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { toast } from "sonner";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Checkbox,
+  Input,
+  Label,
+  Switch,
+} from "@/shared/ui";
+import {
+  checkInGuestAction,
+  type GuestLookupResult,
+  lookupGuestAction,
+} from "../actions";
+import { normalizeFullName, normalizeVnPhone } from "../domain/normalize";
+import { classifyQuery } from "../domain/query-classifier";
 
 interface CheckInFormProps {
   currentBranchId: string;
@@ -65,26 +66,26 @@ export function CheckInForm({
   const [isLookingUp, setIsLookingUp] = useState(false);
 
   // Form Fields
-  const [queryValue, setQueryValue] = useState('');
-  const [detectedKind, setDetectedKind] = useState<string>('phone');
+  const [queryValue, setQueryValue] = useState("");
+  const [detectedKind, setDetectedKind] = useState<string>("phone");
   const [guestId, setGuestId] = useState<string | null>(null);
-  const [fullName, setFullName] = useState('');
-  const [gender, setGender] = useState<'male' | 'female' | 'other'>('male');
-  const [dob, setDob] = useState('');
-  const [phone, setPhone] = useState('');
-  const [docNumber, setDocNumber] = useState('');
-  const [selectedRoomId, setSelectedRoomId] = useState('');
-  const [sourceChannel, setSourceChannel] = useState('walk_in');
+  const [fullName, setFullName] = useState("");
+  const [gender, setGender] = useState<"male" | "female" | "other">("male");
+  const [dob, setDob] = useState("");
+  const [phone, setPhone] = useState("");
+  const [docNumber, setDocNumber] = useState("");
+  const [selectedRoomId, setSelectedRoomId] = useState("");
+  const [sourceChannel, setSourceChannel] = useState("walk_in");
   const [expectedCheckOut, setExpectedCheckOut] = useState(() => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split('T')[0] + 'T12:00';
+    return tomorrow.toISOString().split("T")[0] + "T12:00";
   });
 
   // Manager backdated mode
   const [isBackdated, setIsBackdated] = useState(false);
-  const [actualCheckIn, setActualCheckIn] = useState('');
-  const [actualCheckOut, setActualCheckOut] = useState('');
+  const [actualCheckIn, setActualCheckIn] = useState("");
+  const [actualCheckOut, setActualCheckOut] = useState("");
 
   // Blacklist
   const [blacklistAck, setBlacklistAck] = useState(false);
@@ -101,7 +102,7 @@ export function CheckInForm({
     const { kind, cleanValue } = classifyQuery(queryValue);
     setDetectedKind(kind);
 
-    if (kind === 'phone' || kind === 'cccd' || kind === 'passport') {
+    if (kind === "phone" || kind === "cccd" || kind === "passport") {
       const timer = setTimeout(async () => {
         setIsLookingUp(true);
         const res = await lookupGuestAction(currentBranchId, kind, cleanValue);
@@ -112,15 +113,17 @@ export function CheckInForm({
           setGuestData(g);
           setGuestId(g.guestId);
           setFullName(g.fullName);
-          setGender((g.gender as any) || 'male');
+          setGender((g.gender as any) || "male");
           if (g.dob) setDob(g.dob);
           if (g.phone) setPhone(g.phone);
           if (g.docNumberMasked) setDocNumber(g.docNumberMasked);
-          toast.success(`Nhận diện khách cũ: ${g.fullName} (${g.totalStays} lượt ở)`);
+          toast.success(
+            `Nhận diện khách cũ: ${g.fullName} (${g.totalStays} lượt ở)`,
+          );
         } else {
           // New guest
-          if (kind === 'phone') setPhone(cleanValue);
-          if (kind === 'cccd') setDocNumber(cleanValue);
+          if (kind === "phone") setPhone(cleanValue);
+          if (kind === "cccd") setDocNumber(cleanValue);
           setGuestData(null);
           setGuestId(null);
         }
@@ -134,17 +137,17 @@ export function CheckInForm({
     e.preventDefault();
 
     if (!selectedRoomId) {
-      toast.error('Vui lòng chọn số phòng nhận');
+      toast.error("Vui lòng chọn số phòng nhận");
       return;
     }
 
     if (!fullName) {
-      toast.error('Vui lòng nhập họ và tên khách');
+      toast.error("Vui lòng nhập họ và tên khách");
       return;
     }
 
     if (guestData?.hasBlacklist && !blacklistAck) {
-      toast.error('Khách có cảnh báo vi phạm. Vui lòng tick xác nhận đã đọc!');
+      toast.error("Khách có cảnh báo vi phạm. Vui lòng tick xác nhận đã đọc!");
       return;
     }
 
@@ -157,8 +160,9 @@ export function CheckInForm({
         gender,
         dob: dob || undefined,
         phone: phone ? normalizeVnPhone(phone) : undefined,
-        documentType: detectedKind === 'passport' ? 'passport' : 'cccd',
-        documentNumber: docNumber && !docNumber.includes('*') ? docNumber : undefined,
+        documentType: detectedKind === "passport" ? "passport" : "cccd",
+        documentNumber:
+          docNumber && !docNumber.includes("*") ? docNumber : undefined,
         sourceChannelCode: sourceChannel,
         expectedCheckOutAt: expectedCheckOut,
         isBackdated,
@@ -170,16 +174,16 @@ export function CheckInForm({
       if (res.ok) {
         toast.success(`Check-in thành công cho khách ${fullName}!`);
         // Reset form
-        setQueryValue('');
-        setFullName('');
-        setPhone('');
-        setDocNumber('');
+        setQueryValue("");
+        setFullName("");
+        setPhone("");
+        setDocNumber("");
         setGuestData(null);
         setGuestId(null);
-        setSelectedRoomId('');
+        setSelectedRoomId("");
         setBlacklistAck(false);
       } else {
-        toast.error(res.error.message || 'Lỗi khi thực hiện check-in');
+        toast.error(res.error.message || "Lỗi khi thực hiện check-in");
       }
     });
   };
@@ -188,7 +192,8 @@ export function CheckInForm({
   const roomsByFloor = useMemo(() => {
     const map = new Map<number, typeof rooms>();
     for (const r of rooms) {
-      const floor = r.number.length >= 3 ? parseInt(r.number.slice(0, -2), 10) : 1;
+      const floor =
+        r.number.length >= 3 ? parseInt(r.number.slice(0, -2), 10) : 1;
       if (!map.has(floor)) map.set(floor, []);
       map.get(floor)!.push(r);
     }
@@ -213,7 +218,8 @@ export function CheckInForm({
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Nhận diện hồ sơ khách cũ &lt; 300ms · Tự động áp dụng hạng VIP & giảm giá
+              Nhận diện hồ sơ khách cũ &lt; 300ms · Tự động áp dụng hạng VIP &
+              giảm giá
             </p>
           </div>
         </div>
@@ -225,7 +231,8 @@ export function CheckInForm({
             </span>
             <span className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center justify-end gap-1">
               <BedDouble className="h-4 w-4" />
-              {rooms.filter(r => !r.isOccupied && !r.isBlocked).length} / {rooms.length} phòng
+              {rooms.filter((r) => !r.isOccupied && !r.isBlocked).length} /{" "}
+              {rooms.length} phòng
             </span>
           </div>
         </div>
@@ -254,7 +261,10 @@ export function CheckInForm({
                       checked={isBackdated}
                       onCheckedChange={setIsBackdated}
                     />
-                    <Label htmlFor="backdated" className="text-xs font-semibold cursor-pointer">
+                    <Label
+                      htmlFor="backdated"
+                      className="text-xs font-semibold cursor-pointer"
+                    >
                       Nhập bù
                     </Label>
                   </div>
@@ -264,13 +274,18 @@ export function CheckInForm({
               <CardContent className="space-y-5 pt-5">
                 {/* 1. Quick Identifier Box */}
                 <div className="p-3.5 rounded-xl border-2 border-amber-500/30 bg-amber-500/5 space-y-2">
-                  <Label htmlFor="identity" className="text-xs font-bold flex items-center justify-between text-foreground">
+                  <Label
+                    htmlFor="identity"
+                    className="text-xs font-bold flex items-center justify-between text-foreground"
+                  >
                     <span className="flex items-center gap-1.5">
                       <Sparkles className="h-3.5 w-3.5 text-amber-500" />
                       1. Ô Tra Cứu Nhanh (SĐT / CCCD 12 số / Passport) *
                     </span>
                     <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400">
-                      {isLookingUp ? 'Đang tìm...' : `Loại: ${detectedKind.toUpperCase()}`}
+                      {isLookingUp
+                        ? "Đang tìm..."
+                        : `Loại: ${detectedKind.toUpperCase()}`}
                     </span>
                   </Label>
                   <div className="relative">
@@ -293,7 +308,10 @@ export function CheckInForm({
                 {/* 2. Full Name & Gender & DOB */}
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                   <div className="sm:col-span-6 space-y-1.5">
-                    <Label htmlFor="fullName" className="text-xs font-bold text-foreground">
+                    <Label
+                      htmlFor="fullName"
+                      className="text-xs font-bold text-foreground"
+                    >
                       Họ và tên khách *
                     </Label>
                     <Input
@@ -306,7 +324,10 @@ export function CheckInForm({
                     />
                   </div>
                   <div className="sm:col-span-3 space-y-1.5">
-                    <Label htmlFor="gender" className="text-xs font-semibold text-muted-foreground">
+                    <Label
+                      htmlFor="gender"
+                      className="text-xs font-semibold text-muted-foreground"
+                    >
                       Giới tính
                     </Label>
                     <select
@@ -321,7 +342,10 @@ export function CheckInForm({
                     </select>
                   </div>
                   <div className="sm:col-span-3 space-y-1.5">
-                    <Label htmlFor="dob" className="text-xs font-semibold text-muted-foreground">
+                    <Label
+                      htmlFor="dob"
+                      className="text-xs font-semibold text-muted-foreground"
+                    >
                       Ngày sinh
                     </Label>
                     <Input
@@ -337,7 +361,10 @@ export function CheckInForm({
                 {/* 3. Phone & ID Card */}
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                   <div className="sm:col-span-6 space-y-1.5">
-                    <Label htmlFor="phone" className="text-xs font-bold text-foreground">
+                    <Label
+                      htmlFor="phone"
+                      className="text-xs font-bold text-foreground"
+                    >
                       Số điện thoại liên hệ
                     </Label>
                     <Input
@@ -350,10 +377,13 @@ export function CheckInForm({
                   </div>
                   <div className="sm:col-span-6 space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="docNumber" className="text-xs font-bold text-foreground">
+                      <Label
+                        htmlFor="docNumber"
+                        className="text-xs font-bold text-foreground"
+                      >
                         Số CCCD / Hộ chiếu
                       </Label>
-                      {guestId && docNumber.includes('*') && (
+                      {guestId && docNumber.includes("*") && (
                         <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
                           Đã lưu hồ sơ
                         </span>
@@ -366,9 +396,10 @@ export function CheckInForm({
                       placeholder="12 số CCCD hoặc mã Passport"
                       className="h-9.5 text-xs font-mono font-semibold rounded-xl"
                     />
-                    {guestId && docNumber.includes('*') && (
+                    {guestId && docNumber.includes("*") && (
                       <p className="text-[11px] text-muted-foreground">
-                        Hồ sơ đã lưu CCCD (bảo mật). Nhập số mới chỉ khi khách đổi giấy tờ.
+                        Hồ sơ đã lưu CCCD (bảo mật). Nhập số mới chỉ khi khách
+                        đổi giấy tờ.
                       </p>
                     )}
                   </div>
@@ -377,12 +408,17 @@ export function CheckInForm({
                 {/* 4. Visual Room Selector (Hot Feature for UX!) */}
                 <div className="space-y-2 pt-1">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="roomSelect" className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Label
+                      htmlFor="roomSelect"
+                      className="text-xs font-bold text-foreground flex items-center gap-1.5"
+                    >
                       <BedDouble className="h-4 w-4 text-emerald-600" />
                       <span>Chọn phòng nhận ({branchName}) *</span>
                     </Label>
                     <span className="text-[11px] text-muted-foreground">
-                      {selectedRoomId ? 'Đã chọn phòng' : 'Click chọn trực tiếp ô phòng'}
+                      {selectedRoomId
+                        ? "Đã chọn phòng"
+                        : "Click chọn trực tiếp ô phòng"}
                     </span>
                   </div>
 
@@ -406,16 +442,24 @@ export function CheckInForm({
                                   key={r.id}
                                   type="button"
                                   disabled
-                                  title={isOccupied ? 'Phòng đang có khách ở' : 'Phòng đang khóa ngừng bán (OOO)'}
+                                  title={
+                                    isOccupied
+                                      ? "Phòng đang có khách ở"
+                                      : "Phòng đang khóa ngừng bán (OOO)"
+                                  }
                                   className={`px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-not-allowed border flex items-center gap-1 shadow-2xs opacity-60 ${
                                     isBlocked
-                                      ? 'bg-rose-500/10 border-rose-500/30 text-rose-500'
-                                      : 'bg-muted/40 border-border/50 text-muted-foreground'
+                                      ? "bg-rose-500/10 border-rose-500/30 text-rose-500"
+                                      : "bg-muted/40 border-border/50 text-muted-foreground"
                                   }`}
                                 >
-                                  <span className={`h-1.5 w-1.5 rounded-full ${isBlocked ? 'bg-rose-500' : 'bg-muted-foreground'}`} />
+                                  <span
+                                    className={`h-1.5 w-1.5 rounded-full ${isBlocked ? "bg-rose-500" : "bg-muted-foreground"}`}
+                                  />
                                   <span>P.{r.number}</span>
-                                  <span className="text-[9px] font-bold">({isBlocked ? 'OOO' : 'Ở'})</span>
+                                  <span className="text-[9px] font-bold">
+                                    ({isBlocked ? "OOO" : "Ở"})
+                                  </span>
                                 </button>
                               );
                             }
@@ -427,8 +471,8 @@ export function CheckInForm({
                                 onClick={() => setSelectedRoomId(r.id)}
                                 className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-xs ${
                                   isSelected
-                                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 scale-105 ring-2 ring-emerald-400'
-                                    : 'bg-card border border-border/70 text-foreground hover:border-emerald-500/50 hover:bg-emerald-500/10'
+                                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30 scale-105 ring-2 ring-emerald-400"
+                                    : "bg-card border border-border/70 text-foreground hover:border-emerald-500/50 hover:bg-emerald-500/10"
                                 }`}
                               >
                                 {isSelected ? (
@@ -457,8 +501,17 @@ export function CheckInForm({
                     {rooms.map((r) => {
                       const isUnavailable = r.isOccupied || r.isBlocked;
                       return (
-                        <option key={r.id} value={r.id} disabled={isUnavailable}>
-                          Phòng {r.number} ({r.roomType || 'Tiêu chuẩn'}) {r.isOccupied ? '— [Đang có khách]' : r.isBlocked ? '— [Đang khóa OOO]' : '— [Sẵn sàng]'}
+                        <option
+                          key={r.id}
+                          value={r.id}
+                          disabled={isUnavailable}
+                        >
+                          Phòng {r.number} ({r.roomType || "Tiêu chuẩn"}){" "}
+                          {r.isOccupied
+                            ? "— [Đang có khách]"
+                            : r.isBlocked
+                              ? "— [Đang khóa OOO]"
+                              : "— [Sẵn sàng]"}
                         </option>
                       );
                     })}
@@ -468,7 +521,10 @@ export function CheckInForm({
                 {/* 5. Source channel & Checkout Date */}
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-1">
                   <div className="sm:col-span-6 space-y-1.5">
-                    <Label htmlFor="sourceChannel" className="text-xs font-semibold text-muted-foreground">
+                    <Label
+                      htmlFor="sourceChannel"
+                      className="text-xs font-semibold text-muted-foreground"
+                    >
                       Kênh nguồn khách *
                     </Label>
                     <select
@@ -477,17 +533,26 @@ export function CheckInForm({
                       onChange={(e) => setSourceChannel(e.target.value)}
                       className="w-full h-9.5 rounded-xl border border-input bg-background px-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500/30"
                     >
-                      <option value="walk_in">Khách vãng lai (Quầy lễ tân)</option>
-                      <option value="direct_phone">Đặt qua hotline / Điện thoại</option>
+                      <option value="walk_in">
+                        Khách vãng lai (Quầy lễ tân)
+                      </option>
+                      <option value="direct_phone">
+                        Đặt qua hotline / Điện thoại
+                      </option>
                       <option value="ota_booking">Booking.com</option>
                       <option value="ota_agoda">Agoda</option>
                       <option value="ota_expedia">Expedia</option>
-                      <option value="corporate">Hợp đồng công ty / Doanh nghiệp</option>
+                      <option value="corporate">
+                        Hợp đồng công ty / Doanh nghiệp
+                      </option>
                     </select>
                   </div>
 
                   <div className="sm:col-span-6 space-y-1.5">
-                    <Label htmlFor="checkoutTime" className="text-xs font-semibold text-muted-foreground">
+                    <Label
+                      htmlFor="checkoutTime"
+                      className="text-xs font-semibold text-muted-foreground"
+                    >
                       Dự kiến trả phòng *
                     </Label>
                     <Input
@@ -510,7 +575,10 @@ export function CheckInForm({
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <Label htmlFor="actualIn" className="text-[11px] font-semibold">
+                        <Label
+                          htmlFor="actualIn"
+                          className="text-[11px] font-semibold"
+                        >
                           Giờ vào thực tế *
                         </Label>
                         <Input
@@ -523,7 +591,10 @@ export function CheckInForm({
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label htmlFor="actualOut" className="text-[11px] font-semibold">
+                        <Label
+                          htmlFor="actualOut"
+                          className="text-[11px] font-semibold"
+                        >
                           Giờ ra thực tế (Nếu đã trả)
                         </Label>
                         <Input
@@ -546,7 +617,8 @@ export function CheckInForm({
                       <span>CẢNH BÁO VI PHẠM / SỰ CỐ TỪNG GÂY RA</span>
                     </div>
                     <p className="text-xs text-rose-700 dark:text-rose-300 font-medium">
-                      {guestData.blacklistReason || 'Khách hàng có lịch sử làm hư hỏng tài sản hoặc vi phạm nội quy chuỗi.'}
+                      {guestData.blacklistReason ||
+                        "Khách hàng có lịch sử làm hư hỏng tài sản hoặc vi phạm nội quy chuỗi."}
                     </p>
                     <div className="flex items-center gap-2 pt-1">
                       <Checkbox
@@ -554,8 +626,12 @@ export function CheckInForm({
                         checked={blacklistAck}
                         onCheckedChange={(c) => setBlacklistAck(!!c)}
                       />
-                      <Label htmlFor="ack" className="text-xs font-bold text-rose-700 dark:text-rose-300 cursor-pointer">
-                        Tôi xác nhận đã đọc cảnh báo và chịu trách nhiệm tiếp nhận khách này
+                      <Label
+                        htmlFor="ack"
+                        className="text-xs font-bold text-rose-700 dark:text-rose-300 cursor-pointer"
+                      >
+                        Tôi xác nhận đã đọc cảnh báo và chịu trách nhiệm tiếp
+                        nhận khách này
                       </Label>
                     </div>
                   </div>
@@ -564,7 +640,11 @@ export function CheckInForm({
                 {/* Actions Footer */}
                 <div className="pt-4 flex items-center justify-between border-t border-border/50">
                   <span className="text-[11px] text-muted-foreground hidden sm:inline">
-                    Phím tắt: <kbd className="font-bold text-foreground bg-muted px-1.5 py-0.5 rounded border border-border/60">Enter</kbd> Lưu check-in
+                    Phím tắt:{" "}
+                    <kbd className="font-bold text-foreground bg-muted px-1.5 py-0.5 rounded border border-border/60">
+                      Enter
+                    </kbd>{" "}
+                    Lưu check-in
                   </span>
                   <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                     <Button
@@ -578,9 +658,9 @@ export function CheckInForm({
                           Đang lưu hồ sơ...
                         </>
                       ) : isBackdated ? (
-                        'Lưu Lượt Ở Quá Khứ'
+                        "Lưu Lượt Ở Quá Khứ"
                       ) : (
-                        'Hoàn Tất Check-in'
+                        "Hoàn Tất Check-in"
                       )}
                     </Button>
                   </div>
@@ -603,17 +683,20 @@ export function CheckInForm({
                   <Badge
                     variant="default"
                     className={`text-[10px] font-bold px-2 py-0.5 shadow-xs ${
-                      guestData.tierName === 'Vàng'
-                        ? 'bg-amber-500 text-black font-extrabold'
-                        : guestData.tierName === 'Bạc'
-                        ? 'bg-slate-400 text-white'
-                        : 'bg-amber-800 text-white'
+                      guestData.tierName === "Vàng"
+                        ? "bg-amber-500 text-black font-extrabold"
+                        : guestData.tierName === "Bạc"
+                          ? "bg-slate-400 text-white"
+                          : "bg-amber-800 text-white"
                     }`}
                   >
-                    Hạng {guestData.tierName || 'Đồng'}
+                    Hạng {guestData.tierName || "Đồng"}
                   </Badge>
                 ) : (
-                  <Badge variant="outline" className="text-[10px] border-border/70 bg-muted/40">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] border-border/70 bg-muted/40"
+                  >
                     Khách mới
                   </Badge>
                 )}
@@ -626,14 +709,20 @@ export function CheckInForm({
                   {/* Guest Identity & Discount Highlights */}
                   <div className="rounded-xl bg-card p-4 border border-border/70 shadow-xs space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="font-extrabold text-base text-foreground">{guestData.fullName}</span>
-                      <span className="font-mono text-muted-foreground text-xs font-semibold">{guestData.phone}</span>
+                      <span className="font-extrabold text-base text-foreground">
+                        {guestData.fullName}
+                      </span>
+                      <span className="font-mono text-muted-foreground text-xs font-semibold">
+                        {guestData.phone}
+                      </span>
                     </div>
 
                     {guestData.discountPct > 0 && (
                       <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-3 py-1.5 rounded-lg font-bold text-xs">
                         <Percent className="h-4 w-4" />
-                        <span>Được áp dụng ưu đãi giảm giá {guestData.discountPct}%!</span>
+                        <span>
+                          Được áp dụng ưu đãi giảm giá {guestData.discountPct}%!
+                        </span>
                       </div>
                     )}
                   </div>
@@ -656,10 +745,10 @@ export function CheckInForm({
                         Lần ở gần nhất
                       </span>
                       <span className="text-xs font-bold text-foreground block truncate">
-                        {guestData.lastStayBranchName || 'Boutique'}
+                        {guestData.lastStayBranchName || "Boutique"}
                       </span>
                       <span className="text-[10px] text-muted-foreground font-medium">
-                        {guestData.lastStayDate || 'Gần đây'}
+                        {guestData.lastStayDate || "Gần đây"}
                       </span>
                     </div>
                   </div>
@@ -670,10 +759,13 @@ export function CheckInForm({
                       <FileText className="h-3.5 w-3.5 text-amber-500" />
                       Ghi chú & Sở thích đặc biệt:
                     </span>
-                    {guestData.recentNotes && guestData.recentNotes.length > 0 ? (
+                    {guestData.recentNotes &&
+                    guestData.recentNotes.length > 0 ? (
                       <ul className="space-y-1.5 pl-4 list-disc text-muted-foreground text-[11px]">
                         {guestData.recentNotes.map((note, idx) => (
-                          <li key={idx} className="font-medium">{note}</li>
+                          <li key={idx} className="font-medium">
+                            {note}
+                          </li>
                         ))}
                       </ul>
                     ) : (
@@ -689,9 +781,12 @@ export function CheckInForm({
                     <div className="h-12 w-12 rounded-full bg-amber-500/10 text-amber-600 mx-auto flex items-center justify-center">
                       <UserCheck className="h-6 w-6" />
                     </div>
-                    <p className="font-bold text-sm text-foreground">Sẵn sàng nhận diện khách quen</p>
+                    <p className="font-bold text-sm text-foreground">
+                      Sẵn sàng nhận diện khách quen
+                    </p>
                     <p className="text-[11px] text-muted-foreground max-w-xs mx-auto leading-relaxed">
-                      Nhập số điện thoại hoặc số CCCD vào ô số 1. Hệ thống sẽ tự động đối soát hồ sơ 8 cơ sở ngay tức thì.
+                      Nhập số điện thoại hoặc số CCCD vào ô số 1. Hệ thống sẽ tự
+                      động đối soát hồ sơ 8 cơ sở ngay tức thì.
                     </p>
                   </div>
 
@@ -703,16 +798,28 @@ export function CheckInForm({
                     </span>
                     <div className="grid grid-cols-3 gap-2 text-center text-[11px]">
                       <div className="p-2.5 rounded-lg bg-muted/40 border border-border/40">
-                        <span className="font-bold block text-foreground">Đồng</span>
-                        <span className="text-[10px] text-muted-foreground">≥ 2 lần · -3%</span>
+                        <span className="font-bold block text-foreground">
+                          Đồng
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          ≥ 2 lần · -3%
+                        </span>
                       </div>
                       <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30">
-                        <span className="font-bold block text-amber-700 dark:text-amber-400">Bạc</span>
-                        <span className="text-[10px] text-muted-foreground">≥ 5 lần · -5%</span>
+                        <span className="font-bold block text-amber-700 dark:text-amber-400">
+                          Bạc
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          ≥ 5 lần · -5%
+                        </span>
                       </div>
                       <div className="p-2.5 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
-                        <span className="font-bold block text-yellow-700 dark:text-yellow-400">Vàng</span>
-                        <span className="text-[10px] text-muted-foreground">≥ 10 lần · -10%</span>
+                        <span className="font-bold block text-yellow-700 dark:text-yellow-400">
+                          Vàng
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          ≥ 10 lần · -10%
+                        </span>
                       </div>
                     </div>
                   </div>

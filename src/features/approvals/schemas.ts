@@ -1,16 +1,14 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const proposeMergeSchema = z.object({
   keep_guest_id: z.string().uuid(),
   drop_guest_id: z.string().uuid(),
-  reason: z.string().default('manual'),
+  reason: z.string().default("manual"),
 });
 
 export const approveMergeSchema = z.object({
   request_id: z.string().uuid(),
-  field_choices: z
-    .record(z.string(), z.enum(['keep', 'drop']))
-    .default({}),
+  field_choices: z.record(z.string(), z.enum(["keep", "drop"])).default({}),
 });
 
 export const rejectMergeSchema = z.object({
@@ -21,8 +19,8 @@ export const rejectMergeSchema = z.object({
 export const proposeFlagSchema = z.object({
   guest_id: z.string().uuid(),
   branch_id: z.string().uuid(),
-  flag_type: z.enum(['blacklist', 'attention']),
-  reason: z.string().min(10, 'Lý do tối thiểu 10 ký tự').max(1000),
+  flag_type: z.enum(["blacklist", "attention"]),
+  reason: z.string().min(10, "Lý do tối thiểu 10 ký tự").max(1000),
   evidence_paths: z.array(z.string()).default([]),
 });
 
@@ -34,7 +32,7 @@ export const decideFlagSchema = z.object({
 
 export const removeFlagSchema = z.object({
   id: z.string().uuid(),
-  reason: z.string().min(5, 'Lý do gỡ cờ tối thiểu 5 ký tự').max(500),
+  reason: z.string().min(5, "Lý do gỡ cờ tối thiểu 5 ký tự").max(500),
 });
 
 export type ProposeMergeInput = z.input<typeof proposeMergeSchema>;

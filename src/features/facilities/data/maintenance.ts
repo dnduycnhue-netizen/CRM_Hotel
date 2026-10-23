@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from "@/lib/supabase/server";
 
 export interface PmPlanItem {
   id: string;
@@ -34,7 +34,7 @@ export async function getPmPlans(branchId?: string): Promise<PmPlanItem[]> {
   const supabase = await createClient();
 
   let query = supabase
-    .from('pm_plans')
+    .from("pm_plans")
     .select(`
       id,
       branch_id,
@@ -50,10 +50,10 @@ export async function getPmPlans(branchId?: string): Promise<PmPlanItem[]> {
       vendor:vendors(name),
       assignee:profiles!pm_plans_default_assignee_id_fkey(full_name)
     `)
-    .order('next_due_date', { ascending: true });
+    .order("next_due_date", { ascending: true });
 
   if (branchId) {
-    query = query.eq('branch_id', branchId);
+    query = query.eq("branch_id", branchId);
   }
 
   const { data, error } = await query;
@@ -62,7 +62,7 @@ export async function getPmPlans(branchId?: string): Promise<PmPlanItem[]> {
   return data.map((row: any) => ({
     id: row.id,
     branch_id: row.branch_id,
-    branch_name: row.branch?.name || '',
+    branch_name: row.branch?.name || "",
     name: row.name,
     asset_name: row.asset?.name || null,
     interval_days: row.interval_days,
@@ -76,11 +76,13 @@ export async function getPmPlans(branchId?: string): Promise<PmPlanItem[]> {
   }));
 }
 
-export async function getInspections(branchId?: string): Promise<InspectionItem[]> {
+export async function getInspections(
+  branchId?: string,
+): Promise<InspectionItem[]> {
   const supabase = await createClient();
 
   let query = supabase
-    .from('inspections')
+    .from("inspections")
     .select(`
       id,
       branch_id,
@@ -94,11 +96,11 @@ export async function getInspections(branchId?: string): Promise<InspectionItem[
       room:rooms(number),
       inspector:profiles(full_name)
     `)
-    .order('performed_at', { ascending: false })
+    .order("performed_at", { ascending: false })
     .limit(50);
 
   if (branchId) {
-    query = query.eq('branch_id', branchId);
+    query = query.eq("branch_id", branchId);
   }
 
   const { data, error } = await query;
@@ -107,10 +109,10 @@ export async function getInspections(branchId?: string): Promise<InspectionItem[
   return data.map((row: any) => ({
     id: row.id,
     branch_id: row.branch_id,
-    branch_name: row.branch?.name || '',
-    template_name: row.template?.name || 'Mẫu kiểm tra',
+    branch_name: row.branch?.name || "",
+    template_name: row.template?.name || "Mẫu kiểm tra",
     room_number: row.room?.number || null,
-    inspector_name: row.inspector?.full_name || 'Kỹ thuật viên',
+    inspector_name: row.inspector?.full_name || "Kỹ thuật viên",
     performed_at: row.performed_at,
     passed: row.passed,
     failed: row.failed,

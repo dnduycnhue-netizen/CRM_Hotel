@@ -1,16 +1,16 @@
-import { getSystemRoles, RoleMatrixTable } from '@/features/admin';
-import { requirePermission } from '@/shared/auth/server';
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
+import { getSystemRoles, RoleMatrixTable } from "@/features/admin";
+import { requirePermission } from "@/shared/auth/server";
 
 export const metadata = {
-  title: 'Ma trận vai trò & quyền | CRM Chuỗi Khách Sạn',
-  description: 'Phân quyền động dạng ma trận checkbox cho các vai trò',
+  title: "Ma trận vai trò & quyền | CRM Chuỗi Khách Sạn",
+  description: "Phân quyền động dạng ma trận checkbox cho các vai trò",
 };
 
 export default async function SettingsRolesPage() {
-  const hasPerm = await requirePermission('settings.roles');
+  const hasPerm = await requirePermission("settings.roles");
   if (!hasPerm.ok) {
-    redirect('/');
+    redirect("/");
   }
 
   const { roles, permissions } = await getSystemRoles();
@@ -22,7 +22,8 @@ export default async function SettingsRolesPage() {
           Phân Quyền Vai Trò (Role Matrix)
         </h1>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Ma trận checkbox tùy chỉnh quyền hạn cho từng nhóm nhân viên (Lễ tân, Quản lý, Sales, Kỹ thuật)
+          Ma trận checkbox tùy chỉnh quyền hạn cho từng nhóm nhân viên (Lễ tân,
+          Quản lý, Sales, Kỹ thuật)
         </p>
       </div>
 

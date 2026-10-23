@@ -1,19 +1,23 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import type { RoomItem, Branch } from '../domain/types';
+import { Building, DoorClosed, Filter } from "lucide-react";
+import { useState } from "react";
 import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/ui';
-import { Badge } from '@/shared/ui';
-import { Button } from '@/shared/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui';
-import { DoorClosed, Filter, Building } from 'lucide-react';
+} from "@/shared/ui";
+import type { Branch, RoomItem } from "../domain/types";
 
 interface RoomsTableProps {
   rooms: RoomItem[];
@@ -21,11 +25,14 @@ interface RoomsTableProps {
 }
 
 export function RoomsTable({ rooms, branches }: RoomsTableProps) {
-  const [selectedBranch, setSelectedBranch] = useState<string>('all');
-  const [searchNumber, setSearchNumber] = useState<string>('');
+  const [selectedBranch, setSelectedBranch] = useState<string>("all");
+  const [searchNumber, setSearchNumber] = useState<string>("");
 
   const filteredRooms = rooms.filter((r) => {
-    const matchBranch = selectedBranch === 'all' || r.branchId === selectedBranch || r.branchCode === selectedBranch;
+    const matchBranch =
+      selectedBranch === "all" ||
+      r.branchId === selectedBranch ||
+      r.branchCode === selectedBranch;
     const matchNumber = !searchNumber || r.number.includes(searchNumber);
     return matchBranch && matchNumber;
   });
@@ -80,7 +87,10 @@ export function RoomsTable({ rooms, branches }: RoomsTableProps) {
           <TableBody>
             {filteredRooms.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-32 text-center text-xs text-muted-foreground">
+                <TableCell
+                  colSpan={6}
+                  className="h-32 text-center text-xs text-muted-foreground"
+                >
                   Không tìm thấy phòng nào phù hợp với bộ lọc
                 </TableCell>
               </TableRow>
@@ -88,7 +98,10 @@ export function RoomsTable({ rooms, branches }: RoomsTableProps) {
               filteredRooms.map((r) => (
                 <TableRow key={r.id} className="text-xs hover:bg-muted/40">
                   <TableCell>
-                    <Badge variant="outline" className="font-mono text-[10px] font-bold">
+                    <Badge
+                      variant="outline"
+                      className="font-mono text-[10px] font-bold"
+                    >
                       {r.branchCode}
                     </Badge>
                   </TableCell>
@@ -98,19 +111,28 @@ export function RoomsTable({ rooms, branches }: RoomsTableProps) {
                       <span>Phòng {r.number}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">Tầng {r.floor || 1}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    Tầng {r.floor || 1}
+                  </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className="text-[10px]">
                       {r.roomType}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="default" className="text-[10px] bg-emerald-600 hover:bg-emerald-600">
+                    <Badge
+                      variant="default"
+                      className="text-[10px] bg-emerald-600 hover:bg-emerald-600"
+                    >
                       Hoạt động
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" className="h-7 text-[11px] px-2 text-primary">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-[11px] px-2 text-primary"
+                    >
                       Sửa
                     </Button>
                   </TableCell>

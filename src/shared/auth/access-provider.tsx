@@ -1,12 +1,12 @@
 // src/shared/auth/access-provider.tsx
-'use client';
+"use client";
 
-import { createContext, useContext } from 'react';
-import type { Access } from './types';
-import type { Permission } from './permission-keys';
+import { createContext, useContext } from "react";
+import type { Permission } from "./permission-keys";
+import type { Access } from "./types";
 
 const Ctx = createContext<{ access: Access; branchId: string | null } | null>(
-  null
+  null,
 );
 
 export const AccessProvider = Ctx.Provider;

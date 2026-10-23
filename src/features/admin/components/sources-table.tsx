@@ -1,8 +1,17 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { SourceChannelItem, PartnerItem } from '../data/sources';
-import { Share2, Handshake, CheckCircle2, XCircle, Globe, Building, Phone, Mail } from 'lucide-react';
+import {
+  Building,
+  CheckCircle2,
+  Globe,
+  Handshake,
+  Mail,
+  Phone,
+  Share2,
+  XCircle,
+} from "lucide-react";
+import React, { useState } from "react";
+import type { PartnerItem, SourceChannelItem } from "../data/sources";
 
 interface Props {
   channels: SourceChannelItem[];
@@ -10,22 +19,24 @@ interface Props {
 }
 
 export function SourcesTable({ channels, partners }: Props) {
-  const [activeTab, setActiveTab] = useState<'channels' | 'partners'>('channels');
+  const [activeTab, setActiveTab] = useState<"channels" | "partners">(
+    "channels",
+  );
 
   const kindLabels: Record<string, string> = {
-    direct: 'Trực tiếp (Tại quầy / Hotline)',
-    ota: 'Đại lý OTA trực tuyến',
-    partner: 'Đối tác tour / Lữ hành',
-    corporate: 'Khách hàng doanh nghiệp',
-    other: 'Nguồn khác',
+    direct: "Trực tiếp (Tại quầy / Hotline)",
+    ota: "Đại lý OTA trực tuyến",
+    partner: "Đối tác tour / Lữ hành",
+    corporate: "Khách hàng doanh nghiệp",
+    other: "Nguồn khác",
   };
 
   const partnerKindLabels: Record<string, string> = {
-    tour_operator: 'Công ty lữ hành (Tour)',
-    travel_agency: 'Đại lý du lịch',
-    corporate: 'Doanh nghiệp / Công ty',
-    guide_driver: 'Hướng dẫn viên / Tài xế',
-    other: 'Đối tác khác',
+    tour_operator: "Công ty lữ hành (Tour)",
+    travel_agency: "Đại lý du lịch",
+    corporate: "Doanh nghiệp / Công ty",
+    guide_driver: "Hướng dẫn viên / Tài xế",
+    other: "Đối tác khác",
   };
 
   return (
@@ -34,11 +45,11 @@ export function SourcesTable({ channels, partners }: Props) {
       <div className="flex border-b border-slate-800 space-x-6">
         <button
           type="button"
-          onClick={() => setActiveTab('channels')}
+          onClick={() => setActiveTab("channels")}
           className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
-            activeTab === 'channels'
-              ? 'border-indigo-500 text-indigo-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+            activeTab === "channels"
+              ? "border-indigo-500 text-indigo-400"
+              : "border-transparent text-slate-400 hover:text-slate-200"
           }`}
         >
           <Share2 className="w-4 h-4" />
@@ -47,11 +58,11 @@ export function SourcesTable({ channels, partners }: Props) {
 
         <button
           type="button"
-          onClick={() => setActiveTab('partners')}
+          onClick={() => setActiveTab("partners")}
           className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
-            activeTab === 'partners'
-              ? 'border-emerald-500 text-emerald-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+            activeTab === "partners"
+              ? "border-emerald-500 text-emerald-400"
+              : "border-transparent text-slate-400 hover:text-slate-200"
           }`}
         >
           <Handshake className="w-4 h-4" />
@@ -59,7 +70,7 @@ export function SourcesTable({ channels, partners }: Props) {
         </button>
       </div>
 
-      {activeTab === 'channels' ? (
+      {activeTab === "channels" ? (
         <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
@@ -75,9 +86,16 @@ export function SourcesTable({ channels, partners }: Props) {
               </thead>
               <tbody className="divide-y divide-slate-800/60">
                 {channels.map((c) => (
-                  <tr key={c.id} className="hover:bg-slate-800/30 transition-colors">
-                    <td className="py-3 px-4 font-medium text-slate-200">{c.name}</td>
-                    <td className="py-3 px-4 text-xs font-mono text-indigo-400">{c.code}</td>
+                  <tr
+                    key={c.id}
+                    className="hover:bg-slate-800/30 transition-colors"
+                  >
+                    <td className="py-3 px-4 font-medium text-slate-200">
+                      {c.name}
+                    </td>
+                    <td className="py-3 px-4 text-xs font-mono text-indigo-400">
+                      {c.code}
+                    </td>
                     <td className="py-3 px-4 text-xs text-slate-300">
                       {kindLabels[c.kind] || c.kind}
                     </td>
@@ -90,7 +108,9 @@ export function SourcesTable({ channels, partners }: Props) {
                         <span className="text-xs text-slate-500">Không</span>
                       )}
                     </td>
-                    <td className="py-3 px-4 text-xs text-slate-400">{c.sort}</td>
+                    <td className="py-3 px-4 text-xs text-slate-400">
+                      {c.sort}
+                    </td>
                     <td className="py-3 px-4">
                       {c.is_active ? (
                         <span className="inline-flex items-center gap-1 text-xs text-emerald-400 font-medium">
@@ -125,19 +145,27 @@ export function SourcesTable({ channels, partners }: Props) {
               <tbody className="divide-y divide-slate-800/60">
                 {partners.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-slate-500 text-xs">
+                    <td
+                      colSpan={6}
+                      className="py-8 text-center text-slate-500 text-xs"
+                    >
                       Chưa có đối tác nào được đăng ký trong hệ thống
                     </td>
                   </tr>
                 ) : (
                   partners.map((p) => (
-                    <tr key={p.id} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="py-3 px-4 font-medium text-slate-200">{p.name}</td>
+                    <tr
+                      key={p.id}
+                      className="hover:bg-slate-800/30 transition-colors"
+                    >
+                      <td className="py-3 px-4 font-medium text-slate-200">
+                        {p.name}
+                      </td>
                       <td className="py-3 px-4 text-xs text-slate-300">
                         {partnerKindLabels[p.kind] || p.kind}
                       </td>
                       <td className="py-3 px-4 text-xs text-slate-400">
-                        {p.contact_name || '-'}
+                        {p.contact_name || "-"}
                       </td>
                       <td className="py-3 px-4 text-xs text-slate-300">
                         {p.phone && (
@@ -152,10 +180,12 @@ export function SourcesTable({ channels, partners }: Props) {
                             {p.email}
                           </div>
                         )}
-                        {!p.phone && !p.email && <span className="text-slate-500">-</span>}
+                        {!p.phone && !p.email && (
+                          <span className="text-slate-500">-</span>
+                        )}
                       </td>
                       <td className="py-3 px-4 text-xs font-mono text-slate-400">
-                        {p.tax_code || '-'}
+                        {p.tax_code || "-"}
                       </td>
                       <td className="py-3 px-4">
                         {p.is_active ? (

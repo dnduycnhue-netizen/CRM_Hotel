@@ -1,18 +1,27 @@
-'use client';
+"use client";
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Button, Input, Label, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/shared/ui';
-import { ArrowLeft, Save, Loader2, User } from 'lucide-react';
-import { updateGuestAction } from '../actions';
-import { toast } from 'sonner';
+import { ArrowLeft, Loader2, Save, User } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+} from "@/shared/ui";
+import { updateGuestAction } from "../actions";
 
 interface EditGuestFormProps {
   guest: {
     id: string;
     full_name: string;
-    gender: 'male' | 'female' | 'other';
+    gender: "male" | "female" | "other";
     dob?: string | null;
     nationality?: string | null;
     phone?: string | null;
@@ -29,18 +38,20 @@ export function EditGuestForm({ guest }: EditGuestFormProps) {
   const [isPending, startTransition] = useTransition();
 
   const [fullName, setFullName] = useState(guest.full_name);
-  const [gender, setGender] = useState<'male' | 'female' | 'other'>(guest.gender || 'male');
-  const [dob, setDob] = useState(guest.dob ? guest.dob.slice(0, 10) : '');
-  const [nationality, setNationality] = useState(guest.nationality || 'VN');
-  const [phone, setPhone] = useState(guest.phone || '');
-  const [email, setEmail] = useState(guest.email || '');
-  const [addressLine, setAddressLine] = useState(guest.address_line || '');
+  const [gender, setGender] = useState<"male" | "female" | "other">(
+    guest.gender || "male",
+  );
+  const [dob, setDob] = useState(guest.dob ? guest.dob.slice(0, 10) : "");
+  const [nationality, setNationality] = useState(guest.nationality || "VN");
+  const [phone, setPhone] = useState(guest.phone || "");
+  const [email, setEmail] = useState(guest.email || "");
+  const [addressLine, setAddressLine] = useState(guest.address_line || "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!fullName.trim() || fullName.trim().length < 2) {
-      toast.error('Họ tên tối thiểu 2 ký tự');
+      toast.error("Họ tên tối thiểu 2 ký tự");
       return;
     }
 
@@ -51,16 +62,16 @@ export function EditGuestForm({ guest }: EditGuestFormProps) {
           full_name: fullName.trim(),
           gender,
           dob: dob || null,
-          nationality: nationality.trim().toUpperCase() || 'VN',
+          nationality: nationality.trim().toUpperCase() || "VN",
           phone: phone.trim() || null,
           email: email.trim() || null,
           address_line: addressLine.trim() || null,
         },
-        guest.updated_at
+        guest.updated_at,
       );
 
       if (res.ok) {
-        toast.success('Đã cập nhật hồ sơ khách hàng thành công');
+        toast.success("Đã cập nhật hồ sơ khách hàng thành công");
         router.push(`/guests/${guest.id}`);
         router.refresh();
       } else {
@@ -80,7 +91,9 @@ export function EditGuestForm({ guest }: EditGuestFormProps) {
           <ArrowLeft className="h-4 w-4" />
           <span>Quay lại hồ sơ</span>
         </Link>
-        <span className="text-xs text-muted-foreground font-mono">ID: {guest.id.slice(0, 8)}</span>
+        <span className="text-xs text-muted-foreground font-mono">
+          ID: {guest.id.slice(0, 8)}
+        </span>
       </div>
 
       <Card className="border-border/70 shadow-sm rounded-2xl overflow-hidden">
@@ -90,7 +103,9 @@ export function EditGuestForm({ guest }: EditGuestFormProps) {
               <User className="h-5 w-5" />
             </div>
             <div>
-              <CardTitle className="text-lg font-bold">Chỉnh Sửa Hồ Sơ Khách Hàng</CardTitle>
+              <CardTitle className="text-lg font-bold">
+                Chỉnh Sửa Hồ Sơ Khách Hàng
+              </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
                 Cập nhật thông tin định danh, ngày sinh và liên hệ
               </CardDescription>
@@ -203,7 +218,12 @@ export function EditGuestForm({ guest }: EditGuestFormProps) {
 
             <div className="pt-4 flex items-center justify-end gap-3 border-t border-border/50">
               <Link href={`/guests/${guest.id}`}>
-                <Button type="button" variant="outline" size="sm" className="h-9 text-xs">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-9 text-xs"
+                >
                   Hủy
                 </Button>
               </Link>

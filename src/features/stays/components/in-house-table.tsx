@@ -1,49 +1,50 @@
-'use client';
+"use client";
 
-import { useState, useTransition, useMemo } from 'react';
-import Link from 'next/link';
-import type { InHouseStay } from '../domain/types';
 import {
+  AlertCircle,
+  Ban,
+  Building2,
+  Clock,
+  DoorClosed,
+  Loader2,
+  LogOut,
+  Phone,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  UserCheck,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { useMemo, useState, useTransition } from "react";
+import { toast } from "sonner";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/ui';
-import { Badge } from '@/shared/ui';
-import { Button } from '@/shared/ui';
-import { Input } from '@/shared/ui';
-import { Label } from '@/shared/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui';
-import { checkoutStayAction, cancelStayAction } from '../actions';
-import {
-  Users,
-  DoorClosed,
-  Clock,
-  LogOut,
-  AlertCircle,
-  Sparkles,
-  Phone,
-  Ban,
-  Loader2,
-  Search,
-  UserCheck,
-  Building2,
-  ShieldCheck,
-} from 'lucide-react';
-import { toast } from 'sonner';
-
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogClose,
-} from '@/shared/ui';
-import { formatDateTimeVN } from '@/shared/utils/date';
+} from "@/shared/ui";
+import { formatDateTimeVN } from "@/shared/utils/date";
+import { cancelStayAction, checkoutStayAction } from "../actions";
+import type { InHouseStay } from "../domain/types";
 
 interface InHouseTableProps {
   stays: InHouseStay[];
@@ -58,7 +59,7 @@ export function InHouseTable({
 }: InHouseTableProps) {
   const [isPending, startTransition] = useTransition();
   const [activeStayList, setActiveStayList] = useState(stays);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Dialog state cho Trả phòng
   const [checkoutTarget, setCheckoutTarget] = useState<{
@@ -72,7 +73,7 @@ export function InHouseTable({
     stayId: string;
     roomNumber: string;
   } | null>(null);
-  const [cancelReason, setCancelReason] = useState('');
+  const [cancelReason, setCancelReason] = useState("");
 
   const filteredStays = useMemo(() => {
     if (!searchTerm.trim()) return activeStayList;
@@ -81,7 +82,7 @@ export function InHouseTable({
       (s) =>
         s.roomNumber.toLowerCase().includes(q) ||
         s.primaryGuestName.toLowerCase().includes(q) ||
-        (s.primaryGuestPhone && s.primaryGuestPhone.includes(q))
+        (s.primaryGuestPhone && s.primaryGuestPhone.includes(q)),
     );
   }, [activeStayList, searchTerm]);
 
@@ -92,7 +93,9 @@ export function InHouseTable({
     startTransition(async () => {
       const res = await checkoutStayAction(stayId, currentBranchId);
       if (res.ok) {
-        toast.success(`Đã hoàn tất trả phòng ${roomNumber}! Phòng chuyển sang trạng thái dọn dẹp.`);
+        toast.success(
+          `Đã hoàn tất trả phòng ${roomNumber}! Phòng chuyển sang trạng thái dọn dẹp.`,
+        );
         setActiveStayList((prev) => prev.filter((s) => s.id !== stayId));
         setCheckoutTarget(null);
       } else {
@@ -104,7 +107,7 @@ export function InHouseTable({
   const confirmCancel = () => {
     if (!cancelTarget) return;
     if (cancelReason.trim().length < 5) {
-      toast.error('Lý do hủy phải có tối thiểu 5 ký tự!');
+      toast.error("Lý do hủy phải có tối thiểu 5 ký tự!");
       return;
     }
 
@@ -115,7 +118,7 @@ export function InHouseTable({
         toast.success(`Đã hủy lượt ở phòng ${roomNumber}!`);
         setActiveStayList((prev) => prev.filter((s) => s.id !== stayId));
         setCancelTarget(null);
-        setCancelReason('');
+        setCancelReason("");
       } else {
         toast.error(res.error.message);
       }
@@ -143,10 +146,15 @@ export function InHouseTable({
             <span className="text-3xl font-extrabold text-foreground tracking-tight">
               {activeStayList.length}
             </span>
-            <span className="text-xs text-muted-foreground font-medium">phòng đang ở</span>
+            <span className="text-xs text-muted-foreground font-medium">
+              phòng đang ở
+            </span>
           </div>
           <div className="mt-2 h-1 w-full bg-blue-500/20 rounded-full overflow-hidden">
-            <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.min(100, activeStayList.length * 10)}%` }} />
+            <div
+              className="h-full bg-blue-500 rounded-full"
+              style={{ width: `${Math.min(100, activeStayList.length * 10)}%` }}
+            />
           </div>
         </div>
 
@@ -164,43 +172,59 @@ export function InHouseTable({
             <span className="text-3xl font-extrabold text-foreground tracking-tight">
               {totalGuests}
             </span>
-            <span className="text-xs text-muted-foreground font-medium">người lưu trú</span>
+            <span className="text-xs text-muted-foreground font-medium">
+              người lưu trú
+            </span>
           </div>
           <div className="mt-2 h-1 w-full bg-emerald-500/20 rounded-full overflow-hidden">
-            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, totalGuests * 5)}%` }} />
+            <div
+              className="h-full bg-emerald-500 rounded-full"
+              style={{ width: `${Math.min(100, totalGuests * 5)}%` }}
+            />
           </div>
         </div>
 
         {/* Card 3: Quá hạn giờ trả */}
-        <div className={`p-4 rounded-xl border shadow-xs relative overflow-hidden ${
-          overdueCount > 0
-            ? 'border-rose-500/40 bg-rose-500/5'
-            : 'border-border/70 bg-card'
-        }`}>
+        <div
+          className={`p-4 rounded-xl border shadow-xs relative overflow-hidden ${
+            overdueCount > 0
+              ? "border-rose-500/40 bg-rose-500/5"
+              : "border-border/70 bg-card"
+          }`}
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Quá hạn trả phòng
             </span>
-            <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
-              overdueCount > 0
-                ? 'bg-rose-500/15 text-rose-600 animate-pulse'
-                : 'bg-emerald-500/10 text-emerald-600'
-            }`}>
+            <div
+              className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+                overdueCount > 0
+                  ? "bg-rose-500/15 text-rose-600 animate-pulse"
+                  : "bg-emerald-500/10 text-emerald-600"
+              }`}
+            >
               <Clock className="h-4 w-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className={`text-3xl font-extrabold tracking-tight ${
-              overdueCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
-            }`}>
+            <span
+              className={`text-3xl font-extrabold tracking-tight ${
+                overdueCount > 0
+                  ? "text-rose-600 dark:text-rose-400"
+                  : "text-emerald-600 dark:text-emerald-400"
+              }`}
+            >
               {overdueCount}
             </span>
             <span className="text-xs text-muted-foreground font-medium">
-              {overdueCount > 0 ? 'cần kiểm tra ngay' : 'đúng tiến độ'}
+              {overdueCount > 0 ? "cần kiểm tra ngay" : "đúng tiến độ"}
             </span>
           </div>
           <div className="mt-2 h-1 w-full bg-muted rounded-full overflow-hidden">
-            <div className={`h-full rounded-full ${overdueCount > 0 ? 'bg-rose-500' : 'bg-emerald-500'}`} style={{ width: overdueCount > 0 ? '100%' : '0%' }} />
+            <div
+              className={`h-full rounded-full ${overdueCount > 0 ? "bg-rose-500" : "bg-emerald-500"}`}
+              style={{ width: overdueCount > 0 ? "100%" : "0%" }}
+            />
           </div>
         </div>
       </div>
@@ -215,7 +239,8 @@ export function InHouseTable({
                 <span>Danh Sách Khách Đang Ở ({branchName})</span>
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                Cập nhật tức thì, hỗ trợ tìm nhanh theo tên khách, phòng, số điện thoại
+                Cập nhật tức thì, hỗ trợ tìm nhanh theo tên khách, phòng, số
+                điện thoại
               </CardDescription>
             </div>
 
@@ -265,10 +290,14 @@ export function InHouseTable({
                         <DoorClosed className="h-6 w-6" />
                       </div>
                       <p className="text-sm font-semibold text-foreground">
-                        {searchTerm ? 'Không tìm thấy lượt ở phù hợp' : 'Chưa có phòng nào đang ở tại cơ sở này'}
+                        {searchTerm
+                          ? "Không tìm thấy lượt ở phù hợp"
+                          : "Chưa có phòng nào đang ở tại cơ sở này"}
                       </p>
                       <p className="text-xs text-muted-foreground max-w-sm">
-                        {searchTerm ? 'Thử tìm với từ khóa khác' : 'Bấm nút "Check-in mới" để tiếp nhận khách nhận phòng tức thì.'}
+                        {searchTerm
+                          ? "Thử tìm với từ khóa khác"
+                          : 'Bấm nút "Check-in mới" để tiếp nhận khách nhận phòng tức thì.'}
                       </p>
                       {!searchTerm && (
                         <Link
@@ -284,32 +313,39 @@ export function InHouseTable({
                 </TableRow>
               ) : (
                 filteredStays.map((s) => (
-                  <TableRow key={s.id} className="text-xs hover:bg-muted/40 transition-colors">
+                  <TableRow
+                    key={s.id}
+                    className="text-xs hover:bg-muted/40 transition-colors"
+                  >
                     <TableCell className="font-bold text-foreground">
                       <div className="flex items-center gap-1.5">
                         <span className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 font-bold text-xs">
                           {s.roomNumber}
                         </span>
-                        <span className="font-semibold text-sm">P.{s.roomNumber}</span>
+                        <span className="font-semibold text-sm">
+                          P.{s.roomNumber}
+                        </span>
                       </div>
                       <span className="text-[10px] text-muted-foreground block pl-7">
-                        {s.roomType || 'Tiêu chuẩn'}
+                        {s.roomType || "Tiêu chuẩn"}
                       </span>
                     </TableCell>
 
                     <TableCell>
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-foreground text-xs">{s.primaryGuestName}</span>
+                          <span className="font-bold text-foreground text-xs">
+                            {s.primaryGuestName}
+                          </span>
                           {s.tierName && (
                             <Badge
                               variant="default"
                               className={`text-[9px] py-0 px-1.5 font-bold ${
-                                s.tierName === 'Vàng'
-                                  ? 'bg-amber-500 text-black'
-                                  : s.tierName === 'Bạc'
-                                  ? 'bg-slate-400 text-white'
-                                  : 'bg-amber-800 text-white'
+                                s.tierName === "Vàng"
+                                  ? "bg-amber-500 text-black"
+                                  : s.tierName === "Bạc"
+                                    ? "bg-slate-400 text-white"
+                                    : "bg-amber-800 text-white"
                               }`}
                             >
                               {s.tierName}
@@ -334,8 +370,16 @@ export function InHouseTable({
                     </TableCell>
 
                     <TableCell className="font-mono text-xs">
-                      <span className={s.isOverdue ? 'text-rose-600 font-bold flex items-center gap-1' : 'text-foreground'}>
-                        {s.isOverdue && <AlertCircle className="h-3 w-3 text-rose-600 shrink-0" />}
+                      <span
+                        className={
+                          s.isOverdue
+                            ? "text-rose-600 font-bold flex items-center gap-1"
+                            : "text-foreground"
+                        }
+                      >
+                        {s.isOverdue && (
+                          <AlertCircle className="h-3 w-3 text-rose-600 shrink-0" />
+                        )}
                         {formatDateTimeVN(s.expectedCheckOutAt)}
                       </span>
                     </TableCell>
@@ -348,11 +392,17 @@ export function InHouseTable({
 
                     <TableCell>
                       {s.isOverdue ? (
-                        <Badge variant="destructive" className="text-[10px] animate-pulse">
+                        <Badge
+                          variant="destructive"
+                          className="text-[10px] animate-pulse"
+                        >
                           Quá hạn trả
                         </Badge>
                       ) : (
-                        <Badge variant="default" className="text-[10px] bg-emerald-600 hover:bg-emerald-600 text-white">
+                        <Badge
+                          variant="default"
+                          className="text-[10px] bg-emerald-600 hover:bg-emerald-600 text-white"
+                        >
                           Đang ở
                         </Badge>
                       )}
@@ -363,7 +413,13 @@ export function InHouseTable({
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setCheckoutTarget({ stayId: s.id, roomNumber: s.roomNumber, guestName: s.primaryGuestName })}
+                          onClick={() =>
+                            setCheckoutTarget({
+                              stayId: s.id,
+                              roomNumber: s.roomNumber,
+                              guestName: s.primaryGuestName,
+                            })
+                          }
                           disabled={isPending}
                           className="h-8 text-xs font-bold px-3 text-emerald-700 dark:text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/10 hover:border-emerald-500 transition-all rounded-lg"
                         >
@@ -374,8 +430,11 @@ export function InHouseTable({
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            setCancelTarget({ stayId: s.id, roomNumber: s.roomNumber });
-                            setCancelReason('');
+                            setCancelTarget({
+                              stayId: s.id,
+                              roomNumber: s.roomNumber,
+                            });
+                            setCancelReason("");
                           }}
                           disabled={isPending}
                           className="h-8 w-8 p-0 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 rounded-lg"
@@ -394,7 +453,10 @@ export function InHouseTable({
       </Card>
 
       {/* Dialog Xác nhận Trả phòng */}
-      <Dialog open={!!checkoutTarget} onOpenChange={(open) => !open && setCheckoutTarget(null)}>
+      <Dialog
+        open={!!checkoutTarget}
+        onOpenChange={(open) => !open && setCheckoutTarget(null)}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-emerald-600">
@@ -402,8 +464,12 @@ export function InHouseTable({
               <span>Xác nhận trả phòng {checkoutTarget?.roomNumber}</span>
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground pt-1">
-              Hoàn tất thủ tục check-out cho khách <strong className="text-foreground">{checkoutTarget?.guestName}</strong>.
-              Phòng sẽ được chuyển sang trạng thái dọn dẹp để sẵn sàng đón khách tiếp theo.
+              Hoàn tất thủ tục check-out cho khách{" "}
+              <strong className="text-foreground">
+                {checkoutTarget?.guestName}
+              </strong>
+              . Phòng sẽ được chuyển sang trạng thái dọn dẹp để sẵn sàng đón
+              khách tiếp theo.
             </DialogDescription>
           </DialogHeader>
 
@@ -423,7 +489,9 @@ export function InHouseTable({
               disabled={isPending}
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
             >
-              {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}
+              {isPending && (
+                <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+              )}
               Xác nhận trả phòng
             </Button>
           </DialogFooter>
@@ -431,7 +499,10 @@ export function InHouseTable({
       </Dialog>
 
       {/* Dialog Xác nhận Hủy lượt ở */}
-      <Dialog open={!!cancelTarget} onOpenChange={(open) => !open && setCancelTarget(null)}>
+      <Dialog
+        open={!!cancelTarget}
+        onOpenChange={(open) => !open && setCancelTarget(null)}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-rose-600">
@@ -439,12 +510,16 @@ export function InHouseTable({
               <span>Hủy lượt ở phòng {cancelTarget?.roomNumber}</span>
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground pt-1">
-              Thao tác này chỉ áp dụng trong vòng 6 giờ từ khi tạo. Vui lòng nhập lý do hủy bắt buộc để lưu nhật ký kiểm toán.
+              Thao tác này chỉ áp dụng trong vòng 6 giờ từ khi tạo. Vui lòng
+              nhập lý do hủy bắt buộc để lưu nhật ký kiểm toán.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-2 py-2">
-            <Label htmlFor="cancelReason" className="text-xs font-bold text-foreground">
+            <Label
+              htmlFor="cancelReason"
+              className="text-xs font-bold text-foreground"
+            >
               Lý do hủy (tối thiểu 5 ký tự) *
             </Label>
             <Input
@@ -473,7 +548,9 @@ export function InHouseTable({
               disabled={isPending || cancelReason.trim().length < 5}
               className="font-bold"
             >
-              {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}
+              {isPending && (
+                <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+              )}
               Xác nhận hủy lượt ở
             </Button>
           </DialogFooter>

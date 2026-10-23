@@ -1,44 +1,49 @@
-'use client';
+"use client";
 
-import React, { useState, useTransition } from 'react';
-import type { SystemRole, SystemPermission } from '../domain/types';
+import { Check, Loader2, RotateCcw, Save, ShieldCheck } from "lucide-react";
+import React, { useState, useTransition } from "react";
+import { toast } from "sonner";
 import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Checkbox,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/ui';
-import { Badge } from '@/shared/ui';
-import { Button } from '@/shared/ui';
-import { Checkbox } from '@/shared/ui';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui';
-import { ShieldCheck, Check, RotateCcw, Save, Loader2 } from 'lucide-react';
-import { updateRolePermissionsAction } from '../actions';
-import { toast } from 'sonner';
+} from "@/shared/ui";
+import { updateRolePermissionsAction } from "../actions";
+import type { SystemPermission, SystemRole } from "../domain/types";
 
 interface RoleMatrixTableProps {
   roles: SystemRole[];
   permissions: SystemPermission[];
 }
 
-export function RoleMatrixTable({
-  roles,
-  permissions,
-}: RoleMatrixTableProps) {
+export function RoleMatrixTable({ roles, permissions }: RoleMatrixTableProps) {
   const [isPending, startTransition] = useTransition();
 
   // State: roleId -> Set of permission keys
-  const [rolePerms, setRolePerms] = useState<Record<string, Set<string>>>(() => {
-    const map: Record<string, Set<string>> = {};
-    roles.forEach((r) => {
-      map[r.id] = new Set(r.permissionKeys);
-    });
-    return map;
-  });
+  const [rolePerms, setRolePerms] = useState<Record<string, Set<string>>>(
+    () => {
+      const map: Record<string, Set<string>> = {};
+      roles.forEach((r) => {
+        map[r.id] = new Set(r.permissionKeys);
+      });
+      return map;
+    },
+  );
 
-  const [initialRolePerms, setInitialRolePerms] = useState<Record<string, Set<string>>>(() => {
+  const [initialRolePerms, setInitialRolePerms] = useState<
+    Record<string, Set<string>>
+  >(() => {
     const map: Record<string, Set<string>> = {};
     roles.forEach((r) => {
       map[r.id] = new Set(r.permissionKeys);
@@ -49,7 +54,7 @@ export function RoleMatrixTable({
   // Calculate total changes count
   let changedCount = 0;
   roles.forEach((r) => {
-    if (r.key === 'owner') return; // Owner is locked
+    if (r.key === "owner") return; // Owner is locked
     const current = rolePerms[r.id] || new Set();
     const initial = initialRolePerms[r.id] || new Set();
     permissions.forEach((p) => {
@@ -60,14 +65,21 @@ export function RoleMatrixTable({
   });
 
   // Group permissions by groupName
-  const groupedPermissions = permissions.reduce((acc: Record<string, SystemPermission[]>, p) => {
-    acc[p.groupName] = acc[p.groupName] || [];
-    acc[p.groupName].push(p);
-    return acc;
-  }, {});
+  const groupedPermissions = permissions.reduce(
+    (acc: Record<string, SystemPermission[]>, p) => {
+      acc[p.groupName] = acc[p.groupName] || [];
+      acc[p.groupName].push(p);
+      return acc;
+    },
+    {},
+  );
 
-  const togglePermission = (roleId: string, roleKey: string, permKey: string) => {
-    if (roleKey === 'owner') return; // Owner role cannot be modified
+  const togglePermission = (
+    roleId: string,
+    roleKey: string,
+    permKey: string,
+  ) => {
+    if (roleKey === "owner") return; // Owner role cannot be modified
 
     setRolePerms((prev) => {
       const nextSet = new Set(prev[roleId]);
@@ -85,14 +97,14 @@ export function RoleMatrixTable({
 
   const handleReset = () => {
     setRolePerms(initialRolePerms);
-    toast.info('Đã hủy bỏ các thay đổi phân quyền');
+    toast.info("Đã hủy bỏ các thay đổi phân quyền");
   };
 
   const handleSave = () => {
     startTransition(async () => {
       try {
         for (const r of roles) {
-          if (r.key === 'owner') continue;
+          if (r.key === "owner") continue;
           const current = rolePerms[r.id] || new Set();
           const initial = initialRolePerms[r.id] || new Set();
           // Check if this role changed
@@ -109,18 +121,25 @@ export function RoleMatrixTable({
           }
 
           if (hasDiff) {
-            const res = await updateRolePermissionsAction(r.id, Array.from(current));
+            const res = await updateRolePermissionsAction(
+              r.id,
+              Array.from(current),
+            );
             if (!res.ok) {
-              toast.error(`Lỗi khi lưu vai trò ${r.name}: ${res.error.message}`);
+              toast.error(
+                `Lỗi khi lưu vai trò ${r.name}: ${res.error.message}`,
+              );
               return;
             }
           }
         }
 
         setInitialRolePerms(rolePerms);
-        toast.success(`Đã lưu thành công các thay đổi phân quyền vào cơ sở dữ liệu!`);
+        toast.success(
+          `Đã lưu thành công các thay đổi phân quyền vào cơ sở dữ liệu!`,
+        );
       } catch (err: any) {
-        toast.error('Lỗi khi lưu phân quyền');
+        toast.error("Lỗi khi lưu phân quyền");
       }
     });
   };
@@ -136,7 +155,8 @@ export function RoleMatrixTable({
                 <span>Ma Trận Phân Quyền Vai Trò (Role Matrix)</span>
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                Tích chọn để cấp hoặc thu hồi quyền cho từng vai trò người dùng trong chuỗi khách sạn
+                Tích chọn để cấp hoặc thu hồi quyền cho từng vai trò người dùng
+                trong chuỗi khách sạn
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -151,11 +171,18 @@ export function RoleMatrixTable({
           <Table>
             <TableHeader className="sticky top-0 bg-background z-20 shadow-xs">
               <TableRow className="text-xs bg-muted/40">
-                <TableHead className="w-[320px] font-bold">Quyền hạn hệ thống</TableHead>
+                <TableHead className="w-[320px] font-bold">
+                  Quyền hạn hệ thống
+                </TableHead>
                 {roles.map((r) => (
-                  <TableHead key={r.id} className="text-center font-bold min-w-[120px]">
+                  <TableHead
+                    key={r.id}
+                    className="text-center font-bold min-w-[120px]"
+                  >
                     <div className="space-y-0.5">
-                      <span className="block text-foreground font-bold">{r.name}</span>
+                      <span className="block text-foreground font-bold">
+                        {r.name}
+                      </span>
                       <span className="text-[10px] font-medium text-muted-foreground block font-mono">
                         ({r.key})
                       </span>
@@ -169,18 +196,28 @@ export function RoleMatrixTable({
                 <React.Fragment key={group}>
                   {/* Group Header Row */}
                   <TableRow className="bg-muted/30 font-bold text-xs border-y border-border/50">
-                    <TableCell colSpan={roles.length + 1} className="py-2.5 text-primary font-bold">
+                    <TableCell
+                      colSpan={roles.length + 1}
+                      className="py-2.5 text-primary font-bold"
+                    >
                       {group} ({groupPerms.length} quyền)
                     </TableCell>
                   </TableRow>
 
                   {/* Permission Rows */}
                   {groupPerms.map((p) => (
-                    <TableRow key={p.key} className="text-xs hover:bg-muted/40 transition-colors">
+                    <TableRow
+                      key={p.key}
+                      className="text-xs hover:bg-muted/40 transition-colors"
+                    >
                       <TableCell className="py-2">
                         <div className="space-y-0.5">
-                          <span className="font-semibold text-foreground text-xs block">{p.label}</span>
-                          <span className="text-[11px] text-muted-foreground block">{p.description}</span>
+                          <span className="font-semibold text-foreground text-xs block">
+                            {p.label}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground block">
+                            {p.description}
+                          </span>
                           <span className="text-[10px] text-muted-foreground/80 font-mono block">
                             {p.key}
                           </span>
@@ -188,8 +225,10 @@ export function RoleMatrixTable({
                       </TableCell>
 
                       {roles.map((r) => {
-                        const isOwner = r.key === 'owner';
-                        const isChecked = isOwner ? true : (rolePerms[r.id]?.has(p.key) || false);
+                        const isOwner = r.key === "owner";
+                        const isChecked = isOwner
+                          ? true
+                          : rolePerms[r.id]?.has(p.key) || false;
 
                         return (
                           <TableCell key={r.id} className="text-center py-2">
@@ -202,7 +241,9 @@ export function RoleMatrixTable({
                                 <input
                                   type="checkbox"
                                   checked={isChecked}
-                                  onChange={() => togglePermission(r.id, r.key, p.key)}
+                                  onChange={() =>
+                                    togglePermission(r.id, r.key, p.key)
+                                  }
                                   className="h-4.5 w-4.5 rounded border-border/80 accent-amber-600 cursor-pointer"
                                 />
                               )}

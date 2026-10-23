@@ -1,17 +1,17 @@
-import { Metadata } from 'next';
-import { requirePermission, getSession } from '@/shared/auth/server';
-import { redirect } from 'next/navigation';
-import { getActiveBranches } from '@/features/admin/data/branches';
-import { getAssets, AssetsTable } from '@/features/facilities';
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { getActiveBranches } from "@/features/admin/data/branches";
+import { AssetsTable, getAssets } from "@/features/facilities";
+import { getSession, requirePermission } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
-  title: 'Danh mục tài sản & Thiết bị | CRM Khách Sạn',
+  title: "Danh mục tài sản & Thiết bị | CRM Khách Sạn",
 };
 
 export default async function AssetsPage() {
-  const hasPerm = await requirePermission('facility.view');
+  const hasPerm = await requirePermission("facility.view");
   if (!hasPerm.ok) {
-    redirect('/');
+    redirect("/");
   }
 
   const session = await getSession();

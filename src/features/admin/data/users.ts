@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from "@/lib/supabase/server";
 
 export interface AdminUserItem {
   id: string;
@@ -21,7 +21,7 @@ export async function getUsersList(): Promise<AdminUserItem[]> {
   const supabase = await createClient();
 
   const { data: profiles, error: pError } = await supabase
-    .from('profiles')
+    .from("profiles")
     .select(`
       id,
       full_name,
@@ -31,15 +31,13 @@ export async function getUsersList(): Promise<AdminUserItem[]> {
       created_at,
       default_branch:branches!profiles_default_branch_id_fkey(name)
     `)
-    .order('created_at', { ascending: true });
+    .order("created_at", { ascending: true });
 
   if (pError || !profiles) {
     return [];
   }
 
-  const { data: userRoles } = await supabase
-    .from('user_roles')
-    .select(`
+  const { data: userRoles } = await supabase.from("user_roles").select(`
       user_id,
       role_id,
       branch_id,
@@ -47,17 +45,17 @@ export async function getUsersList(): Promise<AdminUserItem[]> {
       branch:branches(name)
     `);
 
-  const rolesByUser = new Map<string, AdminUserItem['roles']>();
+  const rolesByUser = new Map<string, AdminUserItem["roles"]>();
   (userRoles || []).forEach((ur: any) => {
     if (!rolesByUser.has(ur.user_id)) {
       rolesByUser.set(ur.user_id, []);
     }
     rolesByUser.get(ur.user_id)!.push({
       role_id: ur.role_id,
-      role_name: ur.role?.name || 'Chưa đặt tên',
-      role_key: ur.role?.key || '',
+      role_name: ur.role?.name || "Chưa đặt tên",
+      role_key: ur.role?.key || "",
       branch_id: ur.branch_id,
-      branch_name: ur.branch?.name || 'Toàn chuỗi',
+      branch_name: ur.branch?.name || "Toàn chuỗi",
     });
   });
 

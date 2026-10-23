@@ -1,30 +1,31 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { BranchSelector } from './branch-selector';
-import { logoutAction } from '@/features/auth/actions';
-import { CommandPalette } from '@/features/search';
-import { Button } from '@/shared/ui';
 import {
+  AlertTriangle,
+  HelpCircle,
+  LogOut,
+  Search,
+  Shield,
+  Sparkles,
+  User,
+  UserCheck,
+} from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { logoutAction } from "@/features/auth/actions";
+import { CommandPalette } from "@/features/search";
+import {
+  Avatar,
+  AvatarFallback,
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/shared/ui';
-import { Avatar, AvatarFallback } from '@/shared/ui';
-import {
-  Search,
-  LogOut,
-  User,
-  UserCheck,
-  AlertTriangle,
-  Sparkles,
-  Shield,
-  HelpCircle,
-} from 'lucide-react';
+} from "@/shared/ui";
+import { BranchSelector } from "./branch-selector";
 
 interface AppHeaderProps {
   branches: Array<{ id: string; code: string; name: string }>;
@@ -48,62 +49,70 @@ export function AppHeader({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   // Compute friendly role description and clean initials
-  const isOwner = userEmail?.includes('owner') || userEmail?.includes('duy') || userEmail?.includes('admin');
-  const isManager = userEmail?.includes('quanly');
-  const isReception = userEmail?.includes('letan');
-  const isSales = userEmail?.includes('sales');
-  const isTech = userEmail?.includes('kythuat');
+  const isOwner =
+    userEmail?.includes("owner") ||
+    userEmail?.includes("duy") ||
+    userEmail?.includes("admin");
+  const isManager = userEmail?.includes("quanly");
+  const isReception = userEmail?.includes("letan");
+  const isSales = userEmail?.includes("sales");
+  const isTech = userEmail?.includes("kythuat");
 
   const roleName = isOwner
-    ? 'Chủ chuỗi'
+    ? "Chủ chuỗi"
     : isManager
-    ? 'Quản lý cơ sở'
-    : isReception
-    ? 'Lễ tân'
-    : isSales
-    ? 'Kinh doanh (Sales)'
-    : isTech
-    ? 'Kỹ thuật CSVC'
-    : 'Nhân viên';
+      ? "Quản lý cơ sở"
+      : isReception
+        ? "Lễ tân"
+        : isSales
+          ? "Kinh doanh (Sales)"
+          : isTech
+            ? "Kỹ thuật CSVC"
+            : "Nhân viên";
 
   const roleBadge = isOwner
-    ? 'Toàn quyền'
+    ? "Toàn quyền"
     : isManager
-    ? 'Cơ sở'
-    : isReception
-    ? 'Vận hành'
-    : isSales
-    ? 'Bán hàng'
-    : isTech
-    ? 'Bảo trì'
-    : 'Nội bộ';
+      ? "Cơ sở"
+      : isReception
+        ? "Vận hành"
+        : isSales
+          ? "Bán hàng"
+          : isTech
+            ? "Bảo trì"
+            : "Nội bộ";
 
   const userInitials = isOwner
-    ? 'CC'
+    ? "CC"
     : isManager
-    ? 'QL'
-    : isReception
-    ? 'LT'
-    : isSales
-    ? 'KD'
-    : isTech
-    ? 'KT'
-    : (userEmail ? userEmail.slice(0, 2).toUpperCase() : 'NV');
+      ? "QL"
+      : isReception
+        ? "LT"
+        : isSales
+          ? "KD"
+          : isTech
+            ? "KT"
+            : userEmail
+              ? userEmail.slice(0, 2).toUpperCase()
+              : "NV";
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setIsSearchOpen((prev) => !prev);
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   return (
     <>
-      <CommandPalette isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <CommandPalette
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+      />
       <header className="h-16 border-b border-border/50 bg-background/85 backdrop-blur-xl px-5 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-xs">
         {/* Left: Branch Selector */}
         <div className="flex items-center gap-3">
@@ -186,7 +195,10 @@ export function AppHeader({
                 <span className="absolute bottom-1 right-1 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-background" />
               </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-60 p-1.5 shadow-lg border-border/60">
+            <DropdownMenuContent
+              align="end"
+              className="w-60 p-1.5 shadow-lg border-border/60"
+            >
               <div className="font-normal px-2.5 py-2">
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center justify-between gap-1.5">
@@ -198,7 +210,7 @@ export function AppHeader({
                     </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground truncate">
-                    {userEmail || 'Chưa đăng nhập'}
+                    {userEmail || "Chưa đăng nhập"}
                   </p>
                 </div>
               </div>
@@ -206,7 +218,10 @@ export function AppHeader({
 
               {canManageUsers && (
                 <DropdownMenuItem className="text-xs cursor-pointer rounded-md p-0">
-                  <Link href="/settings/users" className="flex items-center w-full px-2 py-1.5">
+                  <Link
+                    href="/settings/users"
+                    className="flex items-center w-full px-2 py-1.5"
+                  >
                     <User className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
                     <span>Quản lý tài khoản</span>
                   </Link>
@@ -215,7 +230,10 @@ export function AppHeader({
 
               {canViewRoles && (
                 <DropdownMenuItem className="text-xs cursor-pointer rounded-md p-0">
-                  <Link href="/settings/roles" className="flex items-center w-full px-2 py-1.5">
+                  <Link
+                    href="/settings/roles"
+                    className="flex items-center w-full px-2 py-1.5"
+                  >
                     <Shield className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
                     <span>Ma trận phân quyền</span>
                   </Link>

@@ -1,11 +1,11 @@
-import { createClient } from '@/lib/supabase/server';
-import { getVnDateRange } from '@/shared/utils/date';
-import {
+import { createClient } from "@/lib/supabase/server";
+import { getVnDateRange } from "@/shared/utils/date";
+import type {
+  FacilityReportResponse,
+  MonthlyReportRow,
   ReportKpisResponse,
   ReportSeriesPoint,
-  MonthlyReportRow,
-  FacilityReportResponse,
-} from '../types';
+} from "../types";
 
 export async function getReportKpis(options?: {
   from?: string;
@@ -16,14 +16,17 @@ export async function getReportKpis(options?: {
   const supabase = await createClient();
 
   // Mặc định 30 ngày gần nhất theo giờ Việt Nam
-  const defaultRange = getVnDateRange('30days');
+  const defaultRange = getVnDateRange("30days");
   const p_from = options?.from || defaultRange.from;
   const p_to = options?.to || defaultRange.to;
-  const p_compare = options?.compareMode || 'same_period_ly';
-  const p_branch_ids = options?.branchIds && options.branchIds.length > 0 ? options.branchIds : null;
+  const p_compare = options?.compareMode || "same_period_ly";
+  const p_branch_ids =
+    options?.branchIds && options.branchIds.length > 0
+      ? options.branchIds
+      : null;
 
   try {
-    const { data, error } = await supabase.rpc('report_kpis', {
+    const { data, error } = await supabase.rpc("report_kpis", {
       p_from,
       p_to,
       p_branch_ids,
@@ -44,20 +47,23 @@ export async function getReportSeries(options?: {
   from?: string;
   to?: string;
   branchIds?: string[];
-  grain?: 'day' | 'week' | 'month';
+  grain?: "day" | "week" | "month";
   compareMode?: string;
 }): Promise<ReportSeriesPoint[]> {
   const supabase = await createClient();
 
-  const defaultRange = getVnDateRange('30days');
+  const defaultRange = getVnDateRange("30days");
   const p_from = options?.from || defaultRange.from;
   const p_to = options?.to || defaultRange.to;
-  const p_grain = options?.grain || 'day';
-  const p_compare = options?.compareMode || 'same_period_ly';
-  const p_branch_ids = options?.branchIds && options.branchIds.length > 0 ? options.branchIds : null;
+  const p_grain = options?.grain || "day";
+  const p_compare = options?.compareMode || "same_period_ly";
+  const p_branch_ids =
+    options?.branchIds && options.branchIds.length > 0
+      ? options.branchIds
+      : null;
 
   try {
-    const { data, error } = await supabase.rpc('report_series', {
+    const { data, error } = await supabase.rpc("report_series", {
       p_from,
       p_to,
       p_branch_ids,
@@ -74,13 +80,13 @@ export async function getReportSeries(options?: {
 
 export async function getMonthlyReport(
   year: number = new Date().getFullYear(),
-  branchIds?: string[]
+  branchIds?: string[],
 ): Promise<MonthlyReportRow[]> {
   const supabase = await createClient();
   const p_branch_ids = branchIds && branchIds.length > 0 ? branchIds : null;
 
   try {
-    const { data, error } = await supabase.rpc('report_monthly', {
+    const { data, error } = await supabase.rpc("report_monthly", {
       p_year: year,
       p_branch_ids,
     });
@@ -100,14 +106,17 @@ export async function getFacilityReport(options?: {
 }): Promise<FacilityReportResponse | null> {
   const supabase = await createClient();
 
-  const defaultRange = getVnDateRange('30days');
+  const defaultRange = getVnDateRange("30days");
   const p_from = options?.from || defaultRange.from;
   const p_to = options?.to || defaultRange.to;
-  const p_compare = options?.compareMode || 'same_period_ly';
-  const p_branch_ids = options?.branchIds && options.branchIds.length > 0 ? options.branchIds : null;
+  const p_compare = options?.compareMode || "same_period_ly";
+  const p_branch_ids =
+    options?.branchIds && options.branchIds.length > 0
+      ? options.branchIds
+      : null;
 
   try {
-    const { data, error } = await supabase.rpc('report_facilities', {
+    const { data, error } = await supabase.rpc("report_facilities", {
       p_from,
       p_to,
       p_branch_ids,

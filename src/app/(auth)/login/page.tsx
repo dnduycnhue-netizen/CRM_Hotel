@@ -1,8 +1,8 @@
-import { LoginForm } from '@/features/auth/components/login-form';
+import { LoginForm } from "@/features/auth/components/login-form";
 
 export const metadata = {
-  title: 'Đăng nhập | CRM Chuỗi Khách Sạn (8 Cơ Sở · 240 Phòng)',
-  description: 'Đăng nhập hệ thống quản lý nội bộ chuỗi khách sạn',
+  title: "Đăng nhập | CRM Chuỗi Khách Sạn (8 Cơ Sở · 240 Phòng)",
+  description: "Đăng nhập hệ thống quản lý nội bộ chuỗi khách sạn",
 };
 
 export default function LoginPage() {

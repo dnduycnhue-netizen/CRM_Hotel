@@ -1,13 +1,32 @@
-'use client';
+"use client";
 
-import React, { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import { PendingFlagItem } from '../types';
-import { removeFlagAction } from '../actions';
-import { ShieldCheck, ShieldAlert, AlertTriangle, Building2, UserX, Trash2, Loader2 } from 'lucide-react';
-import Link from 'next/link';
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, Input, Label } from '@/shared/ui';
-import { toast } from 'sonner';
+import {
+  AlertTriangle,
+  Building2,
+  Loader2,
+  ShieldAlert,
+  ShieldCheck,
+  Trash2,
+  UserX,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
+} from "@/shared/ui";
+import { removeFlagAction } from "../actions";
+import type { PendingFlagItem } from "../types";
 
 interface Props {
   flags: PendingFlagItem[];
@@ -16,19 +35,21 @@ interface Props {
 export function ActiveFlagsTable({ flags }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [selectedFlag, setSelectedFlag] = useState<PendingFlagItem | null>(null);
-  const [removeReason, setRemoveReason] = useState('');
+  const [selectedFlag, setSelectedFlag] = useState<PendingFlagItem | null>(
+    null,
+  );
+  const [removeReason, setRemoveReason] = useState("");
 
   const handleOpenRemove = (flag: PendingFlagItem) => {
     setSelectedFlag(flag);
-    setRemoveReason('');
+    setRemoveReason("");
   };
 
   const handleConfirmRemove = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFlag) return;
     if (!removeReason.trim() || removeReason.trim().length < 5) {
-      toast.error('Vui lòng nhập lý do gỡ cờ tối thiểu 5 ký tự');
+      toast.error("Vui lòng nhập lý do gỡ cờ tối thiểu 5 ký tự");
       return;
     }
 
@@ -41,10 +62,10 @@ export function ActiveFlagsTable({ flags }: Props) {
       if (res.ok) {
         toast.success(`Đã gỡ cờ cho khách ${selectedFlag.guest_name}`);
         setSelectedFlag(null);
-        setRemoveReason('');
+        setRemoveReason("");
         router.refresh();
       } else {
-        toast.error(res.error.message || 'Thao tác gỡ cờ thất bại');
+        toast.error(res.error.message || "Thao tác gỡ cờ thất bại");
       }
     });
   };
@@ -53,8 +74,12 @@ export function ActiveFlagsTable({ flags }: Props) {
     return (
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-10 text-center text-slate-400">
         <ShieldCheck className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
-        <p className="text-base font-medium text-slate-300">Không có cờ Blacklist nào đang hiệu lực</p>
-        <p className="text-xs text-slate-500 mt-1">Danh sách khách bị hạn chế hoặc cấm lưu trú sẽ hiển thị tại đây.</p>
+        <p className="text-base font-medium text-slate-300">
+          Không có cờ Blacklist nào đang hiệu lực
+        </p>
+        <p className="text-xs text-slate-500 mt-1">
+          Danh sách khách bị hạn chế hoặc cấm lưu trú sẽ hiển thị tại đây.
+        </p>
       </div>
     );
   }
@@ -76,9 +101,12 @@ export function ActiveFlagsTable({ flags }: Props) {
             </thead>
             <tbody className="divide-y divide-slate-800/60">
               {flags.map((flag) => {
-                const isBlacklist = flag.flag_type === 'blacklist';
+                const isBlacklist = flag.flag_type === "blacklist";
                 return (
-                  <tr key={flag.id} className="hover:bg-slate-800/30 transition-colors">
+                  <tr
+                    key={flag.id}
+                    className="hover:bg-slate-800/30 transition-colors"
+                  >
                     {/* Guest info */}
                     <td className="py-3 px-4">
                       <Link
@@ -89,7 +117,9 @@ export function ActiveFlagsTable({ flags }: Props) {
                       </Link>
                       <div className="text-xs text-slate-400 mt-0.5 space-x-2">
                         {flag.guest_phone && <span>{flag.guest_phone}</span>}
-                        {flag.guest_doc_masked && <span>• CCCD: {flag.guest_doc_masked}</span>}
+                        {flag.guest_doc_masked && (
+                          <span>• CCCD: {flag.guest_doc_masked}</span>
+                        )}
                       </div>
                     </td>
 
@@ -112,18 +142,20 @@ export function ActiveFlagsTable({ flags }: Props) {
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-1.5 text-slate-300">
                         <Building2 className="w-3.5 h-3.5 text-slate-500" />
-                        <span>{flag.branch_name || 'Toàn chuỗi'}</span>
+                        <span>{flag.branch_name || "Toàn chuỗi"}</span>
                       </div>
                     </td>
 
                     {/* Reason */}
                     <td className="py-3 px-4 max-w-xs">
-                      <p className="text-xs text-slate-300 line-clamp-2">{flag.reason}</p>
+                      <p className="text-xs text-slate-300 line-clamp-2">
+                        {flag.reason}
+                      </p>
                     </td>
 
                     {/* Time */}
                     <td className="py-3 px-4 text-xs text-slate-400">
-                      {new Date(flag.proposed_at).toLocaleDateString('vi-VN')}
+                      {new Date(flag.proposed_at).toLocaleDateString("vi-VN")}
                     </td>
 
                     {/* Action */}
@@ -147,7 +179,10 @@ export function ActiveFlagsTable({ flags }: Props) {
       </div>
 
       {/* Remove Flag Confirmation Dialog */}
-      <Dialog open={!!selectedFlag} onOpenChange={(open) => !open && setSelectedFlag(null)}>
+      <Dialog
+        open={!!selectedFlag}
+        onOpenChange={(open) => !open && setSelectedFlag(null)}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-rose-400">
@@ -155,8 +190,12 @@ export function ActiveFlagsTable({ flags }: Props) {
               <span>Gỡ cờ cảnh báo / Blacklist</span>
             </DialogTitle>
             <DialogDescription>
-              Khách hàng: <span className="font-bold text-foreground">{selectedFlag?.guest_name}</span>.
-              Thao tác này sẽ phục hồi trạng thái bình thường của hồ sơ khách hàng.
+              Khách hàng:{" "}
+              <span className="font-bold text-foreground">
+                {selectedFlag?.guest_name}
+              </span>
+              . Thao tác này sẽ phục hồi trạng thái bình thường của hồ sơ khách
+              hàng.
             </DialogDescription>
           </DialogHeader>
 

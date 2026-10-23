@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { WifiOff, Wifi, Download, X } from 'lucide-react';
+import { Download, Wifi, WifiOff, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 export function NetworkStatusBanner() {
   const [isOnline, setIsOnline] = useState<boolean>(true);
@@ -11,14 +11,17 @@ export function NetworkStatusBanner() {
 
   useEffect(() => {
     // Initial online state
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       setIsOnline(navigator.onLine);
 
       // Register Service Worker
-      if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+      if (
+        "serviceWorker" in navigator &&
+        process.env.NODE_ENV === "production"
+      ) {
         navigator.serviceWorker
-          .register('/sw.js')
-          .catch((err) => console.warn('SW registration failed:', err));
+          .register("/sw.js")
+          .catch((err) => console.warn("SW registration failed:", err));
       }
 
       const handleOnline = () => {
@@ -37,14 +40,17 @@ export function NetworkStatusBanner() {
         setShowInstallPrompt(true);
       };
 
-      window.addEventListener('online', handleOnline);
-      window.addEventListener('offline', handleOffline);
-      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.addEventListener("online", handleOnline);
+      window.addEventListener("offline", handleOffline);
+      window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
       return () => {
-        window.removeEventListener('online', handleOnline);
-        window.removeEventListener('offline', handleOffline);
-        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        window.removeEventListener("online", handleOnline);
+        window.removeEventListener("offline", handleOffline);
+        window.removeEventListener(
+          "beforeinstallprompt",
+          handleBeforeInstallPrompt,
+        );
       };
     }
   }, []);
@@ -53,7 +59,7 @@ export function NetworkStatusBanner() {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
+    if (outcome === "accepted") {
       setShowInstallPrompt(false);
     }
     setDeferredPrompt(null);
@@ -67,7 +73,8 @@ export function NetworkStatusBanner() {
           <div className="flex items-center gap-2 mx-auto">
             <WifiOff className="w-4 h-4 shrink-0 animate-pulse" />
             <span>
-              Mất kết nối mạng Internet. Hệ thống đang hoạt động ở chế độ ngoại tuyến (dữ liệu check-in sẽ được đồng bộ khi có mạng).
+              Mất kết nối mạng Internet. Hệ thống đang hoạt động ở chế độ ngoại
+              tuyến (dữ liệu check-in sẽ được đồng bộ khi có mạng).
             </span>
           </div>
         </div>
@@ -86,7 +93,10 @@ export function NetworkStatusBanner() {
         <div className="bg-indigo-950 border-b border-indigo-800 text-indigo-200 px-4 py-2 text-xs flex items-center justify-between z-40">
           <div className="flex items-center gap-2">
             <Download className="w-4 h-4 text-indigo-400" />
-            <span>Cài đặt ứng dụng CRM Chuỗi Khách Sạn lên màn hình chính máy quầy để thao tác nhanh hơn</span>
+            <span>
+              Cài đặt ứng dụng CRM Chuỗi Khách Sạn lên màn hình chính máy quầy
+              để thao tác nhanh hơn
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <button

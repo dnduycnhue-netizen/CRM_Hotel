@@ -1,21 +1,21 @@
-import { Metadata } from 'next';
-import { requirePermission } from '@/shared/auth/server';
-import { notFound, redirect } from 'next/navigation';
-import { getGuestProfile } from '@/features/guests';
-import { EditGuestForm } from '@/features/guests/components/edit-guest-form';
+import type { Metadata } from "next";
+import { notFound, redirect } from "next/navigation";
+import { getGuestProfile } from "@/features/guests";
+import { EditGuestForm } from "@/features/guests/components/edit-guest-form";
+import { requirePermission } from "@/shared/auth/server";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
 export const metadata: Metadata = {
-  title: 'Chỉnh sửa hồ sơ khách hàng | CRM Khách Sạn',
+  title: "Chỉnh sửa hồ sơ khách hàng | CRM Khách Sạn",
 };
 
 export default async function EditGuestPage({ params }: PageProps) {
-  const hasPerm = await requirePermission('guest.update');
+  const hasPerm = await requirePermission("guest.update");
   if (!hasPerm.ok) {
-    redirect('/guests');
+    redirect("/guests");
   }
 
   const { id } = await params;

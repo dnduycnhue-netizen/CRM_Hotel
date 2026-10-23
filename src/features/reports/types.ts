@@ -35,7 +35,12 @@ export interface NationalityReportKpi {
 
 export interface ReportKpisResponse {
   range: { from: string; to: string };
-  compare_range?: { from: string; to: string; mode: string; coverage: number } | null;
+  compare_range?: {
+    from: string;
+    to: string;
+    mode: string;
+    coverage: number;
+  } | null;
   current: ReportKpiMetrics;
   compare?: ReportKpiMetrics | null;
   by_branch: BranchReportKpi[];

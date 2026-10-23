@@ -1,17 +1,23 @@
-import { Metadata } from 'next';
-import { requirePermission } from '@/shared/auth/server';
-import { redirect } from 'next/navigation';
-import { getUsersList, getActiveBranches, getSystemRoles, UsersTable } from '@/features/admin';
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import {
+  getActiveBranches,
+  getSystemRoles,
+  getUsersList,
+  UsersTable,
+} from "@/features/admin";
+import { requirePermission } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
-  title: 'Người Dùng & Phân Quyền Tài Khoản | CRM Chuỗi Khách Sạn',
-  description: 'Thêm tài khoản nhân sự mới, phân bổ cơ sở làm việc và gán vai trò quyền hạn',
+  title: "Người Dùng & Phân Quyền Tài Khoản | CRM Chuỗi Khách Sạn",
+  description:
+    "Thêm tài khoản nhân sự mới, phân bổ cơ sở làm việc và gán vai trò quyền hạn",
 };
 
 export default async function UsersPage() {
-  const hasPerm = await requirePermission('settings.users');
+  const hasPerm = await requirePermission("settings.users");
   if (!hasPerm.ok) {
-    redirect('/');
+    redirect("/");
   }
 
   const [users, branches, { roles }] = await Promise.all([

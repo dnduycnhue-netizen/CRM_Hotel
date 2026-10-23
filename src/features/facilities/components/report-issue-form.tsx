@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import { useState, useTransition, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import {
   AlertTriangle,
-  Building2,
-  DoorOpen,
-  Wrench,
-  Clock,
-  ShieldAlert,
-  Loader2,
-  CheckCircle2,
   ArrowLeft,
-} from 'lucide-react';
-import { Button } from '@/shared/ui';
-import { createWorkOrderAction } from '../actions';
-import { ReportIssueInput } from '../schemas';
+  Building2,
+  CheckCircle2,
+  Clock,
+  DoorOpen,
+  Loader2,
+  ShieldAlert,
+  Wrench,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
+import { Button } from "@/shared/ui";
+import { createWorkOrderAction } from "../actions";
+import type { ReportIssueInput } from "../schemas";
 
 interface ReportIssueFormProps {
   branches: Array<{ id: string; name: string; code: string }>;
@@ -35,18 +35,24 @@ export function ReportIssueForm({
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const [selectedBranch, setSelectedBranch] = useState(currentBranchId || branches[0]?.id || '');
-  const [targetType, setTargetType] = useState<'room' | 'location'>('room');
-  const [selectedRoom, setSelectedRoom] = useState('');
-  const [selectedLocation, setSelectedLocation] = useState('');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState<'urgent' | 'high' | 'normal' | 'low'>('normal');
+  const [selectedBranch, setSelectedBranch] = useState(
+    currentBranchId || branches[0]?.id || "",
+  );
+  const [targetType, setTargetType] = useState<"room" | "location">("room");
+  const [selectedRoom, setSelectedRoom] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState<
+    "urgent" | "high" | "normal" | "low"
+  >("normal");
   const [blocksRoom, setBlocksRoom] = useState(false);
 
   // Filter rooms & locations by branch
   const filteredRooms = rooms.filter((r) => r.branch_id === selectedBranch);
-  const filteredLocations = locations.filter((l) => l.branch_id === selectedBranch);
+  const filteredLocations = locations.filter(
+    (l) => l.branch_id === selectedBranch,
+  );
 
   useEffect(() => {
     if (filteredRooms.length > 0 && !selectedRoom) {
@@ -59,31 +65,32 @@ export function ReportIssueForm({
     setErrorMsg(null);
 
     if (!title.trim()) {
-      setErrorMsg('Vui lòng nhập tiêu đề sự cố');
+      setErrorMsg("Vui lòng nhập tiêu đề sự cố");
       return;
     }
 
-    if (targetType === 'room' && !selectedRoom) {
-      setErrorMsg('Vui lòng chọn phòng phát sinh sự cố');
+    if (targetType === "room" && !selectedRoom) {
+      setErrorMsg("Vui lòng chọn phòng phát sinh sự cố");
       return;
     }
 
     startTransition(async () => {
       const payload: ReportIssueInput = {
         branch_id: selectedBranch,
-        kind: 'corrective',
+        kind: "corrective",
         title: title.trim(),
         description: description.trim() || null,
         priority,
-        room_id: targetType === 'room' ? selectedRoom : null,
-        location_id: targetType === 'location' ? selectedLocation || null : null,
-        blocks_room: targetType === 'room' && blocksRoom,
+        room_id: targetType === "room" ? selectedRoom : null,
+        location_id:
+          targetType === "location" ? selectedLocation || null : null,
+        blocks_room: targetType === "room" && blocksRoom,
         photo_paths: [],
       };
 
       const res = await createWorkOrderAction(payload);
       if (res.ok) {
-        router.push('/facilities/work-orders');
+        router.push("/facilities/work-orders");
       } else {
         setErrorMsg(res.error.message);
       }
@@ -104,7 +111,8 @@ export function ReportIssueForm({
             Báo cáo sự cố thiết bị / Buồng phòng
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Dành cho Lễ tân, Buồng phòng và Giám sát cơ sở vật chất ghi nhận sự cố
+            Dành cho Lễ tân, Buồng phòng và Giám sát cơ sở vật chất ghi nhận sự
+            cố
           </p>
         </div>
       </div>
@@ -129,8 +137,8 @@ export function ReportIssueForm({
               value={selectedBranch}
               onChange={(e) => {
                 setSelectedBranch(e.target.value);
-                setSelectedRoom('');
-                setSelectedLocation('');
+                setSelectedRoom("");
+                setSelectedLocation("");
               }}
               className="w-full text-sm font-medium px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
             >
@@ -150,11 +158,11 @@ export function ReportIssueForm({
             <div className="grid grid-cols-2 gap-3 mb-3">
               <button
                 type="button"
-                onClick={() => setTargetType('room')}
+                onClick={() => setTargetType("room")}
                 className={`p-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition ${
-                  targetType === 'room'
-                    ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400'
-                    : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+                  targetType === "room"
+                    ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400"
+                    : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
                 }`}
               >
                 <DoorOpen className="w-4 h-4" />
@@ -163,13 +171,13 @@ export function ReportIssueForm({
               <button
                 type="button"
                 onClick={() => {
-                  setTargetType('location');
+                  setTargetType("location");
                   setBlocksRoom(false);
                 }}
                 className={`p-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition ${
-                  targetType === 'location'
-                    ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400'
-                    : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+                  targetType === "location"
+                    ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400"
+                    : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
                 }`}
               >
                 <Building2 className="w-4 h-4" />
@@ -177,7 +185,7 @@ export function ReportIssueForm({
               </button>
             </div>
 
-            {targetType === 'room' ? (
+            {targetType === "room" ? (
               <div>
                 <select
                   value={selectedRoom}
@@ -233,10 +241,30 @@ export function ReportIssueForm({
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
               {[
-                { id: 'urgent', label: 'Khẩn cấp', sla: '4 giờ', color: 'border-rose-500 bg-rose-50 text-rose-700' },
-                { id: 'high', label: 'Ưu tiên cao', sla: '24 giờ', color: 'border-amber-500 bg-amber-50 text-amber-700' },
-                { id: 'normal', label: 'Bình thường', sla: '72 giờ', color: 'border-indigo-500 bg-indigo-50 text-indigo-700' },
-                { id: 'low', label: 'Ưu tiên thấp', sla: '7 ngày', color: 'border-slate-300 bg-slate-100 text-slate-700' },
+                {
+                  id: "urgent",
+                  label: "Khẩn cấp",
+                  sla: "4 giờ",
+                  color: "border-rose-500 bg-rose-50 text-rose-700",
+                },
+                {
+                  id: "high",
+                  label: "Ưu tiên cao",
+                  sla: "24 giờ",
+                  color: "border-amber-500 bg-amber-50 text-amber-700",
+                },
+                {
+                  id: "normal",
+                  label: "Bình thường",
+                  sla: "72 giờ",
+                  color: "border-indigo-500 bg-indigo-50 text-indigo-700",
+                },
+                {
+                  id: "low",
+                  label: "Ưu tiên thấp",
+                  sla: "7 ngày",
+                  color: "border-slate-300 bg-slate-100 text-slate-700",
+                },
               ].map((p) => (
                 <button
                   key={p.id}
@@ -245,18 +273,20 @@ export function ReportIssueForm({
                   className={`p-3 rounded-xl border text-center transition ${
                     priority === p.id
                       ? `${p.color} font-bold shadow-sm`
-                      : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                      : "border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/40"
                   }`}
                 >
                   <div className="text-xs">{p.label}</div>
-                  <div className="text-[10px] opacity-75 mt-0.5">SLA: {p.sla}</div>
+                  <div className="text-[10px] opacity-75 mt-0.5">
+                    SLA: {p.sla}
+                  </div>
                 </button>
               ))}
             </div>
           </div>
 
           {/* Khóa phòng ngừng bán */}
-          {targetType === 'room' && (
+          {targetType === "room" && (
             <div className="p-4 rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/50 dark:bg-amber-950/20 flex items-start gap-3">
               <input
                 id="blockRoomCheck"
@@ -271,7 +301,8 @@ export function ReportIssueForm({
                   Khóa phòng ngừng bán (Out of Order)
                 </span>
                 <span className="block text-[11px] text-amber-700 dark:text-amber-300/80 mt-0.5">
-                  Tự động chặn check-in phòng này trong hệ thống cho đến khi kỹ thuật viên sửa xong và nghiệm thu đạt.
+                  Tự động chặn check-in phòng này trong hệ thống cho đến khi kỹ
+                  thuật viên sửa xong và nghiệm thu đạt.
                 </span>
               </label>
             </div>
@@ -294,7 +325,11 @@ export function ReportIssueForm({
         {/* Submit */}
         <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800">
           <Link href="/facilities/work-orders">
-            <Button variant="ghost" type="button" className="rounded-xl text-xs">
+            <Button
+              variant="ghost"
+              type="button"
+              className="rounded-xl text-xs"
+            >
               Hủy bỏ
             </Button>
           </Link>

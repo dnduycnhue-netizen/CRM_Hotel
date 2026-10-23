@@ -1,16 +1,17 @@
-import { getActiveBranches, BranchesTable } from '@/features/admin';
-import { requirePermission } from '@/shared/auth/server';
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
+import { BranchesTable, getActiveBranches } from "@/features/admin";
+import { requirePermission } from "@/shared/auth/server";
 
 export const metadata = {
-  title: 'Cài đặt cơ sở | CRM Chuỗi Khách Sạn',
-  description: 'Quản lý danh sách 8 cơ sở, địa chỉ, số điện thoại và giờ cắt đêm',
+  title: "Cài đặt cơ sở | CRM Chuỗi Khách Sạn",
+  description:
+    "Quản lý danh sách 8 cơ sở, địa chỉ, số điện thoại và giờ cắt đêm",
 };
 
 export default async function SettingsBranchesPage() {
-  const hasPerm = await requirePermission('settings.branches');
+  const hasPerm = await requirePermission("settings.branches");
   if (!hasPerm.ok) {
-    redirect('/');
+    redirect("/");
   }
 
   const branches = await getActiveBranches();

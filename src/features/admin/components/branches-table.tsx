@@ -1,34 +1,34 @@
-'use client';
+"use client";
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import type { Branch } from '../domain/types';
+import { Building2, Clock, Edit, Loader2, Phone, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import {
+  Badge,
+  Button,
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
+  Switch,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-  Badge,
-  Button,
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  Input,
-  Label,
-  Switch,
-} from '@/shared/ui';
-import { Building2, Phone, Clock, Edit, Plus, Loader2 } from 'lucide-react';
-import { saveBranchAction } from '../actions';
-import { toast } from 'sonner';
+} from "@/shared/ui";
+import { saveBranchAction } from "../actions";
+import type { Branch } from "../domain/types";
 
 interface BranchesTableProps {
   branches: Branch[];
@@ -43,24 +43,24 @@ export function BranchesTable({ branches }: BranchesTableProps) {
   const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
 
   // Form fields
-  const [code, setCode] = useState('');
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
-  const [nightCutoff, setNightCutoff] = useState('06:00');
-  const [defaultCheckoutTime, setDefaultCheckoutTime] = useState('12:00');
+  const [code, setCode] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [nightCutoff, setNightCutoff] = useState("06:00");
+  const [defaultCheckoutTime, setDefaultCheckoutTime] = useState("12:00");
   const [isActive, setIsActive] = useState(true);
 
   const totalRooms = branches.reduce((sum, b) => sum + (b.roomsCount || 0), 0);
 
   const handleOpenCreate = () => {
     setEditingBranch(null);
-    setCode('');
-    setName('');
-    setPhone('');
-    setAddress('');
-    setNightCutoff('06:00');
-    setDefaultCheckoutTime('12:00');
+    setCode("");
+    setName("");
+    setPhone("");
+    setAddress("");
+    setNightCutoff("06:00");
+    setDefaultCheckoutTime("12:00");
     setIsActive(true);
     setIsDialogOpen(true);
   };
@@ -69,10 +69,10 @@ export function BranchesTable({ branches }: BranchesTableProps) {
     setEditingBranch(branch);
     setCode(branch.code);
     setName(branch.name);
-    setPhone(branch.phone || '');
-    setAddress(branch.address || '');
-    setNightCutoff(branch.nightCutoff || '06:00');
-    setDefaultCheckoutTime(branch.defaultCheckoutTime || '12:00');
+    setPhone(branch.phone || "");
+    setAddress(branch.address || "");
+    setNightCutoff(branch.nightCutoff || "06:00");
+    setDefaultCheckoutTime(branch.defaultCheckoutTime || "12:00");
     setIsActive(branch.isActive);
     setIsDialogOpen(true);
   };
@@ -80,7 +80,7 @@ export function BranchesTable({ branches }: BranchesTableProps) {
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     if (!code.trim() || !name.trim()) {
-      toast.error('Vui lòng nhập đầy đủ mã và tên cơ sở');
+      toast.error("Vui lòng nhập đầy đủ mã và tên cơ sở");
       return;
     }
 
@@ -91,14 +91,16 @@ export function BranchesTable({ branches }: BranchesTableProps) {
         name: name.trim(),
         phone: phone.trim() || undefined,
         address: address.trim() || undefined,
-        nightCutoff: nightCutoff.trim() || '06:00',
-        defaultCheckoutTime: defaultCheckoutTime.trim() || '12:00',
+        nightCutoff: nightCutoff.trim() || "06:00",
+        defaultCheckoutTime: defaultCheckoutTime.trim() || "12:00",
         isActive,
       });
 
       if (res.ok) {
         toast.success(
-          editingBranch ? `Đã cập nhật cơ sở ${name}` : `Đã thêm mới cơ sở ${name}`
+          editingBranch
+            ? `Đã cập nhật cơ sở ${name}`
+            : `Đã thêm mới cơ sở ${name}`,
         );
         setIsDialogOpen(false);
         router.refresh();
@@ -114,7 +116,9 @@ export function BranchesTable({ branches }: BranchesTableProps) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="border-border/60">
           <CardHeader className="pb-2">
-            <CardDescription className="text-xs">Tổng cơ sở chuỗi</CardDescription>
+            <CardDescription className="text-xs">
+              Tổng cơ sở chuỗi
+            </CardDescription>
             <CardTitle className="text-2xl font-bold text-primary">
               {branches.length} Khách sạn
             </CardTitle>
@@ -122,7 +126,9 @@ export function BranchesTable({ branches }: BranchesTableProps) {
         </Card>
         <Card className="border-border/60">
           <CardHeader className="pb-2">
-            <CardDescription className="text-xs">Tổng số phòng kinh doanh</CardDescription>
+            <CardDescription className="text-xs">
+              Tổng số phòng kinh doanh
+            </CardDescription>
             <CardTitle className="text-2xl font-bold text-foreground">
               {totalRooms} Phòng
             </CardTitle>
@@ -130,7 +136,9 @@ export function BranchesTable({ branches }: BranchesTableProps) {
         </Card>
         <Card className="border-border/60">
           <CardHeader className="pb-2">
-            <CardDescription className="text-xs">Quy định giờ nhận / trả phòng</CardDescription>
+            <CardDescription className="text-xs">
+              Quy định giờ nhận / trả phòng
+            </CardDescription>
             <CardTitle className="text-sm font-semibold flex items-center gap-2 pt-1">
               <Clock className="h-4 w-4 text-muted-foreground" />
               <span>Cắt đêm: 06:00 · Trả: 12:00</span>
@@ -144,7 +152,9 @@ export function BranchesTable({ branches }: BranchesTableProps) {
         <CardHeader className="pb-3 border-b border-border/40">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-base font-semibold">Danh sách Cơ sở Khách sạn</CardTitle>
+              <CardTitle className="text-base font-semibold">
+                Danh sách Cơ sở Khách sạn
+              </CardTitle>
               <CardDescription className="text-xs">
                 Cấu hình thông tin cơ sở, giờ cắt đêm và liên hệ
               </CardDescription>
@@ -194,21 +204,23 @@ export function BranchesTable({ branches }: BranchesTableProps) {
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-1.5 text-foreground font-medium">
                         <Phone className="h-3 w-3 text-muted-foreground" />
-                        <span>{b.phone || 'Chưa cập nhật'}</span>
+                        <span>{b.phone || "Chưa cập nhật"}</span>
                       </div>
                       <p className="text-[11px] text-muted-foreground truncate max-w-xs">
-                        {b.address || 'Chưa cập nhật địa chỉ'}
+                        {b.address || "Chưa cập nhật địa chỉ"}
                       </p>
                     </div>
                   </TableCell>
                   <TableCell className="font-mono">{b.nightCutoff}</TableCell>
-                  <TableCell className="font-mono">{b.defaultCheckoutTime}</TableCell>
+                  <TableCell className="font-mono">
+                    {b.defaultCheckoutTime}
+                  </TableCell>
                   <TableCell>
                     <Badge
-                      variant={b.isActive ? 'default' : 'outline'}
+                      variant={b.isActive ? "default" : "outline"}
                       className="text-[10px]"
                     >
-                      {b.isActive ? 'Đang hoạt động' : 'Tạm ngưng'}
+                      {b.isActive ? "Đang hoạt động" : "Tạm ngưng"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -234,7 +246,9 @@ export function BranchesTable({ branches }: BranchesTableProps) {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {editingBranch ? `Chỉnh sửa cơ sở: ${editingBranch.name}` : 'Thêm cơ sở khách sạn mới'}
+              {editingBranch
+                ? `Chỉnh sửa cơ sở: ${editingBranch.name}`
+                : "Thêm cơ sở khách sạn mới"}
             </DialogTitle>
             <DialogDescription>
               Cập nhật thông tin chi tiết, đường dây nóng và cấu hình vận hành
@@ -352,7 +366,7 @@ export function BranchesTable({ branches }: BranchesTableProps) {
                 className="h-9 text-xs font-semibold gap-1.5"
               >
                 {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                <span>{editingBranch ? 'Lưu thay đổi' : 'Tạo cơ sở'}</span>
+                <span>{editingBranch ? "Lưu thay đổi" : "Tạo cơ sở"}</span>
               </Button>
             </DialogFooter>
           </form>
