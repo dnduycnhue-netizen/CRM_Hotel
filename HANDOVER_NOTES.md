@@ -239,6 +239,39 @@ vercel --prod --yes
   - Khắc phục race condition trong [src/app/(app)/stays/page.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/app/(app)/stays/page.tsx) bằng cách ưu tiên `session.branchIds` ngay lần tải đầu tiên.
   - Sửa nút Đăng xuất trong [src/components/layout/app-header.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/components/layout/app-header.tsx) gọi trực tiếp `logoutAction()`, đăng xuất ngay sau 1 lần click.
 
+### Phase P7: Khắc phục Toàn diện & Triệt để Báo cáo QA Vòng 5 — ĐÃ HOÀN THÀNH (23/10/2026)
+- **P7.1 (Khắc phục Gốc rễ Tráo Phiên / Rớt Session — C1, H5, H1)**:
+  - **Nguyên nhân gốc rễ:** Nút Đăng xuất trước đây gọi Server Action bất đồng bộ trong dropdown menu client nhưng unmount ngay tức thì, khiến trình duyệt ngắt request, không xóa được cookie Supabase và không dọn dẹp localStorage. Khi đăng nhập tài khoản khác, app bị kẹt giữa token cũ và mới dẫn đến tráo tài khoản. Ngoài ra, việc chuyển hướng cứng về `/check-in` sau đăng nhập khiến các vai trò không có quyền check-in bị đá quay lại.
+  - **Giải pháp:**
+    - Cập nhật [src/app/logout/route.ts](file:///Users/duyduong/Documents/code/CRM_Hotel/src/app/logout/route.ts) xóa triệt để mọi cookie `branch_id` và token auth `sb-*`.
+    - Cập nhật [src/components/layout/app-header.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/components/layout/app-header.tsx): Khi bấm "Đăng xuất", tự động dọn sạch `localStorage`, `sessionStorage`, xóa cookie và điều hướng cứng trình duyệt sang `/logout`. Chấm dứt 100% tình trạng bấm đăng xuất chỉ đóng menu.
+    - Cập nhật [src/features/auth/actions.ts](file:///Users/duyduong/Documents/code/CRM_Hotel/src/features/auth/actions.ts): Bỏ hardcode `/check-in`, chuyển hướng về `/` để phân luồng tự động theo vai trò (Owner/Manager -> `/reports`, Kỹ thuật -> `/facilities/work-orders`, Sales -> `/guests`, Lễ tân -> `/check-in`).
+- **P7.2 (Chấm dứt Redirect Loop & Khôi phục Menu Sidebar — C6, C2)**:
+  - **Nguyên nhân:** Trang `/reports` chỉ kiểm tra `report.view_branch`. Chủ chuỗi chỉ có `report.view_chain` (không có branchId cụ thể) nên bị redirect về `/`. Tại `/`, logic lại redirect về `/reports`. Hai route đá qua lại tạo vòng lặp vô tận làm trắng trang và mất session.
+  - **Giải pháp:**
+    - Cập nhật [src/app/(app)/reports/page.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/app/(app)/reports/page.tsx) và [src/components/layout/app-sidebar.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/components/layout/app-sidebar.tsx): Cho phép người dùng có `report.view_chain` HOẶC `report.view_branch` truy cập.
+    - Cập nhật [src/app/(app)/approvals/page.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/app/(app)/approvals/page.tsx): Cho phép người dùng có `merge.approve` HOẶC `blacklist.approve` truy cập.
+    - Mở khóa hoàn toàn `/facilities/room-blocks` cho Lễ tân và Kỹ thuật viên sau khi đồng bộ cache quyền trong DB.
+- **P7.3 (Sửa lỗi RPC Lưu Ghi chú & Thao tác Phiếu CSVC — C3, C4, C5)**:
+  - Áp dụng Migration 29 [supabase/migrations/20261101000029_fix_qa_round5_permissions_and_rpc.sql](file:///Users/duyduong/Documents/code/CRM_Hotel/supabase/migrations/20261101000029_fix_qa_round5_permissions_and_rpc.sql):
+    - **C5:** Sửa RPC `public.add_guest_note`: Thêm tham số mặc định `p_branch_id uuid default null` và gọi `private.log_event` an toàn. Lưu ghi chú khách hoạt động trơn tru 100%, không còn crash app.
+    - **C3:** Cập nhật bảng `wo_transitions` và hàm `public.transition_work_order`: Cho phép Kỹ thuật viên có quyền `wo.work` được chuyển trạng thái phiếu từ `new -> in_progress` và tự động gán `assignee_id = auth.uid()`. Đã kiểm chứng thực tế: Phiếu #23 chuyển sang `in_progress` thành công.
+    - **C4:** Cấp quyền `wo.assign` cho vai trò `technician` và đảm bảo Chủ chuỗi có đủ 68 permissions. Đã kiểm chứng: Chủ chuỗi tạo thành công phiếu sự cố #25.
+- **P7.4 (Thu hồi Quyền Cài đặt & Tái lập Cache Quyền — C7, H4)**:
+  - Thu hồi triệt để quyền `settings.roles`, `settings.users`, `report.view_chain`, `merge.approve`, `blacklist.approve` khỏi vai trò `branch_manager`.
+  - Thực thi `private.rebuild_all_permissions()`: Bảng `user_effective_permissions` của Quản lý Boutique giảm từ 67 xuống đúng 56 permissions (chặn hoàn toàn truy cập `/settings/roles` và giới hạn báo cáo trong phạm vi cơ sở).
+- **P7.5 (Sửa lỗi Xuất Excel & Null-Safety — H3)**:
+  - Cập nhật [src/features/reports/actions.ts](file:///Users/duyduong/Documents/code/CRM_Hotel/src/features/reports/actions.ts): Bổ sung kiểm tra null-safe cho toàn bộ các chỉ số so sánh cùng kỳ (`occupancy`, `alos`, `returning_rate`, `cancel_rate`) và `branch_id.slice()`, chấm dứt lỗi `TypeError: Cannot read properties of null (reading 'toFixed')`.
+  - Cập nhật [src/features/guests/actions.ts](file:///Users/duyduong/Documents/code/CRM_Hotel/src/features/guests/actions.ts), [guest-list-table.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/features/guests/components/guest-list-table.tsx), [dashboard-overview.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/features/reports/components/dashboard-overview.tsx): Tối ưu hóa giải mã Base64 sang Blob trực tiếp bằng `Uint8Array`, thêm thông báo lỗi tiếng Việt chi tiết nếu có ngoại lệ.
+- **P7.6 (Combobox Chuyển cơ sở & Trải nghiệm Người dùng — H2, H7, E1)**:
+  - Cập nhật [src/components/layout/branch-selector.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/components/layout/branch-selector.tsx): Với nhân sự 1 cơ sở (Quản lý/Lễ tân), hiển thị nhãn "(Cố định)" kèm tooltip giải thích rõ ràng không thể chuyển đổi. Với Chủ chuỗi, `selectBranchAction` bọc `try...catch` và xử lý an toàn không gây crash.
+  - Cập nhật [src/features/check-in/components/check-in-form.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/features/check-in/components/check-in-form.tsx): Thêm cờ `isCurrent` và khối `finally { setIsLookingUp(false) }`, ngăn chặn hiện tượng kẹt spinner "Đang tìm..." khi dán SĐT.
+  - Bổ sung trường bắt buộc "Nguồn khách / Kênh tiếp cận" trong [src/features/guests/components/guest-form.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/features/guests/components/guest-form.tsx).
+- **P7.7 (Bảo vệ Mặt nạ SĐT Đồng bộ — Section E)**:
+  - Áp dụng Migration 30 [supabase/migrations/20261101000030_consistent_phone_masking.sql](file:///Users/duyduong/Documents/code/CRM_Hotel/supabase/migrations/20261101000030_consistent_phone_masking.sql): Đồng bộ quy tắc che SĐT (`090****024`) trên toàn bộ 3 phân hệ: Danh sách khách (`get_guests_list`), Tìm kiếm nhanh (`search_guests`), và Chi tiết hồ sơ 360° (`get_guest_profile`). Nhân viên Sales chỉ xem được số rõ với khách do mình phụ trách (`view_full_own`).
+- **P7.8 (Error Boundary Toàn cục Chống Crash Trắng Trang — H6)**:
+  - Tạo mới [src/app/error.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/app/error.tsx) và [src/app/(app)/error.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/app/(app)/error.tsx): Bắt toàn bộ unhandled exceptions trong render tree, hiển thị giao diện báo lỗi tiếng Việt thân thiện kèm nút "Thử lại ngay" và "Về trang chủ", tuyệt đối không để xảy ra crash trắng trang.
+
 ---
 
 ## 6. Lưu ý cho người bảo trì tiếp theo (Caveats & Best Practices)

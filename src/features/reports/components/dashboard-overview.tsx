@@ -69,11 +69,10 @@ export function DashboardOverview({
         return;
       }
       const byteCharacters = atob(res.data.base64);
-      const byteNumbers = new Array(byteCharacters.length);
+      const byteArray = new Uint8Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
+        byteArray[i] = byteCharacters.charCodeAt(i);
       }
-      const byteArray = new Uint8Array(byteNumbers);
       const blob = new Blob([byteArray], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
@@ -87,8 +86,13 @@ export function DashboardOverview({
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       toast.success("Xuất báo cáo Excel thành công!");
-    } catch (_err) {
-      toast.error("Đã xảy ra lỗi khi tạo tệp Excel báo cáo");
+    } catch (err: any) {
+      console.error("Lỗi xuất báo cáo Excel:", err);
+      toast.error(
+        err?.message
+          ? `Lỗi tạo tệp Excel: ${err.message}`
+          : "Đã xảy ra lỗi khi tạo tệp Excel báo cáo",
+      );
     } finally {
       setIsExporting(false);
     }

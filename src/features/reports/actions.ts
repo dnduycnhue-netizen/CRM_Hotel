@@ -65,38 +65,44 @@ export async function exportReportAction(params: {
 
     kpiSheet.addRow({
       metric: "Công suất phòng trung bình (Occupancy)",
-      current: `${(kpis.current.occupancy * 100).toFixed(1)}%`,
-      compare: kpis.compare
-        ? `${(kpis.compare.occupancy * 100).toFixed(1)}%`
-        : "—",
+      current: `${((kpis.current?.occupancy ?? 0) * 100).toFixed(1)}%`,
+      compare:
+        kpis.compare?.occupancy != null
+          ? `${(kpis.compare.occupancy * 100).toFixed(1)}%`
+          : "—",
       unit: "%",
     });
     kpiSheet.addRow({
       metric: "Tổng số lượt khách đến (Arrivals)",
-      current: kpis.current.arrivals,
-      compare: kpis.compare ? kpis.compare.arrivals : "—",
+      current: kpis.current?.arrivals ?? 0,
+      compare: kpis.compare?.arrivals != null ? kpis.compare.arrivals : "—",
       unit: "Lượt",
     });
     kpiSheet.addRow({
       metric: "Thời gian lưu trú bình quân (ALOS)",
-      current: `${kpis.current.alos.toFixed(2)} đêm`,
-      compare: kpis.compare ? `${kpis.compare.alos.toFixed(2)} đêm` : "—",
+      current: `${(kpis.current?.alos ?? 0).toFixed(2)} đêm`,
+      compare:
+        kpis.compare?.alos != null
+          ? `${kpis.compare.alos.toFixed(2)} đêm`
+          : "—",
       unit: "Đêm/lượt",
     });
     kpiSheet.addRow({
       metric: "Tỷ lệ khách quay lại (Returning Rate)",
-      current: `${(kpis.current.returning_rate * 100).toFixed(1)}%`,
-      compare: kpis.compare
-        ? `${(kpis.compare.returning_rate * 100).toFixed(1)}%`
-        : "—",
+      current: `${((kpis.current?.returning_rate ?? 0) * 100).toFixed(1)}%`,
+      compare:
+        kpis.compare?.returning_rate != null
+          ? `${(kpis.compare.returning_rate * 100).toFixed(1)}%`
+          : "—",
       unit: "%",
     });
     kpiSheet.addRow({
       metric: "Tỷ lệ hủy phòng (Cancellation Rate)",
-      current: `${(kpis.current.cancel_rate * 100).toFixed(1)}%`,
-      compare: kpis.compare
-        ? `${(kpis.compare.cancel_rate * 100).toFixed(1)}%`
-        : "—",
+      current: `${((kpis.current?.cancel_rate ?? 0) * 100).toFixed(1)}%`,
+      compare:
+        kpis.compare?.cancel_rate != null
+          ? `${(kpis.compare.cancel_rate * 100).toFixed(1)}%`
+          : "—",
       unit: "%",
     });
 
@@ -122,14 +128,14 @@ export async function exportReportAction(params: {
     branchHeader.alignment = { vertical: "middle", horizontal: "center" };
     branchHeader.height = 26;
 
-    kpis.by_branch.forEach((b, idx) => {
+    (kpis.by_branch || []).forEach((b, idx) => {
       const branchInfo = branches.find((item) => item.id === b.branch_id);
       branchSheet.addRow({
         stt: idx + 1,
-        code: branchInfo?.code || b.branch_id.slice(0, 8),
+        code: branchInfo?.code || (b.branch_id ? b.branch_id.slice(0, 8) : "—"),
         name: branchInfo?.name || b.branch || "Khách sạn",
-        occupancy: `${(b.current.occupancy * 100).toFixed(1)}%`,
-        arrivals: b.current.arrivals,
+        occupancy: `${((b.current?.occupancy ?? 0) * 100).toFixed(1)}%`,
+        arrivals: b.current?.arrivals ?? 0,
       });
     });
 
@@ -155,8 +161,8 @@ export async function exportReportAction(params: {
       series.forEach((pt) => {
         seriesSheet.addRow({
           date: pt.bucket,
-          occupancy: `${(pt.cur.occupancy * 100).toFixed(1)}%`,
-          arrivals: pt.cur.arrivals,
+          occupancy: `${((pt.cur?.occupancy ?? 0) * 100).toFixed(1)}%`,
+          arrivals: pt.cur?.arrivals ?? 0,
         });
       });
     }
@@ -166,11 +172,14 @@ export async function exportReportAction(params: {
     const filename = `Bao_Cao_Van_Hanh_${params.from || "all"}_den_${params.to || "all"}.xlsx`;
 
     return ok({ filename, base64 });
-  } catch (_err) {
+  } catch (err: any) {
+    console.error("Lỗi xuất Excel báo cáo:", err);
     return fail(
       "UNKNOWN",
       undefined,
-      "Lỗi trong quá trình xuất file Excel báo cáo",
+      err?.message
+        ? `Lỗi xuất file Excel: ${err.message}`
+        : "Lỗi trong quá trình xuất file Excel báo cáo",
     );
   }
 }

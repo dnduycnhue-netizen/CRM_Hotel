@@ -6,19 +6,22 @@ import {
   getPendingFlags,
   getPendingMergeRequests,
 } from "@/features/approvals";
-import { requirePermission } from "@/shared/auth/server";
+import { getSession } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
   title: "Trung tâm Phê duyệt & Hợp nhất | CRM Khách Sạn",
 };
 
 export default async function ApprovalsPage() {
-  const [hasMergePerm, hasFlagPerm] = await Promise.all([
-    requirePermission("merge.approve"),
-    requirePermission("blacklist.approve"),
-  ]);
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
 
-  if (!hasMergePerm.ok && !hasFlagPerm.ok) {
+  const hasMergePerm = session.can("merge.approve");
+  const hasFlagPerm = session.can("blacklist.approve");
+
+  if (!hasMergePerm && !hasFlagPerm) {
     redirect("/");
   }
 

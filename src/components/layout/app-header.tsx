@@ -264,7 +264,17 @@ export function AppHeader({
               <DropdownMenuItem
                 variant="destructive"
                 className="text-xs cursor-pointer font-semibold py-1.5"
-                onClick={() => logoutAction()}
+                onClick={() => {
+                  try {
+                    document.cookie =
+                      "branch_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+                    if (typeof window !== "undefined") {
+                      localStorage.clear();
+                      sessionStorage.clear();
+                    }
+                  } catch {}
+                  window.location.href = "/logout";
+                }}
               >
                 <LogOut className="mr-2 h-3.5 w-3.5 text-destructive" />
                 <span>Đăng xuất</span>

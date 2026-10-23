@@ -7,13 +7,21 @@ import { createClient } from "@/lib/supabase/server";
 import { requirePermission } from "@/shared/auth/server";
 import { type ActionResult, fail, ok } from "@/shared/errors";
 
-export async function selectBranchAction(branchId: string) {
-  const cookieStore = await cookies();
-  cookieStore.set("branch_id", branchId, {
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30, // 30 days
-  });
-  revalidatePath("/", "layout");
+export async function selectBranchAction(
+  branchId: string,
+): Promise<ActionResult<void>> {
+  try {
+    const cookieStore = await cookies();
+    cookieStore.set("branch_id", branchId, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+      sameSite: "lax",
+    });
+    revalidatePath("/", "layout");
+    return ok(undefined);
+  } catch (err: any) {
+    return fail("UNKNOWN", undefined, err?.message || "Không thể lưu cơ sở");
+  }
 }
 
 /**

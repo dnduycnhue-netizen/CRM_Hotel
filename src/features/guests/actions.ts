@@ -253,7 +253,14 @@ export async function exportGuestsAction(): Promise<
     });
 
     if (error || !data) {
-      return fail(error?.code || "UNKNOWN");
+      console.error("Lỗi RPC export_guests:", error);
+      return fail(
+        (error?.code as any) || "UNKNOWN",
+        undefined,
+        error?.message
+          ? `Lỗi truy vấn dữ liệu: ${error.message}`
+          : "Không thể lấy danh sách khách hàng để xuất Excel",
+      );
     }
 
     const ExcelJS = (await import("exceljs")).default;
@@ -323,8 +330,15 @@ export async function exportGuestsAction(): Promise<
       base64,
       count: data.length,
     });
-  } catch (_err: unknown) {
-    return fail("UNKNOWN");
+  } catch (err: any) {
+    console.error("Lỗi xuất Excel khách hàng:", err);
+    return fail(
+      "UNKNOWN",
+      undefined,
+      err?.message
+        ? `Lỗi tạo tệp Excel: ${err.message}`
+        : "Đã xảy ra lỗi khi tạo tệp Excel",
+    );
   }
 }
 

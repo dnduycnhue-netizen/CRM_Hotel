@@ -29,6 +29,7 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   perm?: import("@/shared/auth").Permission;
+  perms?: import("@/shared/auth").Permission[];
   badge?: string;
   badgeVariant?: "gold" | "emerald" | "amber";
 }
@@ -83,7 +84,7 @@ const NAV_GROUPS: NavGroup[] = [
         title: "Duyệt gộp hồ sơ",
         href: "/approvals",
         icon: CheckSquare,
-        perm: "merge.approve",
+        perms: ["merge.approve", "blacklist.approve"],
       },
     ],
   },
@@ -129,7 +130,7 @@ const NAV_GROUPS: NavGroup[] = [
         title: "Công suất & Khách",
         href: "/reports",
         icon: BarChart3,
-        perm: "report.view_branch",
+        perms: ["report.view_branch", "report.view_chain"],
       },
       {
         title: "Doanh thu & Cùng kỳ",
@@ -224,9 +225,12 @@ export function AppSidebar() {
       {/* Nav Menu */}
       <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-6">
         {NAV_GROUPS.map((group) => {
-          const visibleItems = group.items.filter(
-            (item) => !item.perm || can(item.perm),
-          );
+          const visibleItems = group.items.filter((item: any) => {
+            if (item.perms && Array.isArray(item.perms)) {
+              return item.perms.some((p: any) => can(p));
+            }
+            return !item.perm || can(item.perm);
+          });
           if (visibleItems.length === 0) return null;
 
           return (

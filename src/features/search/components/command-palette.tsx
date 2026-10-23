@@ -212,12 +212,15 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                   <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                     {guest.total_stays} lượt ở · {guest.total_nights} đêm
                   </div>
-                  {guest.last_stay_at && (
-                    <div className="text-[11px] text-slate-400 flex items-center justify-end gap-1 mt-0.5">
-                      <Calendar className="w-3 h-3" />
-                      {new Date(guest.last_stay_at).toLocaleDateString("vi-VN")}
-                    </div>
-                  )}
+                  {guest.last_stay_at &&
+                    !isNaN(new Date(guest.last_stay_at).getTime()) && (
+                      <div className="text-[11px] text-slate-400 flex items-center justify-end gap-1 mt-0.5">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(guest.last_stay_at).toLocaleDateString(
+                          "vi-VN",
+                        )}
+                      </div>
+                    )}
                 </div>
               </button>
             );

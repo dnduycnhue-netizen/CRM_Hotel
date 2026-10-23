@@ -89,18 +89,29 @@ export function CheckInForm({
 
   // Auto classify and lookup
   useEffect(() => {
-    if (!queryValue || queryValue.length < 9) {
+    if (!queryValue || queryValue.trim().length < 4) {
+      setGuestData(null);
+      setGuestId(null);
+      setIsLookingUp(false);
+      setDetectedKind("unknown");
       return;
     }
 
     const { kind, cleanValue } = classifyQuery(queryValue);
     setDetectedKind(kind);
 
-    if (kind === "phone" || kind === "cccd" || kind === "passport") {
-      const timer = setTimeout(async () => {
-        setIsLookingUp(true);
+    if (kind !== "phone" && kind !== "cccd" && kind !== "passport") {
+      setIsLookingUp(false);
+      return;
+    }
+
+    let isCurrent = true;
+    setIsLookingUp(true);
+
+    const timer = setTimeout(async () => {
+      try {
         const res = await lookupGuestAction(currentBranchId, kind, cleanValue);
-        setIsLookingUp(false);
+        if (!isCurrent) return;
 
         if (res.ok && res.data) {
           const g = res.data;
@@ -121,10 +132,19 @@ export function CheckInForm({
           setGuestData(null);
           setGuestId(null);
         }
-      }, 300);
+      } catch (err) {
+        console.error("Lỗi tra cứu thông tin khách:", err);
+      } finally {
+        if (isCurrent) {
+          setIsLookingUp(false);
+        }
+      }
+    }, 250);
 
-      return () => clearTimeout(timer);
-    }
+    return () => {
+      isCurrent = false;
+      clearTimeout(timer);
+    };
   }, [queryValue, currentBranchId]);
 
   // Restore draft on mount (US-21)

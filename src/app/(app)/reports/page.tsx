@@ -22,14 +22,18 @@ interface ReportsPageProps {
 }
 
 export default async function ReportsPage(props: ReportsPageProps) {
-  const hasPerm = await requirePermission("report.view_branch");
-  if (!hasPerm.ok) {
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
+
+  const canViewChain = session.can("report.view_chain");
+  const canViewBranch = session.can("report.view_branch");
+  if (!canViewChain && !canViewBranch) {
     redirect("/");
   }
 
-  const session = await getSession();
-  const canViewChain = session?.can("report.view_chain") ?? false;
-  const canExport = session?.can("report.export") ?? false;
+  const canExport = session.can("report.export");
   const allBranches = await getActiveBranches();
 
   // If user cannot view chain, filter branches strictly to user's assigned branches

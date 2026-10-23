@@ -44,11 +44,10 @@ export function GuestListTable({
 
       // Convert base64 to blob and trigger browser download
       const byteCharacters = atob(res.data.base64);
-      const byteNumbers = new Array(byteCharacters.length);
+      const byteArray = new Uint8Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
+        byteArray[i] = byteCharacters.charCodeAt(i);
       }
-      const byteArray = new Uint8Array(byteNumbers);
       const blob = new Blob([byteArray], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
@@ -62,8 +61,13 @@ export function GuestListTable({
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       toast.success("Xuất file Excel thành công!");
-    } catch (_err) {
-      toast.error("Đã xảy ra lỗi khi tạo tệp Excel");
+    } catch (err: any) {
+      console.error("Lỗi xuất file Excel khách hàng:", err);
+      toast.error(
+        err?.message
+          ? `Lỗi tạo tệp Excel: ${err.message}`
+          : "Đã xảy ra lỗi khi tạo tệp Excel",
+      );
     } finally {
       setIsExporting(false);
     }

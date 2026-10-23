@@ -13,6 +13,7 @@ export function GuestForm() {
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  const [sourceChannel, setSourceChannel] = useState("Điện thoại / Zalo");
   const [formData, setFormData] = useState<CreateGuestInput>({
     full_name: "",
     gender: "other",
@@ -44,9 +45,15 @@ export function GuestForm() {
       return;
     }
 
+    const sourceTag = sourceChannel ? `Nguồn: ${sourceChannel}` : "";
+    const mergedTags = Array.from(
+      new Set([...formData.tags, sourceTag].filter(Boolean)),
+    );
+
     startTransition(async () => {
       const res = await createGuestAction({
         ...formData,
+        tags: mergedTags,
         phone: formData.phone?.trim() || null,
         email: formData.email?.trim() || null,
         document: formData.document?.number?.trim()
@@ -232,6 +239,43 @@ export function GuestForm() {
                 placeholder="khachhang@gmail.com"
                 className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
               />
+            </div>
+
+            <div>
+              <label
+                htmlFor="source_channel"
+                className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1"
+              >
+                Nguồn khách / Kênh tiếp cận{" "}
+                <span className="text-rose-500">*</span>
+              </label>
+              <select
+                id="source_channel"
+                name="source_channel"
+                value={sourceChannel}
+                onChange={(e) => setSourceChannel(e.target.value)}
+                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none font-medium text-foreground"
+                required
+              >
+                <option value="Điện thoại / Zalo">
+                  Điện thoại / Hotline / Zalo
+                </option>
+                <option value="Fanpage / Mạng xã hội">
+                  Fanpage / Mạng xã hội
+                </option>
+                <option value="Website khách sạn">Website khách sạn</option>
+                <option value="Khách vãng lai">
+                  Khách vãng lai / Trực tiếp
+                </option>
+                <option value="Khách công ty">
+                  Khách công ty / Đoàn (Corporate)
+                </option>
+                <option value="Đối tác tour">Đối tác tour / Lữ hành</option>
+                <option value="Booking.com">Booking.com</option>
+                <option value="Agoda">Agoda</option>
+                <option value="Traveloka">Traveloka</option>
+                <option value="Khác">Nguồn khác</option>
+              </select>
             </div>
 
             <div className="sm:col-span-2">

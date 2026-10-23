@@ -20,10 +20,16 @@ export function BranchSelector({
   const [isPending, startTransition] = useTransition();
 
   const handleBranchChange = (value: string | null) => {
-    if (!value) return;
+    if (!value || value === currentBranchId) return;
     const branch = branches.find((b) => b.id === value);
     startTransition(async () => {
-      await selectBranchAction(value);
+      const res = await selectBranchAction(value);
+      if (res && !res.ok) {
+        toast.error(
+          `Không thể chuyển cơ sở: ${res.error.message || res.error.code}`,
+        );
+        return;
+      }
       toast.info(`Đã chuyển làm việc sang cơ sở: ${branch?.name || value}`);
       router.refresh();
     });
@@ -41,12 +47,18 @@ export function BranchSelector({
   if (branches.length === 1) {
     const singleBranch = branches[0];
     return (
-      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 rounded-lg border border-border/70 text-xs font-semibold text-foreground shadow-xs">
+      <div
+        className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/40 rounded-lg border border-border/70 text-xs font-semibold text-foreground select-none shadow-2xs"
+        title="Cơ sở trực thuộc cố định của tài khoản (không thể chuyển đổi)"
+      >
         <MapPin className="h-3.5 w-3.5 text-amber-500 shrink-0" />
         <span className="flex h-5 w-5 items-center justify-center rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold text-[10px] shrink-0">
           {singleBranch.code?.slice(0, 2) || "KS"}
         </span>
-        <span className="truncate max-w-[170px]">{singleBranch.name}</span>
+        <span className="truncate max-w-[150px]">{singleBranch.name}</span>
+        <span className="text-[10px] font-normal text-muted-foreground ml-0.5">
+          (Cố định)
+        </span>
       </div>
     );
   }
