@@ -180,9 +180,19 @@ vercel --prod --yes
   - Bổ sung nhóm mục "Tài liệu & Đào tạo" vào Sidebar (`app-sidebar.tsx`) với huy hiệu `SOP`.
   - Bổ sung nút truy cập nhanh "Quy trình (SOP)" trên Header (`app-header.tsx`).
   - Tích hợp thanh tìm kiếm thời gian thực (Realtime Search) tra cứu toàn văn theo từ khóa và nút In tài liệu quy trình chuẩn (Print SOP).
-  - Đồng bộ thanh Tab chuyển đổi module báo cáo (Tổng quan KPI | Doanh thu 12 tháng | CSVC & Kỹ thuật) và Filter Toolbar trên cả 3 trang báo cáo.
-- **P3.4 (Chất lượng & Build Sản phẩm)**:
-  - Vượt qua toàn bộ kiểm thử TypeScript `tsc --noEmit` (0 lỗi), 22/22 unit tests Vitest (100% pass), và Next.js Turbopack `next build` thành công cho 30 routes.
+
+### Phase P5: Tính năng Tự Đổi Mật Khẩu Cá Nhân (Self-Service Change Password) - ĐÃ HOÀN THÀNH
+- **P5.1 (Validation Schema & Unit Tests)**:
+  - Bổ sung `changePasswordSchema` trong `src/features/auth/schemas.ts` với các ràng buộc: mật khẩu cũ bắt buộc, mật khẩu mới >= 8 ký tự, có đủ chữ hoa, chữ thường, số, không trùng mật khẩu cũ và xác nhận mật khẩu phải khớp.
+  - Bộ 6 unit tests Vitest trong `src/features/auth/schemas.test.ts` pass 100%.
+- **P5.2 (Server Action Bảo mật Xác thực Hai Lớp)**:
+  - Viết `changePasswordAction` trong `src/features/auth/actions.ts`:
+    - Xác thực phiên người dùng hiện tại qua `supabase.auth.getUser()`.
+    - Xác thực lại mật khẩu hiện tại bằng `signInWithPassword` chống việc người khác ngồi vào máy bấm đổi trộm.
+    - Cập nhật mật khẩu mới qua `supabase.auth.updateUser({ password })`.
+- **P5.3 (Giao diện Modal & Tích hợp Header Dropdown)**:
+  - Xây dựng component `ChangePasswordDialog` (`src/features/auth/components/change-password-dialog.tsx`) với thanh đo độ mạnh mật khẩu trực quan (Yếu / Trung bình / Mạnh), nút ẩn/hiện mật khẩu và kiểm tra trùng khớp tức thì.
+  - Tích hợp nút **"Đổi mật khẩu"** (icon `KeyRound`) vào Menu Avatar trên thanh tiêu đề (`app-header.tsx`), cho phép toàn bộ nhân viên (Owner, Manager, Lễ tân, Sales, Kỹ thuật) tự đổi mật khẩu bất kỳ lúc nào.
 
 ### Phase P4: Quản trị Nguồn khách/Đối tác, Dọn sạch Lỗi Lint & Tối ưu PWA (Nhánh `phase/p4-completion`) - ĐÃ HOÀN THÀNH
 - **P4.1 (Quản lý Nguồn khách & Kênh Đối tác - Settings > Sources)**:
