@@ -280,5 +280,11 @@ vercel --prod --yes
 2. **PostgREST Query Typing:** Khi thực hiện `.insert()` hoặc `.update()` trên các bảng chưa sinh đủ type quan hệ hai chiều, hãy cast `(supabase.from('table_name') as any)` để tránh lỗi `SelectQueryError<"Invalid Relationships...">`.
 3. **Audit Log:** Mọi hành vi xuất dữ liệu khách (`guest.export_excel`), gỡ cờ Blacklist (`flag.resolve`), trả phòng (`stay.checkout`), thay đổi quyền quản trị đều phải ghi nhận log vào bảng `audit_logs` thông qua RPC `log_event`.
 4. **Múi giờ:** Mọi chuỗi ngày giờ từ client gửi lên DB phải chuẩn hóa qua `toVnTimestamptz()` để luôn mang múi giờ `+07:00`. Khi hiển thị luôn dùng `formatDateTimeVN()`.
+5. **Kiểm thử trực quan trên Production (Visual Verification V6 - 23/10/2026):**
+   - Đã kiểm thử trực quan tự động bằng browser subagent trên production `https://crm-hotel-five.vercel.app/`:
+     - **Chủ chuỗi (Owner):** Truy cập mượt mà `/reports` (KPI, biểu đồ tải đầy đủ, nút xuất báo cáo hoạt động), `/approvals` (các tab Duyệt gộp & Blacklist hoạt động), tạo phiếu sự cố thành công (#26 `WO-202610-0026`), lưu ghi chú khách hàng thành công không crash app.
+     - **Kỹ thuật (Technician):** Đăng nhập và truy cập `/facilities/room-blocks` không bị đá về login; nhận việc trên phiếu sự cố #26 ("Bắt đầu" -> `in_progress`), hoàn thành và gửi nghiệm thu kèm ghi chú thành công -> `pending_acceptance`.
+     - **Quản lý (Branch Manager):** Hiển thị cố định cơ sở Boutique (`BO Boutique (Cố định)`), truy cập `/settings/roles` bị chặn đúng quyền.
+     - **Cơ chế Phiên & Đăng xuất:** Thao tác đăng xuất của cả 3 vai trò phản hồi ngay lập tức, dọn sạch cookie/storage, chuyển hướng dứt khoát về `/login` và không bị tráo phiên.
 
 
