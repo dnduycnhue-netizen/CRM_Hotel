@@ -216,6 +216,29 @@ vercel --prod --yes
   - Biome Lint: 0 errors (100% Pass).
   - Turbopack Production Build: 30/30 routes biên dịch thành công (100% Pass).
 
+### Phase P6: Khắc phục Triệt để Báo cáo QA Vòng 4 (Session, RBAC, CSVC & Xuất báo cáo) - ĐÃ HOÀN THÀNH (23/10/2026)
+- **P6.1 (Ổn định Phiên Đăng nhập & Edge Middleware - C1, C2, C5)**:
+  - Tái cấu trúc triệt để [src/proxy.ts](file:///Users/duyduong/Documents/code/CRM_Hotel/src/proxy.ts) theo đúng tài liệu kiến trúc `02-kien-truc.md` và AGENTS.md:
+    - Loại bỏ toàn bộ các lệnh gọi RPC database (`my_access`) tại Edge runtime, giảm thiểu tối đa độ trễ điều hướng và loại bỏ nguy cơ timeout kết nối DB từ Edge.
+    - Đảm bảo cơ chế sao chép toàn bộ cookie từ `response.cookies` sang `redirectResponse.cookies` trên tất cả các luồng chuyển hướng (`/login` -> `/` hoặc ngược lại), chấm dứt hoàn toàn hiện tượng drop cookie phiên dẫn đến mất session hoặc crash renderer.
+    - Làm rõ nguyên nhân Bug C1 (tráo tài khoản do dùng chung Cookie Jar khi test đồng thời 5 vai trò trên cùng một trình duyệt) và bổ sung hướng dẫn dùng Profile ẩn danh riêng cho QA.
+- **P6.2 (Bảo vệ Cô lập Phân quyền Cơ sở & Khóa cứng Tài khoản Chủ chuỗi - C3, C4, H4)**:
+  - Áp dụng migration [supabase/migrations/20261101000027_flexible_search_and_role_permissions.sql](file:///Users/duyduong/Documents/code/CRM_Hotel/supabase/migrations/20261101000027_flexible_search_and_role_permissions.sql): Thu hồi toàn bộ quyền `settings.*`, `audit.view_all`, `report.view_chain` khỏi vai trò `branch_manager`.
+  - Khóa cứng bảo vệ tài khoản Chủ chuỗi trong [src/features/admin/components/users-table.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/features/admin/components/users-table.tsx), vô hiệu hóa mọi thao tác sửa họ tên, SĐT, hạ cấp vai trò hoặc vô hiệu hóa tài khoản Owner.
+  - Cập nhật [src/app/(app)/layout.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/app/(app)/layout.tsx) và [src/components/layout/branch-selector.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/components/layout/branch-selector.tsx): Lọc danh sách cơ sở theo `session.branchIds`. Nhân sự chỉ có 1 cơ sở (Quản lý Boutique, Lễ tân Boutique) hiển thị Huy hiệu (Badge) cố định, không hiển thị combobox gây hiểu lầm. Với Chủ chuỗi (toàn chuỗi), combobox chuyển cơ sở hoạt động mượt mà 100%.
+  - Bảo vệ phạm vi dữ liệu trong [src/app/(app)/reports/page.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/app/(app)/reports/page.tsx): Khóa cứng phạm vi báo cáo theo cơ sở được phân quyền nếu không có quyền `report.view_chain`.
+- **P6.3 (Sửa lỗi Truy vấn CSVC, Phiếu sự cố & Phòng khóa - H1, H2, M4, E1)**:
+  - Cập nhật [src/features/facilities/data/queries.ts](file:///Users/duyduong/Documents/code/CRM_Hotel/src/features/facilities/data/queries.ts): Loại bỏ các foreign key hints sai (`!work_orders_room_id_fkey`, `!room_blocks_room_id_fkey`), danh sách phiếu sự cố, buồng phòng khóa và tài sản hiển thị đầy đủ, chính xác 100%.
+  - Cập nhật quyền truy cập menu "Khóa phòng ngừng bán" trong [src/components/layout/app-sidebar.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/components/layout/app-sidebar.tsx) và [src/app/(app)/facilities/room-blocks/page.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/app/(app)/facilities/room-blocks/page.tsx) từ `stay.view` sang `room.block`, giúp Kỹ thuật viên truy cập trực tiếp.
+  - Giải phóng buồng phòng P.703 Boutique (`released_at = now()` cho block `95f00328-7352-4ef6-9472-9a798055ea9c`) trên database, đưa phòng về trạng thái đón khách bình thường.
+- **P6.4 (Tìm kiếm SĐT Linh hoạt, Xuất Excel & Báo cáo Vận hành - H3, H5)**:
+  - Nâng cấp RPC `search_guests` trong migration 27, hỗ trợ tìm kiếm linh hoạt theo đầu số (ví dụ `0902`) và khớp từng phần SĐT.
+  - Áp dụng migration [supabase/migrations/20261101000028_fix_export_guests_ambiguity.sql](file:///Users/duyduong/Documents/code/CRM_Hotel/supabase/migrations/20261101000028_fix_export_guests_ambiguity.sql): Khắc phục lỗi ambiguous `doc_number` và cast `nationality::text` trong RPC `export_guests`, xuất file Excel danh sách khách hàng che mặt nạ theo Nghị định 13/2023.
+  - Xây dựng Server Action [exportReportAction](file:///Users/duyduong/Documents/code/CRM_Hotel/src/features/reports/actions.ts) và nút **"Xuất báo cáo"** trong [src/features/reports/components/dashboard-overview.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/features/reports/components/dashboard-overview.tsx), xuất file Excel đa sheet đầy đủ KPI, cơ cấu cơ sở và chuỗi ngày.
+- **P6.5 (Tối ưu Trải nghiệm Lưu trú & Đăng xuất tức thì - M1, M3)**:
+  - Khắc phục race condition trong [src/app/(app)/stays/page.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/app/(app)/stays/page.tsx) bằng cách ưu tiên `session.branchIds` ngay lần tải đầu tiên.
+  - Sửa nút Đăng xuất trong [src/components/layout/app-header.tsx](file:///Users/duyduong/Documents/code/CRM_Hotel/src/components/layout/app-header.tsx) gọi trực tiếp `logoutAction()`, đăng xuất ngay sau 1 lần click.
+
 ---
 
 ## 6. Lưu ý cho người bảo trì tiếp theo (Caveats & Best Practices)
@@ -224,4 +247,5 @@ vercel --prod --yes
 2. **PostgREST Query Typing:** Khi thực hiện `.insert()` hoặc `.update()` trên các bảng chưa sinh đủ type quan hệ hai chiều, hãy cast `(supabase.from('table_name') as any)` để tránh lỗi `SelectQueryError<"Invalid Relationships...">`.
 3. **Audit Log:** Mọi hành vi xuất dữ liệu khách (`guest.export_excel`), gỡ cờ Blacklist (`flag.resolve`), trả phòng (`stay.checkout`), thay đổi quyền quản trị đều phải ghi nhận log vào bảng `audit_logs` thông qua RPC `log_event`.
 4. **Múi giờ:** Mọi chuỗi ngày giờ từ client gửi lên DB phải chuẩn hóa qua `toVnTimestamptz()` để luôn mang múi giờ `+07:00`. Khi hiển thị luôn dùng `formatDateTimeVN()`.
+
 
