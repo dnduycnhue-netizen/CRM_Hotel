@@ -229,7 +229,9 @@ export function WorkOrdersTable({
             onChange={(e) => setSelectedBranch(e.target.value)}
             className="text-xs py-1.5 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 font-medium text-slate-800 dark:text-slate-200 outline-none"
           >
-            <option value="all">Toàn bộ 8 cơ sở</option>
+            {branches.length > 1 && (
+              <option value="all">Toàn bộ {branches.length} cơ sở</option>
+            )}
             {branches.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}

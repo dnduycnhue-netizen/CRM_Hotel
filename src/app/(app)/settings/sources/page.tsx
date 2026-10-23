@@ -5,15 +5,18 @@ import {
   getSourceChannels,
   SourcesTable,
 } from "@/features/admin";
-import { requirePermission } from "@/shared/auth/server";
+import { getSession } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
   title: "Nguồn khách & Kênh đối tác | Cài đặt hệ thống",
 };
 
 export default async function SourcesPage() {
-  const hasPerm = await requirePermission("settings.sources");
-  if (!hasPerm.ok) {
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
+  if (!session.can("settings.sources")) {
     redirect("/");
   }
 

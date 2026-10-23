@@ -131,7 +131,9 @@ export function AuditTable({ initialLogs, branches }: Props) {
             onChange={(e) => setSelectedBranch(e.target.value)}
             className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
-            <option value="all">Tất cả 8 cơ sở</option>
+            {branches.length > 1 && (
+              <option value="all">Tất cả {branches.length} cơ sở</option>
+            )}
             {branches.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}

@@ -6,15 +6,18 @@ import {
   getPmPlans,
   MaintenanceHub,
 } from "@/features/facilities";
-import { requirePermission } from "@/shared/auth/server";
+import { getSession } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
   title: "Bảo trì định kỳ & Kiểm tra CSVC | CRM Khách Sạn",
 };
 
 export default async function MaintenancePage() {
-  const hasPerm = await requirePermission("pm.view");
-  if (!hasPerm.ok) {
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
+  if (!session.can("pm.view")) {
     redirect("/");
   }
 

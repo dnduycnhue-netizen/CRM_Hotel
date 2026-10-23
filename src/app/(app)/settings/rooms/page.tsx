@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getActiveBranches, getRooms, RoomsTable } from "@/features/admin";
-import { requirePermission } from "@/shared/auth/server";
+import { getSession } from "@/shared/auth/server";
 
 export const metadata = {
   title: "Cài đặt phòng | CRM Chuỗi Khách Sạn",
@@ -8,8 +8,11 @@ export const metadata = {
 };
 
 export default async function SettingsRoomsPage() {
-  const hasPerm = await requirePermission("settings.rooms");
-  if (!hasPerm.ok) {
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
+  if (!session.can("settings.rooms")) {
     redirect("/");
   }
 

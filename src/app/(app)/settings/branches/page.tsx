@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { BranchesTable, getActiveBranches } from "@/features/admin";
-import { requirePermission } from "@/shared/auth/server";
+import { getSession } from "@/shared/auth/server";
 
 export const metadata = {
   title: "Cài đặt cơ sở | CRM Chuỗi Khách Sạn",
@@ -9,8 +9,11 @@ export const metadata = {
 };
 
 export default async function SettingsBranchesPage() {
-  const hasPerm = await requirePermission("settings.branches");
-  if (!hasPerm.ok) {
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
+  if (!session.can("settings.branches")) {
     redirect("/");
   }
 

@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/shared/ui";
+import { formatDateVN } from "@/shared/utils/date";
 import { exportGuestsAction } from "../actions";
 import type { GuestListItem, SalesUser } from "../types";
 
@@ -274,11 +275,7 @@ export function GuestListTable({
                     <td className="py-3.5 px-4 text-xs text-slate-500">
                       {g.last_stay_at ? (
                         <div>
-                          <div>
-                            {new Date(g.last_stay_at).toLocaleDateString(
-                              "vi-VN",
-                            )}
-                          </div>
+                          <div>{formatDateVN(g.last_stay_at)}</div>
                           {g.last_branch_name && (
                             <div className="text-[11px] text-slate-400 mt-0.5">
                               {g.last_branch_name}

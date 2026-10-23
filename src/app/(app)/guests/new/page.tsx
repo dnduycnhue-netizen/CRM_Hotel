@@ -1,17 +1,25 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { getSourceChannels } from "@/features/admin/data/sources";
 import { GuestForm } from "@/features/guests";
-import { requirePermission } from "@/shared/auth/server";
+import { getSession } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
   title: "Thêm hồ sơ khách tiềm năng | CRM Khách Sạn",
 };
 
 export default async function NewGuestPage() {
-  const hasPerm = await requirePermission("guest.create");
-  if (!hasPerm.ok) {
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
+
+  if (!session.can("guest.create")) {
     redirect("/guests");
   }
 
-  return <GuestForm />;
+  const channels = await getSourceChannels();
+  const activeChannels = channels.filter((c) => c.is_active);
+
+  return <GuestForm sourceChannels={activeChannels} />;
 }

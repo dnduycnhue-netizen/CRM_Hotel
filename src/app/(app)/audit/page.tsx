@@ -2,26 +2,38 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getActiveBranches } from "@/features/admin/data/branches";
 import { AuditTable, getAuditLogs } from "@/features/audit";
-import { requirePermission } from "@/shared/auth/server";
+import { getSession } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
   title: "Nhật ký thao tác & Thay đổi | CRM Khách Sạn",
 };
 
 export default async function AuditPage() {
-  const [hasAllPerm, hasBranchPerm] = await Promise.all([
-    requirePermission("audit.view_all"),
-    requirePermission("audit.view_branch"),
-  ]);
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
 
-  if (!hasAllPerm.ok && !hasBranchPerm.ok) {
+  const canViewAudit =
+    session.can("audit.view_all") || session.can("audit.view_branch");
+
+  if (!canViewAudit) {
     redirect("/");
   }
 
-  const [logs, branches] = await Promise.all([
-    getAuditLogs({ limit: 100 }),
+  const branchId =
+    !session.can("audit.view_all") && session.currentBranchId
+      ? session.currentBranchId
+      : undefined;
+
+  const [logs, allBranches] = await Promise.all([
+    getAuditLogs({ limit: 100, branchId }),
     getActiveBranches(),
   ]);
+
+  const branches = session.can("audit.view_all")
+    ? allBranches
+    : allBranches.filter((b) => session.branchIds.includes(b.id));
 
   return (
     <div className="space-y-6">

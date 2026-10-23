@@ -26,6 +26,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useCan } from "@/shared/auth";
 import { Button } from "@/shared/ui";
+import { formatDateVN } from "@/shared/utils/date";
 import {
   addGuestNoteAction,
   assignSalesOwnerAction,
@@ -489,7 +490,7 @@ export function GuestProfileView({
             </span>
             <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 pt-1">
               {stats?.last_stay_at
-                ? new Date(stats.last_stay_at).toLocaleDateString("vi-VN")
+                ? formatDateVN(stats.last_stay_at)
                 : "Chưa có"}
             </div>
           </div>
@@ -632,12 +633,7 @@ export function GuestProfileView({
                         </span>
                       </div>
                       <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
-                        <span>
-                          Check-in:{" "}
-                          {new Date(stay.check_in_at).toLocaleDateString(
-                            "vi-VN",
-                          )}
-                        </span>
+                        <span>Check-in: {formatDateVN(stay.check_in_at)}</span>
                         <span>· {stay.nights} đêm</span>
                         <span>· Nguồn: {stay.source}</span>
                       </div>
@@ -792,7 +788,7 @@ export function GuestProfileView({
                         · {n.author}
                       </span>
                       <span className="text-xs text-slate-400">
-                        · {new Date(n.at).toLocaleDateString("vi-VN")}
+                        · {formatDateVN(n.at)}
                       </span>
                     </div>
 
@@ -1019,7 +1015,7 @@ export function GuestProfileView({
                         · Đề xuất tại {f.branch}
                       </span>
                       <span className="text-xs text-slate-400">
-                        · {new Date(f.proposed_at).toLocaleDateString("vi-VN")}
+                        · {formatDateVN(f.proposed_at)}
                       </span>
                       <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-rose-100 text-rose-800">
                         {f.status === "approved" ? "Đã duyệt" : "Chờ duyệt"}

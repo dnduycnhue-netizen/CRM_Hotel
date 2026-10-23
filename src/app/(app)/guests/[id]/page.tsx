@@ -6,7 +6,7 @@ import {
   getGuestProfile,
   getSalesUsers,
 } from "@/features/guests";
-import { requirePermission } from "@/shared/auth/server";
+import { getSession } from "@/shared/auth/server";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -26,8 +26,11 @@ export async function generateMetadata({
 }
 
 export default async function GuestDetailPage({ params }: PageProps) {
-  const hasPerm = await requirePermission("guest.view_summary");
-  if (!hasPerm.ok) {
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
+  if (!session.can("guest.view_summary")) {
     redirect("/");
   }
 

@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { getActiveBranches } from "@/features/admin";
 import { getInHouseStays, InHouseTable } from "@/features/stays";
 import { getSession } from "@/shared/auth/server";
@@ -9,6 +10,12 @@ export const metadata = {
 
 export default async function StaysPage() {
   const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
+  if (!session.can("stay.view")) {
+    redirect("/");
+  }
   const allBranches = await getActiveBranches();
 
   // Prioritize user's authorized branches

@@ -5,29 +5,40 @@ import {
   getGuestsList,
   getSalesUsers,
 } from "@/features/guests";
-import { requirePermission } from "@/shared/auth/server";
+import { getSession } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
   title: "Hồ sơ khách hàng & Sales | CRM Khách Sạn",
 };
 
 export default async function GuestsPage() {
-  const hasPerm = await requirePermission("guest.search");
-  if (!hasPerm.ok) {
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
+
+  if (!session.can("guest.search")) {
     redirect("/");
   }
 
-  const [guests, salesUsers, canExportRes] = await Promise.all([
-    getGuestsList({ limit: 100 }),
+  // Quản lý cơ sở chỉ xem khách thuộc cơ sở của mình
+  const branchId =
+    !session.can("report.view_chain") && session.currentBranchId
+      ? session.currentBranchId
+      : undefined;
+
+  const [guests, salesUsers] = await Promise.all([
+    getGuestsList({ limit: 100, branchId }),
     getSalesUsers(),
-    requirePermission("guest.export"),
   ]);
+
+  const canExport = session.can("guest.export");
 
   return (
     <GuestListTable
       initialGuests={guests}
       salesUsers={salesUsers}
-      canExport={canExportRes.ok}
+      canExport={canExport}
     />
   );
 }

@@ -3,19 +3,20 @@ import { redirect } from "next/navigation";
 import { getActiveBranches } from "@/features/admin/data/branches";
 import { getRooms } from "@/features/admin/data/rooms";
 import { getFacilityLocations, ReportIssueForm } from "@/features/facilities";
-import { getSession, requirePermission } from "@/shared/auth/server";
+import { getSession } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
   title: "Báo sự cố buồng phòng | CRM Khách Sạn",
 };
 
 export default async function ReportIssuePage() {
-  const hasPerm = await requirePermission("wo.create");
-  if (!hasPerm.ok) {
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
+  if (!session.can("wo.create")) {
     redirect("/");
   }
-
-  const session = await getSession();
   const [branches, rooms, locations] = await Promise.all([
     getActiveBranches(),
     getRooms(),

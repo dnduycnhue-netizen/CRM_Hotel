@@ -3,19 +3,20 @@ import { redirect } from "next/navigation";
 import { getActiveBranches } from "@/features/admin/data/branches";
 import { getRooms } from "@/features/admin/data/rooms";
 import { getRoomBlocks, RoomBlocksTable } from "@/features/facilities";
-import { getSession, requirePermission } from "@/shared/auth/server";
+import { getSession } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
   title: "Khóa phòng ngừng bán | CRM Khách Sạn",
 };
 
 export default async function RoomBlocksPage() {
-  const hasPerm = await requirePermission("room.block");
-  if (!hasPerm.ok) {
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
+  if (!session.can("room.block")) {
     redirect("/");
   }
-
-  const session = await getSession();
   const [blocks, branches, rooms] = await Promise.all([
     getRoomBlocks(),
     getActiveBranches(),

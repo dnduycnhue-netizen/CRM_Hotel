@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSystemRoles, RoleMatrixTable } from "@/features/admin";
-import { requirePermission } from "@/shared/auth/server";
+import { getSession } from "@/shared/auth/server";
 
 export const metadata = {
   title: "Ma trận vai trò & quyền | CRM Chuỗi Khách Sạn",
@@ -8,8 +8,11 @@ export const metadata = {
 };
 
 export default async function SettingsRolesPage() {
-  const hasPerm = await requirePermission("settings.roles");
-  if (!hasPerm.ok) {
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
+  if (!session.can("settings.roles")) {
     redirect("/");
   }
 

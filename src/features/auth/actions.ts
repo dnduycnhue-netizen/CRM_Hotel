@@ -38,14 +38,6 @@ export async function loginAction(
   redirect("/");
 }
 
-export async function logoutAction(): Promise<void> {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  const cookieStore = await cookies();
-  cookieStore.delete("branch_id");
-  redirect("/login");
-}
-
 export async function changePasswordAction(
   formData: FormData,
 ): Promise<ActionResult<{ success: boolean }>> {

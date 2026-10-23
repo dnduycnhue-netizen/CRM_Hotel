@@ -4,16 +4,21 @@ import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import type { SourceChannelItem } from "@/features/admin/data/sources";
 import { Button } from "@/shared/ui";
 import { createGuestAction } from "../actions";
 import type { CreateGuestInput } from "../schemas";
 
-export function GuestForm() {
+interface GuestFormProps {
+  sourceChannels?: SourceChannelItem[];
+}
+
+export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const [sourceChannel, setSourceChannel] = useState("Điện thoại / Zalo");
+  const defaultSourceId = sourceChannels[0]?.id || "";
   const [formData, setFormData] = useState<CreateGuestInput>({
     full_name: "",
     gender: "other",
@@ -21,6 +26,7 @@ export function GuestForm() {
     phone: "",
     email: "",
     address_line: "",
+    source_channel_id: defaultSourceId,
     tags: [],
     document: {
       type: "cccd",
@@ -45,15 +51,11 @@ export function GuestForm() {
       return;
     }
 
-    const sourceTag = sourceChannel ? `Nguồn: ${sourceChannel}` : "";
-    const mergedTags = Array.from(
-      new Set([...formData.tags, sourceTag].filter(Boolean)),
-    );
-
     startTransition(async () => {
       const res = await createGuestAction({
         ...formData,
-        tags: mergedTags,
+        source_channel_id: formData.source_channel_id || null,
+        tags: formData.tags,
         phone: formData.phone?.trim() || null,
         email: formData.email?.trim() || null,
         document: formData.document?.number?.trim()
@@ -252,29 +254,25 @@ export function GuestForm() {
               <select
                 id="source_channel"
                 name="source_channel"
-                value={sourceChannel}
-                onChange={(e) => setSourceChannel(e.target.value)}
+                value={formData.source_channel_id || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    source_channel_id: e.target.value,
+                  }))
+                }
                 className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none font-medium text-foreground"
                 required
               >
-                <option value="Điện thoại / Zalo">
-                  Điện thoại / Hotline / Zalo
-                </option>
-                <option value="Fanpage / Mạng xã hội">
-                  Fanpage / Mạng xã hội
-                </option>
-                <option value="Website khách sạn">Website khách sạn</option>
-                <option value="Khách vãng lai">
-                  Khách vãng lai / Trực tiếp
-                </option>
-                <option value="Khách công ty">
-                  Khách công ty / Đoàn (Corporate)
-                </option>
-                <option value="Đối tác tour">Đối tác tour / Lữ hành</option>
-                <option value="Booking.com">Booking.com</option>
-                <option value="Agoda">Agoda</option>
-                <option value="Traveloka">Traveloka</option>
-                <option value="Khác">Nguồn khác</option>
+                {sourceChannels.length > 0 ? (
+                  sourceChannels.map((sc) => (
+                    <option key={sc.id} value={sc.id}>
+                      {sc.name} ({sc.kind})
+                    </option>
+                  ))
+                ) : (
+                  <option value="">-- Chọn nguồn khách --</option>
+                )}
               </select>
             </div>
 

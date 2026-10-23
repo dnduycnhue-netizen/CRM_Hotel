@@ -320,7 +320,9 @@ export function DashboardOverview({
                   : "text-slate-500 hover:text-slate-800"
               }`}
             >
-              Theo 8 cơ sở
+              {branches.length > 1
+                ? `Theo ${branches.length} cơ sở`
+                : "Theo cơ sở"}
             </button>
             <button
               type="button"
@@ -610,7 +612,10 @@ export function DashboardOverview({
         <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
           <div className="p-5 border-b border-slate-200 dark:border-slate-800">
             <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
-              Bảng so sánh chi tiết hiệu quả kinh doanh 8 khách sạn
+              Bảng so sánh chi tiết hiệu quả kinh doanh{" "}
+              {branches.length > 1
+                ? `${branches.length} khách sạn`
+                : (branches[0]?.name ?? "khách sạn")}
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
               So sánh công suất, số đêm phòng, tỷ lệ khách quen và tỷ lệ hủy

@@ -26,6 +26,7 @@ export async function getGuestsList(options?: {
   salesOwnerId?: string;
   tag?: string;
   limit?: number;
+  branchId?: string;
 }): Promise<GuestListItem[]> {
   const supabase = await createClient();
   const limit = options?.limit || 50;
@@ -34,6 +35,7 @@ export async function getGuestsList(options?: {
     p_limit: limit,
     p_sales_owner_id: options?.salesOwnerId || null,
     p_tag: options?.tag || null,
+    p_branch_id: options?.branchId || null,
   });
 
   if (error || !data) {
@@ -44,7 +46,10 @@ export async function getGuestsList(options?: {
     id: g.id,
     full_name: g.full_name,
     gender: g.gender,
-    birth_year: g.dob ? new Date(g.dob).getFullYear() : null,
+    birth_year:
+      g.dob && !isNaN(new Date(g.dob).getTime())
+        ? new Date(g.dob).getFullYear()
+        : null,
     phone: g.phone,
     doc_masked: g.doc_number || null,
     email: g.email,

@@ -4,13 +4,31 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { requirePermission } from "@/shared/auth/server";
+import { getSession, requirePermission } from "@/shared/auth/server";
 import { type ActionResult, fail, ok } from "@/shared/errors";
 
 export async function selectBranchAction(
   branchId: string,
 ): Promise<ActionResult<void>> {
   try {
+    const session = await getSession();
+    if (!session) {
+      return fail("UNAUTHENTICATED");
+    }
+
+    const isAllowed =
+      session.can("report.view_chain") ||
+      session.can("settings.branches") ||
+      session.branchIds.includes(branchId);
+
+    if (!isAllowed) {
+      return fail(
+        "FORBIDDEN",
+        undefined,
+        "Bạn không có quyền truy cập cơ sở này",
+      );
+    }
+
     const cookieStore = await cookies();
     cookieStore.set("branch_id", branchId, {
       path: "/",

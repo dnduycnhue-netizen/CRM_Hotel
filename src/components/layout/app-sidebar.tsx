@@ -225,9 +225,9 @@ export function AppSidebar() {
       {/* Nav Menu */}
       <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-6">
         {NAV_GROUPS.map((group) => {
-          const visibleItems = group.items.filter((item: any) => {
+          const visibleItems = group.items.filter((item: NavItem) => {
             if (item.perms && Array.isArray(item.perms)) {
-              return item.perms.some((p: any) => can(p));
+              return item.perms.some((p) => can(p));
             }
             return !item.perm || can(item.perm);
           });

@@ -16,7 +16,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import type React from "react";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   Badge,
@@ -86,10 +86,20 @@ export function CheckInForm({
 
   // Guest 360 preview data
   const [guestData, setGuestData] = useState<GuestLookupResult | null>(null);
+  const guestIdRef = useRef(guestId);
+  guestIdRef.current = guestId;
 
   // Auto classify and lookup
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Only re-run lookup when queryValue or currentBranchId changes
   useEffect(() => {
     if (!queryValue || queryValue.trim().length < 4) {
+      if (guestIdRef.current) {
+        setFullName("");
+        setDob("");
+        setPhone("");
+        setDocNumber("");
+        setGender("male");
+      }
       setGuestData(null);
       setGuestId(null);
       setIsLookingUp(false);
@@ -126,9 +136,20 @@ export function CheckInForm({
             `Nhận diện khách cũ: ${g.fullName} (${g.totalStays} lượt ở)`,
           );
         } else {
-          // New guest
-          if (kind === "phone") setPhone(cleanValue);
-          if (kind === "cccd") setDocNumber(cleanValue);
+          // New guest: reset auto-filled fields from previously recognized guest
+          if (guestIdRef.current) {
+            setFullName("");
+            setDob("");
+            setGender("male");
+          }
+          if (kind === "phone") {
+            setPhone(cleanValue);
+            setDocNumber("");
+          }
+          if (kind === "cccd") {
+            setDocNumber(cleanValue);
+            setPhone("");
+          }
           setGuestData(null);
           setGuestId(null);
         }

@@ -287,4 +287,23 @@ vercel --prod --yes
      - **Quản lý (Branch Manager):** Hiển thị cố định cơ sở Boutique (`BO Boutique (Cố định)`), truy cập `/settings/roles` bị chặn đúng quyền.
      - **Cơ chế Phiên & Đăng xuất:** Thao tác đăng xuất của cả 3 vai trò phản hồi ngay lập tức, dọn sạch cookie/storage, chuyển hướng dứt khoát về `/login` và không bị tráo phiên.
 
+6. **Khắc phục toàn diện QA Vòng 6 (Phase 8 - 23/10/2026, 22:00 +07):**
+   - **P0-1 (Tab Doanh thu 12 tháng /reports/monthly):** Kích hoạt module `revenue_input` (`default_state = 'on'` và gán `state = 'on'` cho toàn bộ 8 cơ sở trong `branch_modules`). Đảm bảo quyền `revenue.view` hoạt động, loại bỏ vòng lặp redirect về `/reports`.
+   - **P0-2 (Danh sách /guests trống với Quản lý & Sales):** Sửa lỗi type mismatch trong RPC `get_guests_list` (`bigint` -> `integer` cho `total_stays`/`total_nights`), bổ sung tham số `p_branch_id uuid` và áp dụng che thông tin cá nhân `dob` và `email` cho các vai trò cơ sở.
+   - **P0-3 (Quản lý vào /audit thấy log phân quyền toàn chuỗi):** Cập nhật RLS policy `read_audit` trên `public.audit_logs`: chặn triệt để các log `entity IN ('user_roles', 'role_permissions', 'permissions', 'roles')` đối với người dùng không có quyền quản trị chuỗi (`audit.view_all`). Đồng thời `/audit` lọc branch nghiêm ngặt theo `session.branchIds`.
+   - **P0-4 (Tra cứu /search lộ PII toàn chuỗi cho vai trò cơ sở):** Sửa RPC `search_guests` nhận `p_branch_ids uuid[]`, lọc phạm vi khách theo cơ sở được phép và kiểm tra quyền `guest.view_full` tại đúng `last_branch_id` của khách hàng.
+   - **P1-1 (Nguồn khách lưu FK thay vì text tag):** Bổ sung cột `source_channel_id uuid REFERENCES public.source_channels(id)` vào bảng `public.guests`, cập nhật Zod schema, action `createGuestAction`, RPC `create_guest` và select dropdown chuẩn trên form `/guests/new`.
+   - **P1-2 (Siết quyền và xóa dead code transition_work_order):** Xóa lệnh dead `update wo_transitions...`, kiểm tra `v_t.assignee_may` và siết chặt quyền chỉ cho phép chính kỹ thuật viên được giao việc (hoặc chưa phân công) nhận phiếu chuyển `in_progress`.
+   - **P1-3 (Đồng bộ getSession cho 16 page còn lại):** Chuyển toàn bộ các page trong `src/app/(app)/**` sang mô hình chuẩn: kiểm tra `const session = await getSession(); if (!session) redirect('/login'); if (!session.can(PERM)) redirect('/');`.
+   - **P1-4 (Che PII dob/email trong get_guests_list):** Che ngày sinh và email thành định dạng an toàn `r***@domain` trong danh sách khách.
+   - **P1-5 (Validation server-side cho selectBranchAction):** Ngăn chặn giả mạo ID cơ sở bằng việc kiểm tra `session.branchIds.includes(branchId)` hoặc quyền quản trị chuỗi.
+   - **P1-6 (Dọn dẹp dead code & type safety):** Xóa `logoutAction` thừa trong `auth/actions.ts`, bổ sung interface `NavItem` có type an toàn trong `app-sidebar.tsx`.
+   - **P1-7 (Bảo vệ chuyển đổi ngày tháng Date):** Chuẩn hóa toàn bộ hiển thị ngày sang hàm tiện ích `formatDateVN()` chống lỗi `Invalid Date` / `NaN`.
+   - **P2-1 (Nhãn lọc cơ sở linh hoạt):** Đổi nhãn hardcode "Toàn bộ 8 cơ sở" thành số lượng cơ sở thực tế mà tài khoản được phân quyền.
+   - **P2-2 (Tỷ lệ hủy phòng):** Xác nhận công thức tỷ lệ hủy phòng `round(100.0 * cancel / nullif(arrivals + cancel, 0), 1)` hoạt động chính xác; tỷ lệ tăng sau thao tác test là phản ánh đúng dữ liệu nghiệp vụ thực tế.
+   - **P2-3 (Reset ô tra cứu check-in):** Tự động xóa sạch các trường thông tin tự điền (họ tên, ngày sinh, cccd) khi người dùng xóa hoặc đổi nội dung ô tìm kiếm.
+   - **P2-7 (Lưu trữ tag khách hàng):** RPC `create_guest` lưu trữ mảng `tags` đầy đủ vào DB.
+   - **P2-8 (Quyền xem SĐT khách của Sales):** Giải thích rõ ràng trường hợp tài khoản Sales nhìn thấy số điện thoại đầy đủ của khách do trực tiếp phụ trách (`sales_owner_id`), hoàn toàn đúng nghiệp vụ.
+
+
 

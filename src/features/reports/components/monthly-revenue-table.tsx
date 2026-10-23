@@ -99,7 +99,9 @@ export function MonthlyRevenueTable({
               disabled={isPending}
               className="bg-transparent font-bold text-slate-900 dark:text-slate-100 focus:outline-none cursor-pointer"
             >
-              <option value="all">Toàn bộ 8 cơ sở</option>
+              {branches.length > 1 && (
+                <option value="all">Toàn bộ {branches.length} cơ sở</option>
+              )}
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
                   {b.name}

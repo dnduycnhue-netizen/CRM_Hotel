@@ -6,7 +6,7 @@ import {
   getUsersList,
   UsersTable,
 } from "@/features/admin";
-import { requirePermission } from "@/shared/auth/server";
+import { getSession } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
   title: "Người Dùng & Phân Quyền Tài Khoản | CRM Chuỗi Khách Sạn",
@@ -15,8 +15,11 @@ export const metadata: Metadata = {
 };
 
 export default async function UsersPage() {
-  const hasPerm = await requirePermission("settings.users");
-  if (!hasPerm.ok) {
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
+  if (!session.can("settings.users")) {
     redirect("/");
   }
 

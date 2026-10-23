@@ -4,7 +4,7 @@ import {
   getSystemModules,
   ModuleMatrixTable,
 } from "@/features/admin";
-import { requirePermission } from "@/shared/auth/server";
+import { getSession } from "@/shared/auth/server";
 
 export const metadata = {
   title: "Bật/tắt Module tính năng | CRM Chuỗi Khách Sạn",
@@ -12,8 +12,11 @@ export const metadata = {
 };
 
 export default async function SettingsModulesPage() {
-  const hasPerm = await requirePermission("settings.modules");
-  if (!hasPerm.ok) {
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
+  if (!session.can("settings.modules")) {
     redirect("/");
   }
 

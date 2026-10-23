@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getGuestProfile } from "@/features/guests";
 import { EditGuestForm } from "@/features/guests/components/edit-guest-form";
-import { requirePermission } from "@/shared/auth/server";
+import { getSession } from "@/shared/auth/server";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -13,8 +13,11 @@ export const metadata: Metadata = {
 };
 
 export default async function EditGuestPage({ params }: PageProps) {
-  const hasPerm = await requirePermission("guest.update");
-  if (!hasPerm.ok) {
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
+  if (!session.can("guest.update")) {
     redirect("/guests");
   }
 

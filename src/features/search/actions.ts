@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { requirePermission } from "@/shared/auth/server";
+import { getSession } from "@/shared/auth/server";
 import { type ActionResult, fail, ok } from "@/shared/errors";
 import type { SearchGuestMode, SearchGuestResult } from "./types";
 
@@ -32,18 +32,28 @@ export async function searchGuestsAction(
       return ok([]);
     }
 
-    const hasPerm = await requirePermission("guest.search");
-    if (!hasPerm.ok) {
-      return hasPerm;
+    const session = await getSession();
+    if (!session) {
+      return fail("UNAUTHENTICATED");
+    }
+    if (!session.can("guest.search")) {
+      return fail("FORBIDDEN");
     }
 
     const mode = explicitMode || inferSearchMode(q);
     const supabase = await createClient();
 
+    const p_branch_ids = session.can("report.view_chain")
+      ? null
+      : session.branchIds.length > 0
+        ? session.branchIds
+        : null;
+
     const { data, error } = await supabase.rpc("search_guests", {
       p_mode: mode,
       p_query: q,
       p_limit: 20,
+      p_branch_ids,
     });
 
     if (error) {
