@@ -162,8 +162,8 @@ test.describe("CRM Hotel End-to-End System & Security Audit", () => {
 
     // Login as Admin
     await page.goto("/login");
-    await page.locator("input#email").fill(E2E_OWNER_EMAIL!);
-    await page.locator("input#password").fill(E2E_OWNER_PASSWORD!);
+    await page.locator("input#email").fill(E2E_OWNER_EMAIL || "");
+    await page.locator("input#password").fill(E2E_OWNER_PASSWORD || "");
     await page.getByRole("button", { name: /Đăng Nhập Hệ Thống/i }).click();
     await page.waitForURL((url) => !url.pathname.includes("/login"), {
       timeout: 15000,

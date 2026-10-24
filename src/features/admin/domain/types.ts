@@ -34,7 +34,14 @@ export interface SystemModule {
   defaultState: "off" | "readonly" | "on";
   isCore: boolean;
   isAvailable: boolean;
+  isHidden?: boolean;
   sort: number;
+}
+
+export interface BranchModuleMatrix {
+  modules: SystemModule[];
+  branches: Branch[];
+  states: Record<string, Record<string, "off" | "readonly" | "on">>; // moduleKey -> branchId -> state
 }
 
 export interface SystemRole {

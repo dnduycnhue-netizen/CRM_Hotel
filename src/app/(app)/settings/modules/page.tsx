@@ -1,9 +1,5 @@
 import { redirect } from "next/navigation";
-import {
-  getActiveBranches,
-  getSystemModules,
-  ModuleMatrixTable,
-} from "@/features/admin";
+import { getBranchModuleMatrix, ModuleMatrixTable } from "@/features/admin";
 import { getSession } from "@/shared/auth/server";
 
 export const metadata = {
@@ -20,10 +16,7 @@ export default async function SettingsModulesPage() {
     redirect("/");
   }
 
-  const [modules, branches] = await Promise.all([
-    getSystemModules(),
-    getActiveBranches(),
-  ]);
+  const matrix = await getBranchModuleMatrix();
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -37,7 +30,7 @@ export default async function SettingsModulesPage() {
         </p>
       </div>
 
-      <ModuleMatrixTable modules={modules} branches={branches} />
+      <ModuleMatrixTable matrix={matrix} />
     </div>
   );
 }

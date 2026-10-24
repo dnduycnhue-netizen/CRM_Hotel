@@ -438,3 +438,73 @@ export async function savePartnerAction(
   revalidatePath("/settings/sources");
   return ok({ id: data.id });
 }
+
+export interface SetBranchModuleChange {
+  branchId: string | null;
+  moduleKey: string;
+  state: "off" | "readonly" | "on";
+}
+
+/**
+ * Cập nhật cấu hình bật/tắt module theo cơ sở hoặc toàn chuỗi
+ */
+export async function setBranchModulesAction(
+  changes: SetBranchModuleChange[],
+): Promise<ActionResult<{ applied: number; cascaded: string[] }>> {
+  const perm = await requirePermission("settings.modules");
+  if (!perm.ok) return perm;
+
+  if (!Array.isArray(changes) || changes.length === 0) {
+    return ok({ applied: 0, cascaded: [] });
+  }
+
+  const supabase = await createClient();
+  const allCascaded = new Set<string>();
+  let appliedCount = 0;
+
+  for (const change of changes) {
+    const { branchId, moduleKey, state } = change;
+    const { data: cascaded, error: rpcErr } = await (supabase.rpc as any)(
+      "set_branch_module",
+      {
+        p_branch_id: branchId || null,
+        p_module_key: moduleKey,
+        p_state: state,
+        p_config: null,
+      },
+    );
+
+    if (rpcErr) {
+      let friendlyMessage = rpcErr.message;
+      if (rpcErr.message?.includes("enable dependencies first")) {
+        const matches = rpcErr.message.match(/enable dependencies first: (.*)/);
+        const depKeys = matches ? matches[1] : "";
+        friendlyMessage = `Cần bật các module phụ thuộc trước (${depKeys}) trước khi kích hoạt module này`;
+      } else if (rpcErr.message?.includes("core module cannot be changed")) {
+        friendlyMessage =
+          "Không thể thay đổi trạng thái của module lõi hệ thống";
+      } else if (rpcErr.message?.includes("module not available yet")) {
+        friendlyMessage =
+          "Tính năng này hiện chưa khả dụng trong hệ thống (Sắp có)";
+      } else if (rpcErr.code === "P0403" || rpcErr.code === "42501") {
+        friendlyMessage = "Bạn không có quyền quản trị cài đặt module";
+      }
+      return fail(rpcErr.code || "UNKNOWN", undefined, friendlyMessage);
+    }
+
+    if (Array.isArray(cascaded)) {
+      for (const c of cascaded) {
+        allCascaded.add(c);
+      }
+    }
+    appliedCount++;
+  }
+
+  revalidatePath("/", "layout");
+  revalidatePath("/settings/modules");
+
+  return ok({
+    applied: appliedCount,
+    cascaded: Array.from(allCascaded),
+  });
+}

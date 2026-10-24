@@ -17,12 +17,11 @@ Danh sách các công việc hành chính, bảo mật tài khoản thực tế 
 
 ---
 
-### 🏢 2. Tích hợp phần mềm PMS bên thứ ba (ezCloud) & Cổng khai báo
+### 🏢 2. Tích hợp phần mềm PMS bên thứ ba (ezCloud)
 - [ ] **Làm việc với đại diện kỹ thuật ezCloud:**
   - Xác nhận ezCloud PMS có cung cấp API ghi dữ liệu (Lượt ở / Khách) hay chỉ cho phép đọc / webhook?
   - Xin tài liệu API, điều kiện cấp phép (API Key, giới hạn Rate Limit) và chi phí kết nối.
-- [ ] **Cổng khai báo tạm trú (Công an / Bộ Công an):**
-  - Tham khảo quy định địa phương về cổng xuất file hoặc API tự động đẩy thông tin khai báo tạm trú cho khách lưu trú.
+
 
 ---
 

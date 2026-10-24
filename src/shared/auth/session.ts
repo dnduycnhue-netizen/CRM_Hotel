@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Permission } from "./permission-keys";
-import type { Access } from "./types";
+import type { Access, ModuleState } from "./types";
 
 export * from "./types";
 
@@ -33,6 +33,23 @@ export const getSession = cache(async () => {
       ? !!a.permissions[branchId]?.includes(perm)
       : branchIds.some((b) => a.permissions[b]?.includes(perm));
 
+  const moduleState = (
+    moduleKey: string,
+    branchId?: string | null,
+  ): ModuleState => {
+    const targetBranch = branchId || currentBranchId;
+    if (!targetBranch) return "off";
+    return a.modules?.[targetBranch]?.[moduleKey] ?? "off";
+  };
+
+  const isModuleOn = (moduleKey: string, branchId?: string | null): boolean =>
+    moduleState(moduleKey, branchId) === "on";
+
+  const isModuleAvailable = (
+    moduleKey: string,
+    branchId?: string | null,
+  ): boolean => moduleState(moduleKey, branchId) !== "off";
+
   return {
     userId: data.claims.sub as string,
     email: data.claims.email as string | undefined,
@@ -41,5 +58,8 @@ export const getSession = cache(async () => {
     branchIds,
     currentBranchId,
     can,
+    moduleState,
+    isModuleOn,
+    isModuleAvailable,
   };
 });
