@@ -178,22 +178,29 @@ export function MaintenanceHub({ plans, inspections, branches }: Props) {
             <span>Tạo kế hoạch bảo trì</span>
           </Button>
 
-          <div className="w-44">
-            <select
-              value={selectedBranch}
-              onChange={(e) => setSelectedBranch(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:ring-1 focus:ring-indigo-500"
-            >
-              {branches.length > 1 && (
-                <option value="all">Tất cả {branches.length} cơ sở</option>
-              )}
-              {branches.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          {branches.length === 1 ? (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-xs font-medium text-slate-200">
+              <Building2 className="w-3.5 h-3.5 text-indigo-400" />
+              <span>{branches[0]?.name}</span>
+            </div>
+          ) : (
+            <div className="w-44">
+              <select
+                value={selectedBranch}
+                onChange={(e) => setSelectedBranch(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                {branches.length > 1 && (
+                  <option value="all">Tất cả {branches.length} cơ sở</option>
+                )}
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </div>
 

@@ -5,6 +5,7 @@ import {
   Award,
   Building2,
   Loader2,
+  Lock,
   Phone,
   Search,
   ShieldAlert,
@@ -16,7 +17,11 @@ import { Button } from "@/shared/ui";
 import { searchGuestsAction } from "../actions";
 import type { SearchGuestMode, SearchGuestResult } from "../types";
 
-export function SearchView() {
+interface SearchViewProps {
+  canViewChain?: boolean;
+}
+
+export function SearchView({ canViewChain = true }: SearchViewProps) {
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState<SearchGuestMode | "auto">("auto");
   const [results, setResults] = useState<SearchGuestResult[]>([]);
@@ -44,11 +49,14 @@ export function SearchView() {
     <div className="space-y-6 max-w-5xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-          Tra cứu khách hàng toàn chuỗi
+          {canViewChain
+            ? "Tra cứu khách hàng toàn chuỗi"
+            : "Tra cứu khách hàng"}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Tìm kiếm nhanh chóng qua 8 khách sạn (Boutique, Grand, Xavia, Eco, Ngô
-          Mây, Aloha, Sun, Bãi Xếp)
+          {canViewChain
+            ? "Tìm kiếm nhanh chóng qua 8 khách sạn (Boutique, Grand, Xavia, Eco, Ngô Mây, Aloha, Sun, Bãi Xếp)"
+            : "Tìm kiếm thông tin khách hàng trong phạm vi cơ sở được phân quyền"}
         </p>
       </div>
 
@@ -157,9 +165,17 @@ export function SearchView() {
 
                       <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 flex-wrap">
                         {guest.phone && (
-                          <span className="flex items-center gap-1">
+                          <span className="flex items-center gap-1 font-mono">
                             <Phone className="w-3.5 h-3.5 text-slate-400" />
-                            {guest.phone}
+                            <span>{guest.phone}</span>
+                            {guest.phone.includes("****") ? (
+                              <span
+                                title="Số điện thoại đã che bảo mật"
+                                className="inline-flex text-slate-400 cursor-help"
+                              >
+                                <Lock className="w-3 h-3 ml-0.5" />
+                              </span>
+                            ) : null}
                           </span>
                         )}
                         {guest.doc_masked && (

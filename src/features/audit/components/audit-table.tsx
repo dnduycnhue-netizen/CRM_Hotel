@@ -124,24 +124,34 @@ export function AuditTable({ initialLogs, branches }: Props) {
       {/* Filters bar */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap items-center gap-3">
         {/* Branch Filter */}
-        <div className="w-48">
+        <div className="w-52">
           <label className="text-xs font-medium text-slate-400 block mb-1">
             Cơ sở:
           </label>
-          <select
-            value={selectedBranch}
-            onChange={(e) => setSelectedBranch(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            {branches.length > 1 && (
-              <option value="all">Tất cả {branches.length} cơ sở</option>
-            )}
-            {branches.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
+          {branches.length === 1 ? (
+            <div
+              className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-200"
+              title="Cơ sở được phân quyền của bạn"
+            >
+              <Building2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span className="truncate">{branches[0].name}</span>
+            </div>
+          ) : (
+            <select
+              value={selectedBranch}
+              onChange={(e) => setSelectedBranch(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            >
+              {branches.length > 1 && (
+                <option value="all">Tất cả {branches.length} cơ sở</option>
+              )}
+              {branches.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         {/* Entity Filter */}

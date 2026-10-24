@@ -4,6 +4,7 @@ import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import type { SourceChannelItem } from "@/features/admin/data/sources";
 import { Button } from "@/shared/ui";
 import { createGuestAction } from "../actions";
@@ -51,11 +52,33 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
       return;
     }
 
+    // Extract clean tags and detect any source tag if source_channel_id is not set
+    let activeSourceId = formData.source_channel_id || null;
+    const cleanTags: string[] = [];
+
+    for (const tag of formData.tags) {
+      const match = tag.match(/^#?Nguồn:\s*(.+)$/i);
+      if (match) {
+        if (!activeSourceId) {
+          const chanName = match[1].trim().toLowerCase();
+          const found = sourceChannels.find(
+            (sc) =>
+              sc.name.toLowerCase() === chanName ||
+              sc.code.toLowerCase() === chanName ||
+              sc.name.toLowerCase().includes(chanName),
+          );
+          if (found) activeSourceId = found.id;
+        }
+      } else {
+        cleanTags.push(tag);
+      }
+    }
+
     startTransition(async () => {
       const res = await createGuestAction({
         ...formData,
-        source_channel_id: formData.source_channel_id || null,
-        tags: formData.tags,
+        source_channel_id: activeSourceId,
+        tags: cleanTags,
         phone: formData.phone?.trim() || null,
         email: formData.email?.trim() || null,
         document: formData.document?.number?.trim()
@@ -76,9 +99,35 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
   };
 
   const handleAddTag = () => {
-    const t = rawTag.trim();
+    let t = rawTag.trim();
     if (!t) return;
-    if (!formData.tags.includes(t)) {
+
+    // Detect if user is trying to add a source as a tag (e.g. #Nguồn: Fanpage...)
+    const sourceMatch = t.match(/^#?Nguồn:\s*(.+)$/i);
+    if (sourceMatch) {
+      const chanName = sourceMatch[1].trim().toLowerCase();
+      const matched = sourceChannels.find(
+        (sc) =>
+          sc.name.toLowerCase() === chanName ||
+          sc.code.toLowerCase() === chanName ||
+          sc.name.toLowerCase().includes(chanName),
+      );
+      if (matched) {
+        setFormData((prev) => ({ ...prev, source_channel_id: matched.id }));
+        toast.info(
+          `Đã tự động chọn Kênh nguồn: "${matched.name}". Nguồn khách được lưu chuẩn hóa, không cần lưu dạng tag.`,
+        );
+      } else {
+        toast.info(
+          'Vui lòng chọn Kênh nguồn ở mục "Nguồn khách / Kênh tiếp cận" thay vì nhập tag.',
+        );
+      }
+      setRawTag("");
+      return;
+    }
+
+    if (t.startsWith("#")) t = t.slice(1).trim();
+    if (t && !formData.tags.includes(t)) {
       setFormData((prev) => ({ ...prev, tags: [...prev.tags, t] }));
     }
     setRawTag("");

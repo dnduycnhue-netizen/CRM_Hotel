@@ -39,6 +39,7 @@ export default async function GuestsPage() {
       initialGuests={guests}
       salesUsers={salesUsers}
       canExport={canExport}
+      currentUserId={session.userId}
     />
   );
 }

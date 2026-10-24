@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { getSourceChannels } from "@/features/admin/data/sources";
 import { getGuestProfile } from "@/features/guests";
 import { EditGuestForm } from "@/features/guests/components/edit-guest-form";
 import { getSession } from "@/shared/auth/server";
@@ -22,7 +23,10 @@ export default async function EditGuestPage({ params }: PageProps) {
   }
 
   const { id } = await params;
-  const profile = await getGuestProfile(id);
+  const [profile, sourceChannels] = await Promise.all([
+    getGuestProfile(id),
+    getSourceChannels(),
+  ]);
 
   if (!profile) {
     notFound();
@@ -31,6 +35,7 @@ export default async function EditGuestPage({ params }: PageProps) {
   return (
     <div className="p-4 sm:p-6">
       <EditGuestForm
+        sourceChannels={sourceChannels}
         guest={{
           id: profile.guest.id,
           full_name: profile.guest.full_name,
@@ -42,6 +47,7 @@ export default async function EditGuestPage({ params }: PageProps) {
           address_line: profile.guest.address_line,
           province_code: profile.guest.province_code,
           ward_code: profile.guest.ward_code,
+          source_channel_id: profile.guest.source_channel?.id || null,
           updated_at: profile.guest.updated_at,
         }}
       />

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import type { SourceChannelItem } from "@/features/admin/data/sources";
 import {
   Button,
   Card,
@@ -29,11 +30,16 @@ interface EditGuestFormProps {
     address_line?: string | null;
     province_code?: string | null;
     ward_code?: string | null;
+    source_channel_id?: string | null;
     updated_at: string;
   };
+  sourceChannels?: SourceChannelItem[];
 }
 
-export function EditGuestForm({ guest }: EditGuestFormProps) {
+export function EditGuestForm({
+  guest,
+  sourceChannels = [],
+}: EditGuestFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -46,6 +52,9 @@ export function EditGuestForm({ guest }: EditGuestFormProps) {
   const [phone, setPhone] = useState(guest.phone || "");
   const [email, setEmail] = useState(guest.email || "");
   const [addressLine, setAddressLine] = useState(guest.address_line || "");
+  const [sourceChannelId, setSourceChannelId] = useState(
+    guest.source_channel_id || "",
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +75,7 @@ export function EditGuestForm({ guest }: EditGuestFormProps) {
           phone: phone.trim() || null,
           email: email.trim() || null,
           address_line: addressLine.trim() || null,
+          source_channel_id: sourceChannelId || null,
         },
         guest.updated_at,
       );
@@ -202,6 +212,30 @@ export function EditGuestForm({ guest }: EditGuestFormProps) {
                 className="h-9 text-xs"
               />
             </div>
+
+            {sourceChannels.length > 0 && (
+              <div className="space-y-1.5">
+                <Label
+                  htmlFor="sourceChannel"
+                  className="text-xs font-semibold"
+                >
+                  Nguồn khách / Kênh tiếp cận
+                </Label>
+                <select
+                  id="sourceChannel"
+                  value={sourceChannelId}
+                  onChange={(e) => setSourceChannelId(e.target.value)}
+                  className="w-full h-9 rounded-xl border border-input bg-background px-3 text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-amber-500/30"
+                >
+                  <option value="">-- Chọn nguồn khách --</option>
+                  {sourceChannels.map((sc) => (
+                    <option key={sc.id} value={sc.id}>
+                      {sc.name} ({sc.kind})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="space-y-1.5">
               <Label htmlFor="addressLine" className="text-xs font-semibold">

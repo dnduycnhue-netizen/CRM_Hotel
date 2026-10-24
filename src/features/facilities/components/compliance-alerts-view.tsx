@@ -78,23 +78,35 @@ export function ComplianceAlertsView({ alerts, branches }: Props) {
 
       {/* Filter toolbar */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap items-center gap-3">
-        <div className="w-52">
-          <label className="text-xs font-medium text-slate-400 block mb-1">
-            Cơ sở:
-          </label>
-          <select
-            value={selectedBranch}
-            onChange={(e) => setSelectedBranch(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:ring-1 focus:ring-indigo-500"
-          >
-            <option value="all">Tất cả cơ sở</option>
-            {branches.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        {branches.length === 1 ? (
+          <div>
+            <label className="text-xs font-medium text-slate-400 block mb-1">
+              Cơ sở:
+            </label>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-xs font-medium text-slate-200">
+              <Building2 className="w-3.5 h-3.5 text-indigo-400" />
+              <span>{branches[0]?.name}</span>
+            </div>
+          </div>
+        ) : (
+          <div className="w-52">
+            <label className="text-xs font-medium text-slate-400 block mb-1">
+              Cơ sở:
+            </label>
+            <select
+              value={selectedBranch}
+              onChange={(e) => setSelectedBranch(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:ring-1 focus:ring-indigo-500"
+            >
+              <option value="all">Tất cả cơ sở</option>
+              {branches.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div className="w-48">
           <label className="text-xs font-medium text-slate-400 block mb-1">

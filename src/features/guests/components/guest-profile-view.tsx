@@ -44,12 +44,14 @@ interface GuestProfileViewProps {
   profile: GuestProfile;
   salesUsers: SalesUser[];
   branches: Array<{ id: string; name: string; code: string }>;
+  currentUserId?: string;
 }
 
 export function GuestProfileView({
   profile,
   salesUsers,
   branches,
+  currentUserId,
 }: GuestProfileViewProps) {
   const canPerm = useCan();
   const [activeTab, setActiveTab] = useState<
@@ -331,9 +333,32 @@ export function GuestProfileView({
               {/* Contact & Identity Meta */}
               <div className="flex items-center gap-4 text-xs text-slate-500 flex-wrap pt-1">
                 {guest.phone && (
-                  <span className="flex items-center gap-1 font-medium text-slate-700 dark:text-slate-300">
+                  <span className="flex items-center gap-1 font-medium text-slate-700 dark:text-slate-300 font-mono">
                     <Phone className="w-3.5 h-3.5 text-slate-400" />
-                    {guest.phone}
+                    <span>{guest.phone}</span>
+                    {guest.phone.includes("****") ? (
+                      <span
+                        title="Số điện thoại được che bảo mật"
+                        className="inline-flex text-slate-400 cursor-help"
+                      >
+                        <Lock className="w-3 h-3 ml-0.5" />
+                      </span>
+                    ) : currentUserId &&
+                      guest.sales_owner?.id === currentUserId ? (
+                      <span
+                        title="Hiển thị đầy đủ vì bạn là Sales phụ trách lead này"
+                        className="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-200/50 ml-1"
+                      >
+                        Lead của bạn
+                      </span>
+                    ) : can.view_full ? (
+                      <span
+                        title="Dữ liệu đầy đủ (đã ghi audit log)"
+                        className="inline-flex text-emerald-600"
+                      >
+                        <Unlock className="w-3 h-3 ml-0.5" />
+                      </span>
+                    ) : null}
                   </span>
                 )}
 
@@ -463,9 +488,16 @@ export function GuestProfileView({
                 ))}
               </select>
             ) : (
-              <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-indigo-500" />
-                {guest.sales_owner?.name || "Chưa phân công"}
+              <div className="flex flex-col gap-0.5">
+                <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-indigo-500" />
+                  <span>{guest.sales_owner?.name || "Chưa phân công"}</span>
+                </div>
+                {currentUserId && guest.sales_owner?.id === currentUserId && (
+                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                    (Bạn đang phụ trách hồ sơ này)
+                  </span>
+                )}
               </div>
             )}
             <div className="text-[11px] text-slate-400 mt-2">

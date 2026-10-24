@@ -29,6 +29,7 @@ interface AppHeaderProps {
   branches: Array<{ id: string; code: string; name: string }>;
   currentBranchId: string | null;
   userEmail?: string;
+  userFullName?: string;
   canManageUsers?: boolean;
   canViewRoles?: boolean;
   canCreateStay?: boolean;
@@ -39,6 +40,7 @@ export function AppHeader({
   branches,
   currentBranchId,
   userEmail,
+  userFullName,
   canManageUsers = false,
   canViewRoles = false,
   canCreateStay = false,
@@ -203,23 +205,36 @@ export function AppHeader({
                     {userInitials}
                   </AvatarFallback>
                 </Avatar>
+                <div className="hidden xl:flex flex-col text-left text-xs leading-tight mr-1">
+                  <span className="font-semibold text-foreground truncate max-w-[150px]">
+                    {userFullName || roleName}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground truncate">
+                    {roleName}
+                  </span>
+                </div>
                 <span className="absolute bottom-1 right-1 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-background" />
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="w-60 p-1.5 shadow-lg border-border/60"
+              className="w-64 p-1.5 shadow-lg border-border/60"
             >
               <div className="font-normal px-2.5 py-2">
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center justify-between gap-1.5">
                     <span className="font-bold text-xs text-foreground truncate">
-                      {roleName}
+                      {userFullName || roleName}
                     </span>
                     <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/20 shrink-0">
                       {roleBadge}
                     </span>
                   </div>
+                  {userFullName && (
+                    <p className="text-[11px] font-medium text-amber-500/90 truncate">
+                      {roleName}
+                    </p>
+                  )}
                   <p className="text-[11px] text-muted-foreground truncate">
                     {userEmail || "Chưa đăng nhập"}
                   </p>

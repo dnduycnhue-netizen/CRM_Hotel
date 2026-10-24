@@ -521,6 +521,35 @@ export function CheckInForm({
                     </span>
                   </div>
 
+                  {/* Status Legend */}
+                  <div className="flex flex-wrap items-center gap-3 py-1.5 px-3 rounded-xl bg-muted/30 text-[11px] text-muted-foreground border border-border/40">
+                    <span className="font-bold text-foreground text-[10px] uppercase tracking-wider">
+                      Trạng thái phòng:
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                        Sẵn sàng đón khách
+                      </span>
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <span className="h-2 w-2 rounded-full bg-amber-500" />
+                      <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                        Chờ dọn dẹp
+                      </span>
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <span className="h-2 w-2 rounded-full bg-slate-400" />
+                      <span>Đang có khách</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <span className="h-2 w-2 rounded-full bg-rose-500" />
+                      <span className="text-rose-500 font-semibold">
+                        Khóa OOO
+                      </span>
+                    </span>
+                  </div>
+
                   {/* Quick-Pick Room Chips Grid */}
                   <div className="p-3 rounded-xl border border-border/70 bg-muted/20 max-h-48 overflow-y-auto space-y-2.5">
                     {roomsByFloor.map(([floor, floorRooms]) => (
@@ -551,11 +580,11 @@ export function CheckInForm({
                                         ? "Phòng vừa trả phòng, đang chờ dọn dẹp"
                                         : "Phòng đang có khách ở"
                                   }
-                                  className={`px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-not-allowed border flex items-center gap-1 shadow-2xs opacity-75 ${
+                                  className={`px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-not-allowed border flex items-center gap-1 shadow-2xs opacity-80 ${
                                     isBlocked
                                       ? "bg-rose-500/10 border-rose-500/30 text-rose-500"
                                       : isCleaning
-                                        ? "bg-amber-500/10 border-amber-500/30 text-amber-500"
+                                        ? "bg-amber-500/15 border-amber-500/40 text-amber-600 dark:text-amber-400 font-semibold"
                                         : "bg-muted/40 border-border/50 text-muted-foreground"
                                   }`}
                                 >
@@ -564,7 +593,7 @@ export function CheckInForm({
                                       isBlocked
                                         ? "bg-rose-500"
                                         : isCleaning
-                                          ? "bg-amber-500"
+                                          ? "bg-amber-500 ring-2 ring-amber-400/30"
                                           : "bg-muted-foreground"
                                     }`}
                                   />
@@ -574,7 +603,7 @@ export function CheckInForm({
                                     {isBlocked
                                       ? "OOO"
                                       : isCleaning
-                                        ? "Dọn"
+                                        ? "Chờ dọn"
                                         : "Ở"}
                                     )
                                   </span>
@@ -631,7 +660,7 @@ export function CheckInForm({
                             : r.isBlocked
                               ? "— [Đang khóa OOO]"
                               : r.isCleaning
-                                ? "— [Chờ dọn dẹp]"
+                                ? "— [Chờ dọn dẹp - Vừa trả phòng]"
                                 : "— [Sẵn sàng]"}
                         </option>
                       );

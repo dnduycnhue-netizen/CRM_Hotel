@@ -45,6 +45,12 @@ export const updateGuestSchema = z.object({
   address_line: z.string().optional().nullable(),
   province_code: z.string().optional().nullable(),
   ward_code: z.string().optional().nullable(),
+  source_channel_id: z
+    .string()
+    .uuid("Nguồn khách phải là UUID hợp lệ")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
 });
 
 export const addGuestNoteSchema = z.object({

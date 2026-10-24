@@ -18,19 +18,34 @@ export async function getRooms(branchId?: string | null): Promise<RoomItem[]> {
       query = query.eq("branch_id", branchId);
     }
 
-    // Fetch rooms, active stays, room blocks, and recent checkouts (last 4 hours)
-    const fourHoursAgo = new Date(
-      Date.now() - 4 * 60 * 60 * 1000,
-    ).toISOString();
+    // Fetch rooms, active stays, room blocks, and recent checkouts (last 6 hours for cleaning state)
+    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+
+    let staysQuery = supabase
+      .from("stays")
+      .select("room_id")
+      .eq("status", "in_house");
+    let blocksQuery = supabase
+      .from("room_blocks")
+      .select("room_id")
+      .is("released_at", null);
+    let checkoutsQuery = supabase
+      .from("stays")
+      .select("room_id")
+      .eq("status", "checked_out")
+      .gte("checked_out_at", sixHoursAgo);
+
+    if (branchId) {
+      staysQuery = staysQuery.eq("branch_id", branchId);
+      blocksQuery = blocksQuery.eq("branch_id", branchId);
+      checkoutsQuery = checkoutsQuery.eq("branch_id", branchId);
+    }
+
     const [roomsRes, staysRes, blocksRes, checkoutsRes] = await Promise.all([
       query,
-      supabase.from("stays").select("room_id").eq("status", "in_house"),
-      supabase.from("room_blocks").select("room_id").is("released_at", null),
-      supabase
-        .from("stays")
-        .select("room_id")
-        .eq("status", "checked_out")
-        .gte("checked_out_at", fourHoursAgo),
+      staysQuery,
+      blocksQuery,
+      checkoutsQuery,
     ]);
 
     const { data, error } = roomsRes;

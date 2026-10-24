@@ -163,20 +163,30 @@ export function AssetsTable({
         <div className="flex items-center gap-3 flex-wrap text-xs">
           <div className="flex items-center gap-1.5">
             <span className="text-slate-400 font-medium">Cơ sở:</span>
-            <select
-              value={selectedBranch}
-              onChange={(e) => setSelectedBranch(e.target.value)}
-              className="text-xs py-1.5 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-transparent font-medium text-slate-800 dark:text-slate-200 outline-none"
-            >
-              {branches.length > 1 && (
-                <option value="all">Toàn bộ {branches.length} cơ sở</option>
-              )}
-              {branches.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
+            {branches.length === 1 ? (
+              <div
+                className="flex items-center gap-1.5 py-1 px-2.5 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 font-semibold text-slate-800 dark:text-slate-200"
+                title="Cơ sở được phân quyền của bạn"
+              >
+                <Building2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span>{branches[0].name}</span>
+              </div>
+            ) : (
+              <select
+                value={selectedBranch}
+                onChange={(e) => setSelectedBranch(e.target.value)}
+                className="text-xs py-1.5 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-transparent font-medium text-slate-800 dark:text-slate-200 outline-none"
+              >
+                {branches.length > 1 && (
+                  <option value="all">Toàn bộ {branches.length} cơ sở</option>
+                )}
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div className="flex items-center gap-1.5">

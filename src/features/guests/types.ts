@@ -127,6 +127,7 @@ export interface GuestListItem {
   last_branch_name: string | null;
   tier: string | null;
   tags: string[] | null;
+  sales_owner_id?: string | null;
   sales_owner_name: string | null;
   source_channel_name?: string | null;
   has_blacklist: boolean;

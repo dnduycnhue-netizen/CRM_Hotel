@@ -5,6 +5,7 @@ import {
   FileSpreadsheet,
   Filter,
   Loader2,
+  Lock,
   Plus,
   User,
 } from "lucide-react";
@@ -20,12 +21,14 @@ interface GuestListTableProps {
   initialGuests: GuestListItem[];
   salesUsers: SalesUser[];
   canExport?: boolean;
+  currentUserId?: string;
 }
 
 export function GuestListTable({
   initialGuests,
   salesUsers,
   canExport = false,
+  currentUserId,
 }: GuestListTableProps) {
   const [filterOwner, setFilterOwner] = useState<string>("all");
   const [filterTier, setFilterTier] = useState<string>("all");
@@ -260,7 +263,36 @@ export function GuestListTable({
                     </td>
 
                     <td className="py-3.5 px-4 text-xs text-slate-600 dark:text-slate-400">
-                      <div>{g.phone || "—"}</div>
+                      {g.phone ? (
+                        g.phone.includes("****") ? (
+                          <div className="flex items-center gap-1.5 font-mono">
+                            <span>{g.phone}</span>
+                            <span
+                              title="Số điện thoại được che mặt nạ theo chính sách bảo mật"
+                              className="inline-flex text-slate-400 cursor-help"
+                            >
+                              <Lock className="w-3 h-3 text-slate-400" />
+                            </span>
+                          </div>
+                        ) : currentUserId &&
+                          g.sales_owner_id === currentUserId ? (
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                              {g.phone}
+                            </span>
+                            <span
+                              title="Hiển thị đầy đủ vì bạn là Sales phụ trách lead này"
+                              className="text-[9px] px-1 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-200/50"
+                            >
+                              Lead của bạn
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="font-mono">{g.phone}</div>
+                        )
+                      ) : (
+                        <div>—</div>
+                      )}
                       {g.doc_masked && (
                         <div className="font-mono text-[11px] text-slate-400 mt-0.5">
                           {g.doc_masked}
@@ -294,10 +326,18 @@ export function GuestListTable({
 
                     <td className="py-3.5 px-4 text-xs">
                       {g.sales_owner_name ? (
-                        <span className="inline-flex items-center gap-1 font-medium text-slate-700 dark:text-slate-300">
-                          <User className="w-3 h-3 text-indigo-500" />
-                          {g.sales_owner_name}
-                        </span>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="inline-flex items-center gap-1 font-medium text-slate-700 dark:text-slate-300">
+                            <User className="w-3 h-3 text-indigo-500" />
+                            {g.sales_owner_name}
+                          </span>
+                          {currentUserId &&
+                            g.sales_owner_id === currentUserId && (
+                              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                                (Bạn phụ trách)
+                              </span>
+                            )}
+                        </div>
                       ) : (
                         <span className="text-slate-400 italic">Chưa gán</span>
                       )}

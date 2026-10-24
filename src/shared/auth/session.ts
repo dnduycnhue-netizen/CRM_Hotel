@@ -14,8 +14,12 @@ export const getSession = cache(async () => {
   const { data } = await supabase.auth.getClaims();
   if (!data?.claims) return null;
 
-  const [{ data: access }, cookieStore] = await Promise.all([
+  const [{ data: access }, { data: profile }, cookieStore] = await Promise.all([
     supabase.rpc("my_access"),
+    (supabase.from("profiles") as any)
+      .select("full_name")
+      .eq("id", data.claims.sub)
+      .maybeSingle(),
     cookies(),
   ]);
   const a = (access ?? { permissions: {}, modules: {} }) as Access;
@@ -32,6 +36,7 @@ export const getSession = cache(async () => {
   return {
     userId: data.claims.sub as string,
     email: data.claims.email as string | undefined,
+    fullName: ((profile as any)?.full_name as string) || undefined,
     access: a,
     branchIds,
     currentBranchId,

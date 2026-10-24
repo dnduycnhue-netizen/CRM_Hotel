@@ -50,6 +50,7 @@ export default async function GuestDetailPage({ params }: PageProps) {
       profile={profile}
       salesUsers={salesUsers}
       branches={branches}
+      currentUserId={session.userId}
     />
   );
 }

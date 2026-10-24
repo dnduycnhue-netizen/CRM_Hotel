@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, Lock, Plus, Unlock, User } from "lucide-react";
+import { Building2, Loader2, Lock, Plus, Unlock, User } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/shared/ui";
@@ -125,23 +125,33 @@ export function RoomBlocksTable({
       <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs">
           <span className="text-slate-400 font-medium">Lọc theo cơ sở:</span>
-          <select
-            value={selectedBranch}
-            onChange={(e) => setSelectedBranch(e.target.value)}
-            className="text-xs py-1.5 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 font-medium text-slate-800 dark:text-slate-200 outline-none"
-          >
-            {branches.length > 1 && (
-              <option value="all">
-                Tất cả {branches.length} cơ sở ({initialBlocks.length} phòng
-                đang khóa)
-              </option>
-            )}
-            {branches.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
+          {branches.length === 1 ? (
+            <div
+              className="flex items-center gap-1.5 py-1 px-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 font-semibold text-slate-800 dark:text-slate-200"
+              title="Cơ sở được phân quyền của bạn"
+            >
+              <Building2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span>{branches[0].name}</span>
+            </div>
+          ) : (
+            <select
+              value={selectedBranch}
+              onChange={(e) => setSelectedBranch(e.target.value)}
+              className="text-xs py-1.5 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 font-medium text-slate-800 dark:text-slate-200 outline-none"
+            >
+              {branches.length > 1 && (
+                <option value="all">
+                  Tất cả {branches.length} cơ sở ({initialBlocks.length} phòng
+                  đang khóa)
+                </option>
+              )}
+              {branches.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         <div className="text-xs text-slate-400">

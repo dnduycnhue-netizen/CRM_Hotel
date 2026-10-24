@@ -38,6 +38,7 @@ export default async function AppLayout({
             branches={branches}
             currentBranchId={currentBranchId}
             userEmail={session?.email}
+            userFullName={session?.fullName}
             canManageUsers={session?.can("settings.users") ?? false}
             canViewRoles={session?.can("settings.roles") ?? false}
             canCreateStay={session?.can("stay.create") ?? false}

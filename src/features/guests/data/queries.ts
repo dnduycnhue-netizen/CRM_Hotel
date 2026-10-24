@@ -59,6 +59,7 @@ export async function getGuestsList(options?: {
     last_branch_name: g.last_branch_name || null,
     tier: null,
     tags: g.tags || [],
+    sales_owner_id: g.sales_owner_id || null,
     sales_owner_name: g.sales_owner_name || null,
     source_channel_name: g.source_channel_name || null,
     has_blacklist: false,

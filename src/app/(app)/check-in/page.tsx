@@ -3,6 +3,8 @@ import { getActiveBranches, getRooms } from "@/features/admin";
 import { CheckInForm } from "@/features/check-in";
 import { getSession } from "@/shared/auth/server";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Check-in | CRM Chuỗi Khách Sạn",
   description:

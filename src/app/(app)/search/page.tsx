@@ -17,5 +17,7 @@ export default async function SearchPage() {
     redirect("/");
   }
 
-  return <SearchView />;
+  const canViewChain = session.can("report.view_chain");
+
+  return <SearchView canViewChain={canViewChain} />;
 }
