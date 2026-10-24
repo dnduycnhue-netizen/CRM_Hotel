@@ -1,9 +1,21 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { getActiveBranches } from "@/features/admin/data/branches";
+import { createClient } from "@/lib/supabase/server";
 import { requirePermission } from "@/shared/auth/server";
-import { type ActionResult, fail, ok } from "@/shared/errors";
-import { getReportKpis, getReportSeries } from "./data/queries";
+import { type ActionResult, fail, ok, toFieldErrors } from "@/shared/errors";
+import {
+  getMonthlyInputMatrix,
+  getReportKpis,
+  getReportSeries,
+} from "./data/queries";
+import {
+  lockMonthlyFiguresSchema,
+  saveMonthlyFiguresSchema,
+  unlockMonthlyFiguresSchema,
+} from "./schemas";
+import type { MonthlyInputBranchRow } from "./types";
 
 export async function exportReportAction(params: {
   from?: string;
@@ -183,3 +195,118 @@ export async function exportReportAction(params: {
     );
   }
 }
+
+export async function getMonthlyInputMatrixAction(
+  month: string,
+  branchId?: string,
+): Promise<ActionResult<MonthlyInputBranchRow[]>> {
+  try {
+    const auth = await requirePermission("revenue.view", branchId);
+    if (!auth.ok) {
+      const altAuth = await requirePermission("revenue.input", branchId);
+      if (!altAuth.ok) return auth;
+    }
+
+    const data = await getMonthlyInputMatrix(month, branchId);
+    return ok(data);
+  } catch (err: any) {
+    return fail("UNKNOWN", undefined, err?.message || "Không thể tải số liệu tháng");
+  }
+}
+
+export async function saveMonthlyFiguresAction(
+  rawInput: unknown,
+): Promise<ActionResult<{ applied: number }>> {
+  try {
+    const parsed = saveMonthlyFiguresSchema.safeParse(rawInput);
+    if (!parsed.success) {
+      return fail("VALIDATION", toFieldErrors(parsed.error));
+    }
+
+    for (const row of parsed.data.rows) {
+      const auth = await requirePermission("revenue.input", row.branch_id);
+      if (!auth.ok) return auth;
+    }
+
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("upsert_monthly_figures", {
+      p_rows: parsed.data.rows,
+    });
+
+    if (error) {
+      let customMsg = "Không thể lưu số liệu doanh thu tháng";
+      if (error.message?.includes("đã bị khóa sổ")) {
+        customMsg = error.message;
+      } else if (error.message?.includes("không thể lớn hơn")) {
+        customMsg = error.message;
+      }
+      return fail(error.code, undefined, customMsg);
+    }
+
+    revalidatePath("/reports/monthly");
+    revalidatePath("/reports");
+    return ok({ applied: (data as any)?.applied || parsed.data.rows.length });
+  } catch (err: any) {
+    return fail("UNKNOWN", undefined, err?.message || "Không thể lưu số liệu");
+  }
+}
+
+export async function lockMonthlyFiguresAction(
+  rawInput: unknown,
+): Promise<ActionResult<{ locked_at: string }>> {
+  try {
+    const parsed = lockMonthlyFiguresSchema.safeParse(rawInput);
+    if (!parsed.success) {
+      return fail("VALIDATION", toFieldErrors(parsed.error));
+    }
+
+    const auth = await requirePermission("revenue.input", parsed.data.branch_id);
+    if (!auth.ok) return auth;
+
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("lock_monthly_figures", {
+      p_branch_id: parsed.data.branch_id,
+      p_month: parsed.data.month,
+    });
+
+    if (error) {
+      return fail(error.code, undefined, error.message || "Không thể khóa sổ tháng");
+    }
+
+    revalidatePath("/reports/monthly");
+    return ok(data as { locked_at: string });
+  } catch (err: any) {
+    return fail("UNKNOWN", undefined, err?.message || "Không thể khóa sổ tháng");
+  }
+}
+
+export async function unlockMonthlyFiguresAction(
+  rawInput: unknown,
+): Promise<ActionResult<{ unlocked_at: string }>> {
+  try {
+    const parsed = unlockMonthlyFiguresSchema.safeParse(rawInput);
+    if (!parsed.success) {
+      return fail("VALIDATION", toFieldErrors(parsed.error));
+    }
+
+    const auth = await requirePermission("revenue.input", parsed.data.branch_id);
+    if (!auth.ok) return auth;
+
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("unlock_monthly_figures", {
+      p_branch_id: parsed.data.branch_id,
+      p_month: parsed.data.month,
+      p_reason: parsed.data.reason,
+    });
+
+    if (error) {
+      return fail(error.code, undefined, error.message || "Không thể mở khóa sổ tháng");
+    }
+
+    revalidatePath("/reports/monthly");
+    return ok(data as { unlocked_at: string });
+  } catch (err: any) {
+    return fail("UNKNOWN", undefined, err?.message || "Không thể mở khóa sổ tháng");
+  }
+}
+

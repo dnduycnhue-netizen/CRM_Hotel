@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  checklistTemplateSchema,
   createAssetSchema,
+  createPmPlanSchema,
   reportIssueSchema,
   roomBlockSchema,
+  submitInspectionSchema,
   transitionWorkOrderSchema,
   updateAssetStatusSchema,
+  upsertComplianceDocSchema,
 } from "./schemas";
 
 describe("Facilities Schemas Validation", () => {
@@ -123,4 +127,128 @@ describe("Facilities Schemas Validation", () => {
       expect(valid.success).toBe(true);
     });
   });
+
+  describe("createPmPlanSchema", () => {
+    it("chấp nhận kế hoạch bảo trì hợp lệ", () => {
+      const valid = {
+        branch_id: validBranchId,
+        name: "Bảo dưỡng điều hòa trung tâm",
+        interval_days: 60,
+        lead_days: 7,
+        checklist: ["Vệ sinh màng lọc", "Kiểm tra gas", "Đo dòng điện"],
+        next_due_date: "2026-11-15",
+      };
+      expect(createPmPlanSchema.safeParse(valid).success).toBe(true);
+    });
+
+    it("từ chối khi tên quá ngắn hoặc chu kỳ <= 0", () => {
+      expect(
+        createPmPlanSchema.safeParse({
+          branch_id: validBranchId,
+          name: "AB",
+          interval_days: 0,
+          next_due_date: "2026-11-15",
+        }).success,
+      ).toBe(false);
+    });
+  });
+
+  describe("checklistTemplateSchema", () => {
+    it("chấp nhận mẫu kiểm tra với các tiêu chí", () => {
+      const valid = {
+        name: "Checklist Buồng phòng tiêu chuẩn",
+        scope: "room",
+        items: [
+          { key: "bed", label: "Giường nệm phẳng, sạch sẽ", critical: false },
+          { key: "ac", label: "Điều hòa mát, không kêu", critical: true, hint: "Bật 24 độ" },
+        ],
+        is_active: true,
+      };
+      expect(checklistTemplateSchema.safeParse(valid).success).toBe(true);
+    });
+
+    it("từ chối mẫu không có tiêu chí nào", () => {
+      expect(
+        checklistTemplateSchema.safeParse({
+          name: "Mẫu rỗng",
+          scope: "area",
+          items: [],
+        }).success,
+      ).toBe(false);
+    });
+  });
+
+  describe("submitInspectionSchema", () => {
+    const validTemplateId = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+
+    it("chấp nhận kết quả kiểm tra hợp lệ", () => {
+      const valid = {
+        branch_id: validBranchId,
+        template_id: validTemplateId,
+        room_id: validRoomId,
+        results: [
+          { key: "bed", status: "pass" },
+          { key: "ac", status: "fail", note: "Điều hòa chảy nước rỉ xuống sàn" },
+        ],
+      };
+      expect(submitInspectionSchema.safeParse(valid).success).toBe(true);
+    });
+
+    it("bắt buộc ghi chú lý do khi mục đánh giá là fail", () => {
+      const invalid = {
+        branch_id: validBranchId,
+        template_id: validTemplateId,
+        results: [
+          { key: "ac", status: "fail", note: "" }, // không ghi chú
+        ],
+      };
+      expect(submitInspectionSchema.safeParse(invalid).success).toBe(false);
+    });
+  });
+
+  describe("upsertComplianceDocSchema", () => {
+    const validDocTypeId = "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22";
+
+    it("chấp nhận hồ sơ pháp lý hợp lệ", () => {
+      const valid = {
+        branch_id: validBranchId,
+        doc_type_id: validDocTypeId,
+        number: "GPKD-2024-001",
+        issuer: "Sở Kế hoạch và Đầu tư TP.HCM",
+        issued_on: "2024-01-15",
+        expires_on: "2026-01-15",
+        file_paths: ["compliance/gpkd_signed.pdf"],
+        note: "Giấy phép đăng ký kinh doanh bản cấp đổi lần 2",
+        is_renew: false,
+      };
+      expect(upsertComplianceDocSchema.safeParse(valid).success).toBe(true);
+    });
+
+    it("từ chối khi ngày hết hạn trước ngày cấp", () => {
+      const invalid = {
+        branch_id: validBranchId,
+        doc_type_id: validDocTypeId,
+        number: "PCCC-999",
+        issued_on: "2026-05-10",
+        expires_on: "2025-05-10", // hết hạn trước khi cấp
+      };
+      const res = upsertComplianceDocSchema.safeParse(invalid);
+      expect(res.success).toBe(false);
+      if (!res.success) {
+        expect(res.error.issues[0]?.message).toContain("Ngày hết hạn không được trước ngày cấp");
+      }
+    });
+
+    it("chấp nhận hồ sơ không có thời hạn (expires_on = null)", () => {
+      const valid = {
+        branch_id: validBranchId,
+        doc_type_id: validDocTypeId,
+        number: "GPKD-VO-THOI-HAN",
+        issued_on: "2020-01-01",
+        expires_on: null,
+      };
+      expect(upsertComplianceDocSchema.safeParse(valid).success).toBe(true);
+    });
+  });
 });
+

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getVnDateRange } from "@/shared/utils/date";
 import type {
   FacilityReportResponse,
+  MonthlyInputBranchRow,
   MonthlyReportRow,
   ReportKpisResponse,
   ReportSeriesPoint,
@@ -129,3 +130,22 @@ export async function getFacilityReport(options?: {
     return null;
   }
 }
+
+export async function getMonthlyInputMatrix(
+  month: string,
+  branchId?: string,
+): Promise<MonthlyInputBranchRow[]> {
+  const supabase = await createClient();
+  try {
+    const { data, error } = await supabase.rpc("get_monthly_input_matrix", {
+      p_month: month,
+      p_branch_id: branchId || null,
+    });
+
+    if (error || !data) return [];
+    return data as MonthlyInputBranchRow[];
+  } catch {
+    return [];
+  }
+}
+

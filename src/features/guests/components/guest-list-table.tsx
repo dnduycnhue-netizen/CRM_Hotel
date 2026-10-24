@@ -7,9 +7,11 @@ import {
   Loader2,
   Lock,
   Plus,
+  ShieldCheck,
   User,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/shared/ui";
@@ -22,6 +24,7 @@ interface GuestListTableProps {
   salesUsers: SalesUser[];
   canExport?: boolean;
   currentUserId?: string;
+  initialConsentFilter?: string;
 }
 
 export function GuestListTable({
@@ -29,16 +32,21 @@ export function GuestListTable({
   salesUsers,
   canExport = false,
   currentUserId,
+  initialConsentFilter = "all",
 }: GuestListTableProps) {
+  const router = useRouter();
   const [filterOwner, setFilterOwner] = useState<string>("all");
   const [filterTier, setFilterTier] = useState<string>("all");
+  const [filterConsent, setFilterConsent] =
+    useState<string>(initialConsentFilter);
   const [searchFilter, setSearchFilter] = useState("");
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExportExcel = async () => {
     try {
       setIsExporting(true);
-      const res = await exportGuestsAction();
+      const targetChannel = filterConsent !== "all" ? filterConsent : undefined;
+      const res = await exportGuestsAction({ consentChannel: targetChannel });
       if (!res.ok) {
         toast.error(
           `Không thể xuất Excel: ${res.error.message || res.error.code}`,
@@ -120,14 +128,28 @@ export function GuestListTable({
               variant="outline"
               disabled={isExporting}
               onClick={handleExportExcel}
-              className="rounded-xl font-medium border-slate-700 hover:bg-slate-800 text-slate-200"
+              className={`rounded-xl font-medium border-slate-700 hover:bg-slate-800 ${
+                filterConsent !== "all"
+                  ? "text-teal-400 border-teal-700/60 bg-teal-950/20"
+                  : "text-slate-200"
+              }`}
             >
               {isExporting ? (
                 <Loader2 className="w-4 h-4 mr-1.5 animate-spin text-slate-400" />
               ) : (
-                <FileSpreadsheet className="w-4 h-4 mr-1.5 text-emerald-400" />
+                <FileSpreadsheet
+                  className={`w-4 h-4 mr-1.5 ${
+                    filterConsent !== "all"
+                      ? "text-teal-400"
+                      : "text-emerald-400"
+                  }`}
+                />
               )}
-              {isExporting ? "Đang xuất..." : "Xuất Excel"}
+              {isExporting
+                ? "Đang xuất..."
+                : filterConsent !== "all"
+                  ? `Xuất tệp ${filterConsent.toUpperCase()}`
+                  : "Xuất Excel"}
             </Button>
           )}
 
@@ -153,6 +175,30 @@ export function GuestListTable({
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5 text-xs text-slate-500">
+            <ShieldCheck className="w-3.5 h-3.5 text-teal-500" />
+            <span>Đồng ý nhận tin:</span>
+            <select
+              value={filterConsent}
+              onChange={(e) => {
+                const val = e.target.value;
+                setFilterConsent(val);
+                if (val === "all") {
+                  router.push("/guests");
+                } else {
+                  router.push(`/guests?consent=${val}`);
+                }
+              }}
+              className="text-xs py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-transparent outline-none font-medium text-slate-800 dark:text-slate-200"
+            >
+              <option value="all">Tất cả khách</option>
+              <option value="zalo">Zalo OA</option>
+              <option value="sms">SMS Brandname</option>
+              <option value="email">Email Marketing</option>
+              <option value="phone">Cuộc gọi Telesales</option>
+            </select>
+          </div>
+
           <div className="flex items-center gap-1.5 text-xs text-slate-500">
             <Filter className="w-3.5 h-3.5" />
             <span>Sales:</span>

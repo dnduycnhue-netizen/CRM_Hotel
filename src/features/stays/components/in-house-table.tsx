@@ -40,6 +40,7 @@ import {
 import { formatDateTimeVN } from "@/shared/utils/date";
 import { cancelStayAction, checkoutStayAction } from "../actions";
 import type { InHouseStay } from "../domain/types";
+import { StayCompanionsDialog } from "./stay-companions-dialog";
 
 interface InHouseTableProps {
   stays: InHouseStay[];
@@ -69,6 +70,12 @@ export function InHouseTable({
     roomNumber: string;
   } | null>(null);
   const [cancelReason, setCancelReason] = useState("");
+
+  // Dialog state cho Người đi cùng
+  const [companionStayTarget, setCompanionStayTarget] = useState<{
+    stayId: string;
+    roomNumber: string;
+  } | null>(null);
 
   const filteredStays = useMemo(() => {
     if (!searchTerm.trim()) return activeStayList;
@@ -357,7 +364,20 @@ export function InHouseTable({
                     </TableCell>
 
                     <TableCell className="font-medium text-foreground">
-                      {s.guestCount} người
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCompanionStayTarget({
+                            stayId: s.id,
+                            roomNumber: s.roomNumber,
+                          })
+                        }
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-muted/60 hover:bg-muted text-foreground transition border border-border/40 hover:border-indigo-400 group cursor-pointer"
+                        title="Xem và quản lý người đi cùng"
+                      >
+                        <Users className="w-3.5 h-3.5 text-indigo-500 group-hover:scale-110 transition-transform" />
+                        <span>{s.guestCount} người</span>
+                      </button>
                     </TableCell>
 
                     <TableCell className="text-muted-foreground font-mono text-xs">
@@ -550,6 +570,24 @@ export function InHouseTable({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog Quản lý Người đi cùng (§2) */}
+      <StayCompanionsDialog
+        stayId={companionStayTarget?.stayId || null}
+        roomNumber={companionStayTarget?.roomNumber || ""}
+        branchId={currentBranchId}
+        isOpen={!!companionStayTarget}
+        onClose={() => setCompanionStayTarget(null)}
+        onGuestsUpdated={(newCount) => {
+          setActiveStayList((prev) =>
+            prev.map((item) =>
+              item.id === companionStayTarget?.stayId
+                ? { ...item, guestCount: newCount }
+                : item,
+            ),
+          );
+        }}
+      />
     </div>
   );
 }

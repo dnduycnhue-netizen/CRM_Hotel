@@ -1,16 +1,25 @@
 "use client";
 
-import { Building2, FileSpreadsheet, Loader2 } from "lucide-react";
+import {
+  Bell,
+  Building2,
+  FileEdit,
+  FileSpreadsheet,
+  Loader2,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
+import { Button } from "@/shared/ui";
 import type { MonthlyReportRow } from "../types";
+import { MonthlyInputDialog } from "./monthly-input-dialog";
 
 interface MonthlyRevenueTableProps {
   initialRows: MonthlyReportRow[];
   year: number;
   branches: Array<{ id: string; name: string; code: string }>;
   initialBranchId?: string;
+  canInput?: boolean;
 }
 
 export function MonthlyRevenueTable({
@@ -18,9 +27,15 @@ export function MonthlyRevenueTable({
   year,
   branches,
   initialBranchId = "all",
+  canInput = true,
 }: MonthlyRevenueTableProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [isInputModalOpen, setIsInputModalOpen] = useState(false);
+
+  const isDay5Reminder = useMemo(() => {
+    return new Date().getDate() >= 5;
+  }, []);
 
   const handleBranchChange = (bId: string) => {
     startTransition(() => {
@@ -129,7 +144,33 @@ export function MonthlyRevenueTable({
             </div>
           )}
         </div>
+
+        <div className="flex items-center gap-2">
+          {canInput && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setIsInputModalOpen(true)}
+              className="h-8.5 rounded-xl text-xs bg-indigo-600 hover:bg-indigo-700 text-white gap-1.5 shadow-sm"
+            >
+              <FileEdit className="w-3.5 h-3.5" />
+              <span>Nhập số liệu tháng</span>
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* Day 5 Reminder Banner */}
+      {isDay5Reminder && canInput && (
+        <div className="flex items-center gap-2 p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/40 text-xs text-amber-800 dark:text-amber-300">
+          <Bell className="w-4 h-4 shrink-0 text-amber-600" />
+          <span>
+            <strong>Nhắc nhở kỳ báo cáo:</strong> Hôm nay từ ngày 5 trở đi. Vui
+            lòng kiểm tra và hoàn thành việc nhập &amp; khóa sổ doanh thu tháng
+            trước cho các cơ sở trực thuộc.
+          </span>
+        </div>
+      )}
 
       {/* Main Table */}
 
@@ -222,6 +263,12 @@ export function MonthlyRevenueTable({
           </table>
         </div>
       </div>
+
+      <MonthlyInputDialog
+        isOpen={isInputModalOpen}
+        onClose={() => setIsInputModalOpen(false)}
+        onSaved={() => router.refresh()}
+      />
     </div>
   );
 }

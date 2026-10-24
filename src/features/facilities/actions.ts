@@ -4,18 +4,27 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requirePermission } from "@/shared/auth/server";
 import { type ActionResult, fail, ok, toFieldErrors } from "@/shared/errors";
+import { getComplianceHistory } from "./data/compliance";
 import {
   type CreateAssetInput,
+  type CreatePmPlanInput,
+  checklistTemplateSchema,
   createAssetSchema,
+  createPmPlanSchema,
   type ReportIssueInput,
   type RoomBlockInput,
   reportIssueSchema,
   roomBlockSchema,
+  submitInspectionSchema,
   type TransitionWorkOrderInput,
   transitionWorkOrderSchema,
   type UpdateAssetStatusInput,
+  type UpsertComplianceDocInput,
   updateAssetStatusSchema,
+  updatePmPlanSchema,
+  upsertComplianceDocSchema,
 } from "./schemas";
+import type { ComplianceHistoryItem } from "./types";
 
 export async function createWorkOrderAction(
   rawInput: ReportIssueInput,
@@ -155,15 +164,6 @@ export async function releaseRoomBlockAction(
   } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
-}
-
-export interface CreatePmPlanInput {
-  branch_id: string;
-  name: string;
-  interval_days: number;
-  lead_days?: number;
-  checklist?: string[];
-  next_due_date?: string;
 }
 
 export async function createPmPlanAction(
@@ -315,5 +315,345 @@ export async function updateAssetStatusAction(
     return ok(undefined);
   } catch (_err: unknown) {
     return fail("UNKNOWN");
+  }
+}
+
+export async function updatePmPlanAction(
+  rawInput: unknown,
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const parsed = updatePmPlanSchema.safeParse(rawInput);
+    if (!parsed.success) {
+      return fail("VALIDATION", toFieldErrors(parsed.error));
+    }
+
+    const supabase = await createClient();
+    const { data: plan } = await (supabase.from("pm_plans") as any)
+      .select("branch_id")
+      .eq("id", parsed.data.id)
+      .single();
+
+    if (!plan)
+      return fail("NOT_FOUND", undefined, "Kế hoạch bảo trì không tồn tại");
+
+    const auth = await requirePermission("pm.manage", plan.branch_id);
+    if (!auth.ok) return auth;
+
+    const { data, error } = await supabase.rpc("update_pm_plan", {
+      p_id: parsed.data.id,
+      p_patch: parsed.data,
+    });
+
+    if (error) {
+      return fail(
+        error.code,
+        undefined,
+        error.message || "Không thể cập nhật kế hoạch bảo trì",
+      );
+    }
+
+    revalidatePath("/facilities/maintenance");
+    return ok(data as { id: string });
+  } catch (err: unknown) {
+    return fail(
+      "UNKNOWN",
+      undefined,
+      (err as Error)?.message || "Không thể cập nhật kế hoạch bảo trì",
+    );
+  }
+}
+
+export async function deletePmPlanAction(
+  id: string,
+): Promise<ActionResult<{ action: string }>> {
+  try {
+    const supabase = await createClient();
+    const { data: plan } = (await supabase
+      .from("pm_plans")
+      .select("branch_id")
+      .eq("id", id)
+      .single()) as unknown as {
+      data: { branch_id: string } | null;
+      error: unknown;
+    };
+
+    if (!plan)
+      return fail("NOT_FOUND", undefined, "Kế hoạch bảo trì không tồn tại");
+
+    const auth = await requirePermission("pm.manage", plan.branch_id);
+    if (!auth.ok) return auth;
+
+    const { data, error } = await supabase.rpc("delete_pm_plan", {
+      p_id: id,
+    });
+
+    if (error) {
+      return fail(
+        error.code,
+        undefined,
+        error.message || "Không thể xóa kế hoạch bảo trì",
+      );
+    }
+
+    revalidatePath("/facilities/maintenance");
+    return ok(data as { action: string });
+  } catch (err: unknown) {
+    return fail(
+      "UNKNOWN",
+      undefined,
+      (err as Error)?.message || "Không thể xóa kế hoạch bảo trì",
+    );
+  }
+}
+
+export async function triggerPmPlanNowAction(
+  planId: string,
+): Promise<ActionResult<{ work_order_id: string; work_order_number: number }>> {
+  try {
+    const supabase = await createClient();
+    const { data: plan } = (await supabase
+      .from("pm_plans")
+      .select("branch_id")
+      .eq("id", planId)
+      .single()) as unknown as {
+      data: { branch_id: string } | null;
+      error: unknown;
+    };
+
+    if (!plan)
+      return fail("NOT_FOUND", undefined, "Kế hoạch bảo trì không tồn tại");
+
+    const auth = await requirePermission("pm.manage", plan.branch_id);
+    if (!auth.ok) return auth;
+
+    const { data, error } = await supabase.rpc("trigger_pm_now", {
+      p_plan_id: planId,
+    });
+
+    if (error) {
+      return fail(
+        error.code,
+        undefined,
+        error.message || "Không thể tạo phiếu bảo trì",
+      );
+    }
+
+    revalidatePath("/facilities/maintenance");
+    revalidatePath("/facilities/work-orders");
+    return ok(data as { work_order_id: string; work_order_number: number });
+  } catch (err: unknown) {
+    return fail(
+      "UNKNOWN",
+      undefined,
+      (err as Error)?.message || "Không thể tạo phiếu bảo trì",
+    );
+  }
+}
+
+export async function upsertChecklistTemplateAction(
+  rawInput: unknown,
+): Promise<ActionResult<{ id: string; versioned?: boolean }>> {
+  try {
+    const parsed = checklistTemplateSchema.safeParse(rawInput);
+    if (!parsed.success) {
+      return fail("VALIDATION", toFieldErrors(parsed.error));
+    }
+
+    const auth = await requirePermission("inspection.manage");
+    if (!auth.ok) return auth;
+
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("upsert_checklist_template", {
+      p: parsed.data,
+    });
+
+    if (error) {
+      return fail(
+        error.code,
+        undefined,
+        error.message || "Không thể lưu mẫu checklist",
+      );
+    }
+
+    revalidatePath("/settings/checklists");
+    revalidatePath("/facilities/inspections/new");
+    revalidatePath("/facilities/maintenance");
+    return ok(data as { id: string; versioned?: boolean });
+  } catch (err: unknown) {
+    return fail(
+      "UNKNOWN",
+      undefined,
+      (err as Error)?.message || "Không thể lưu mẫu checklist",
+    );
+  }
+}
+
+export async function submitInspectionAction(rawInput: unknown): Promise<
+  ActionResult<{
+    inspection_id: string;
+    score: number;
+    work_order_ids: string[];
+  }>
+> {
+  try {
+    const parsed = submitInspectionSchema.safeParse(rawInput);
+    if (!parsed.success) {
+      return fail("VALIDATION", toFieldErrors(parsed.error));
+    }
+
+    const auth = await requirePermission(
+      "inspection.perform",
+      parsed.data.branch_id,
+    );
+    if (!auth.ok) return auth;
+
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("submit_inspection", {
+      p: parsed.data,
+    });
+
+    if (error) {
+      return fail(
+        error.code,
+        undefined,
+        error.message || "Không thể gửi kết quả kiểm tra",
+      );
+    }
+
+    revalidatePath("/facilities/maintenance");
+    revalidatePath("/facilities/work-orders");
+    return ok(
+      data as {
+        inspection_id: string;
+        score: number;
+        work_order_ids: string[];
+      },
+    );
+  } catch (err: unknown) {
+    return fail(
+      "UNKNOWN",
+      undefined,
+      (err as Error)?.message || "Không thể gửi kết quả kiểm tra",
+    );
+  }
+}
+
+export async function upsertComplianceDocAction(
+  rawInput: unknown,
+): Promise<ActionResult<{ id: string; action: string }>> {
+  try {
+    const parsed = upsertComplianceDocSchema.safeParse(rawInput);
+    if (!parsed.success) {
+      return fail("VALIDATION", toFieldErrors(parsed.error));
+    }
+
+    const auth = await requirePermission(
+      "compliance.manage",
+      parsed.data.branch_id,
+    );
+    if (!auth.ok) return auth;
+
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("upsert_compliance_doc", {
+      p: parsed.data,
+    });
+
+    if (error) {
+      return fail(
+        error.code,
+        undefined,
+        error.message || "Không thể lưu hồ sơ pháp lý",
+      );
+    }
+
+    revalidatePath("/facilities/compliance");
+    revalidatePath("/facilities/alerts");
+    return ok(data as { id: string; action: string });
+  } catch (err: unknown) {
+    return fail(
+      "UNKNOWN",
+      undefined,
+      (err as Error)?.message || "Không thể lưu hồ sơ pháp lý",
+    );
+  }
+}
+
+export async function getComplianceHistoryAction(
+  docId: string,
+): Promise<ActionResult<ComplianceHistoryItem[]>> {
+  try {
+    const history = await getComplianceHistory(docId);
+    return ok(history);
+  } catch (err: unknown) {
+    return fail(
+      "UNKNOWN",
+      undefined,
+      (err as Error)?.message || "Không thể tải lịch sử hồ sơ",
+    );
+  }
+}
+
+export async function createComplianceUploadSignedUrlAction(
+  branchId: string,
+  fileName: string,
+): Promise<ActionResult<{ signedUrl: string; token: string; path: string }>> {
+  try {
+    const auth = await requirePermission("compliance.manage", branchId);
+    if (!auth.ok) return auth;
+
+    const supabase = await createClient();
+    const cleanName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const filePath = `${branchId}/${Date.now()}_${cleanName}`;
+
+    const { data, error } = await supabase.storage
+      .from("compliance")
+      .createSignedUploadUrl(filePath);
+
+    if (error || !data) {
+      return fail(
+        "STORAGE_ERROR",
+        undefined,
+        error?.message || "Không thể tạo URL tải tệp lên",
+      );
+    }
+
+    return ok({
+      signedUrl: data.signedUrl,
+      token: data.token,
+      path: filePath,
+    });
+  } catch (err: unknown) {
+    return fail(
+      "UNKNOWN",
+      undefined,
+      (err as Error)?.message || "Không thể tạo URL tải tệp lên",
+    );
+  }
+}
+
+export async function getComplianceSignedUrlAction(
+  filePath: string,
+): Promise<ActionResult<{ signedUrl: string }>> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.storage
+      .from("compliance")
+      .createSignedUrl(filePath, 300);
+
+    if (error || !data) {
+      return fail(
+        "NOT_FOUND",
+        undefined,
+        error?.message || "Không tìm thấy file hoặc link đã hết hạn",
+      );
+    }
+
+    return ok({ signedUrl: data.signedUrl });
+  } catch (err: unknown) {
+    return fail(
+      "UNKNOWN",
+      undefined,
+      (err as Error)?.message || "Không thể lấy link file",
+    );
   }
 }

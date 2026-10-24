@@ -364,3 +364,31 @@ vercel --prod --yes
 | `42c09b9` | ~21:40 | Test | Bổ sung unit tests cho check-in, guests schemas và permission-keys; dọn sạch unused imports | `pnpm test` Pass (52/52) |
 | `0d0dbd0` | ~22:00 | Fix | Khắc phục QA Vòng 6: Bật module revenue, fix type RPC get_guests_list, chặn log audit & PII | `pnpm typecheck` Pass |
 | `03bae34` | ~23:15 | Fix | Khắc phục QA Vòng 7: Siết RLS audit logs, scope cơ sở guests & search, badge nguồn khách, trạng thái dọn phòng | `pnpm typecheck` & `pnpm test` Pass |
+| `1b5c892` | 24/10/2026 | Feature | Triển khai Sprint 1: Bật/tắt Module Matrix & Quản lý trạng thái khả dụng | `pnpm typecheck` & `pnpm test` Pass |
+| (Sprints 2-4) | 24/10/2026 | Release | **GO-LIVE RELEASE**: Tích hợp Sprints 2, 3, 4 (Loyalty, Companions, Doanh thu tháng, Bảo trì định kỳ, Kiểm định CSVC, Consent NĐ 13/2023) | `pnpm test` Pass (87/87), `next build` Pass |
+
+---
+
+## 8. Chi tiết Go-Live Release: Sprints 2, 3, 4 (24/10/2026)
+
+### Sprint 2: Hạng thành viên (Loyalty) & Người đi cùng (Companions)
+- **Migration 36:** `20261101000036_loyalty_policies_and_companions.sql`
+- Cấu hình chính sách hạng thẻ (`loyalty_tiers`), tự động nâng/hạ hạng hoặc gán thủ công có thời hạn (`manual_override`).
+- Quản lý người đi cùng (`stay_companions`), tính điểm thành viên theo đêm lưu trú và tự động giảm giá phòng theo hạng thành viên.
+- Màn hình Cài đặt Loyalty (`/settings/loyalty`), màn hình Người đi cùng trong In-House và Check-in.
+
+### Sprint 3: Doanh thu tháng & Quản lý Cơ sở vật chất nâng cao
+- **Migration 37:** `20261101000037_sprint3_revenue_and_maintenance.sql`
+  - Nhập doanh thu tháng (`revenue_input`) qua modal chuyên dụng và xem bảng tổng hợp doanh thu chuỗi (`/reports/monthly`).
+  - Lập lịch bảo trì định kỳ (`preventive_maintenance`) tự động sinh phiếu công việc theo chu kỳ.
+- **Migration 38:** `20261101000038_sprint3_compliance.sql`
+  - Quản lý mẫu kiểm tra phòng & CSVC (`inspection_checklists`), thực hiện kiểm tra phòng di động (`/facilities/inspections/new`).
+  - Quản lý hồ sơ kiểm định pháp lý PCCC, thang máy, an toàn lao động (`/facilities/compliance`).
+
+### Sprint 4: Quản lý đồng ý nhận tin (Consent Management - Nghị định 13/2023/NĐ-CP)
+- **Migration 39:** `20261101000039_sprint4_consent.sql`
+  - Bảng ghi vết kiểm toán bất biến `guest_consent_events` và trigger `trg_guest_consents_audit`.
+  - Check-in 4 kênh Zalo, SMS, Email, Cuộc gọi với kịch bản lễ tân, tuân thủ nguyên tắc opt-in (không tích sẵn).
+  - Hồ sơ khách 360° với nút Cấp/Rút đồng ý có lý do lưu audit log và bảng lịch sử kiểm toán chi tiết.
+  - Bộ lọc tệp khách theo kênh đồng ý và xuất file Excel gửi tin tự động lược bỏ CCCD/Hộ chiếu để giảm thiểu dữ liệu.
+

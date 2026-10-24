@@ -2,6 +2,7 @@
 
 import {
   AlertTriangle,
+  Award,
   BarChart3,
   Boxes,
   Building,
@@ -9,6 +10,7 @@ import {
   ChevronRight,
   ClipboardList,
   Compass,
+  FileCheck2,
   FileSpreadsheet,
   Hotel,
   KeyRound,
@@ -20,6 +22,7 @@ import {
   Users,
   Wrench,
 } from "lucide-react";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCan } from "@/shared/auth";
@@ -116,6 +119,12 @@ const NAV_GROUPS: NavGroup[] = [
         perm: "pm.view",
       },
       {
+        title: "Hồ sơ pháp lý & PCCC",
+        href: "/facilities/compliance",
+        icon: FileCheck2,
+        perm: "compliance.view",
+      },
+      {
         title: "Cảnh báo hết hạn",
         href: "/facilities/alerts",
         icon: AlertTriangle,
@@ -162,11 +171,24 @@ const NAV_GROUPS: NavGroup[] = [
         perm: "settings.roles",
       },
       {
+        title: "Mẫu kiểm tra (Checklists)",
+        href: "/settings/checklists",
+        icon: ClipboardList,
+        perm: "inspection.manage",
+      },
+      {
+        title: "Chính sách hạng & Giảm giá",
+        href: "/settings/loyalty",
+        icon: Award,
+        perms: ["loyalty.view", "loyalty.configure"],
+      },
+      {
         title: "Bật / Tắt Module",
         href: "/settings/modules",
         icon: Settings,
         perm: "settings.modules",
       },
+
       {
         title: "Nguồn khách & Kênh",
         href: "/settings/sources",

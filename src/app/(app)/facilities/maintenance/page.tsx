@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getActiveBranches } from "@/features/admin";
 import {
-  getInspections,
+  getChecklistTemplates,
+  getInspectionsList,
   getPmPlans,
   MaintenanceHub,
 } from "@/features/facilities";
@@ -10,6 +11,7 @@ import { getSession } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
   title: "Bảo trì định kỳ & Kiểm tra CSVC | CRM Khách Sạn",
+  description: "Theo dõi kế hoạch bảo trì thiết bị và biên bản kiểm tra phòng, khu vực",
 };
 
 export default async function MaintenancePage() {
@@ -27,9 +29,10 @@ export default async function MaintenancePage() {
     ? allBranches
     : allBranches.filter((b) => session.branchIds.includes(b.id));
 
-  const [plans, inspections] = await Promise.all([
+  const [plans, inspections, templates] = await Promise.all([
     getPmPlans(),
-    getInspections(),
+    getInspectionsList(),
+    getChecklistTemplates(),
   ]);
 
   return (
@@ -47,7 +50,10 @@ export default async function MaintenancePage() {
       <MaintenanceHub
         plans={plans}
         inspections={inspections}
+        templates={templates}
         branches={branches}
+        canManagePm={session.can("pm.manage")}
+        canPerformInspection={session.can("inspection.perform")}
       />
     </div>
   );

@@ -6,7 +6,9 @@ import {
   CheckCircle2,
   ChevronRight,
   Compass,
+  FileText,
   GitMerge,
+  History,
   Loader2,
   Lock,
   Mail,
@@ -16,11 +18,13 @@ import {
   Search,
   Send,
   ShieldAlert,
+  ShieldCheck,
   Tag,
   Trash2,
   Unlock,
   User,
   Users,
+  XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
@@ -32,19 +36,34 @@ import {
   addGuestNoteAction,
   assignSalesOwnerAction,
   deleteGuestNoteAction,
+  getGuestConsentHistoryAction,
   proposeGuestFlagAction,
   proposeGuestMergeAction,
   searchCandidateGuestsAction,
   setGuestConsentAction,
   setGuestTagsAction,
+  setGuestTierOverrideAction,
 } from "../actions";
-import type { GuestProfile, SalesUser } from "../types";
+import type {
+  ConsentChannel,
+  ConsentHistoryItem,
+  GuestProfile,
+  SalesUser,
+} from "../types";
 
 interface GuestProfileViewProps {
   profile: GuestProfile;
   salesUsers: SalesUser[];
   branches: Array<{ id: string; name: string; code: string }>;
   currentUserId?: string;
+  availableTiers?: Array<{
+    id?: string;
+    code: string;
+    name: string;
+    discountPct: number;
+    minValue: number;
+  }>;
+  consentHistory?: ConsentHistoryItem[];
 }
 
 export function GuestProfileView({
@@ -52,12 +71,26 @@ export function GuestProfileView({
   salesUsers,
   branches,
   currentUserId,
+  availableTiers = [],
+  consentHistory = [],
 }: GuestProfileViewProps) {
   const canPerm = useCan();
   const [activeTab, setActiveTab] = useState<
-    "stays" | "notes" | "companions" | "flags" | "consents"
+    "stays" | "notes" | "companions" | "flags" | "consents" | "tier_history"
   >("stays");
   const [isPending, startTransition] = useTransition();
+
+  // Tier manual override modal state
+  const [showOverrideModal, setShowOverrideModal] = useState(false);
+  const [overrideTierCode, setOverrideTierCode] = useState(
+    profile.guest.tier_override_code || profile.tier?.code || "",
+  );
+  const [overrideReason, setOverrideReason] = useState(
+    profile.guest.tier_override_reason || "",
+  );
+  const [overrideUntil, setOverrideUntil] = useState(
+    profile.guest.tier_override_until || "",
+  );
 
   // Note form state
   const [noteKind, setNoteKind] = useState<
@@ -82,6 +115,27 @@ export function GuestProfileView({
   // Tags state
   const [tagInput, setTagInput] = useState("");
   const [isAddingTag, setIsAddingTag] = useState(false);
+
+  // Consent states
+  const [localConsents, setLocalConsents] = useState<Record<string, boolean>>(
+    profile.consents || {},
+  );
+  const [localConsentHistory, setLocalConsentHistory] = useState<
+    ConsentHistoryItem[]
+  >(consentHistory || []);
+  const [consentModal, setConsentModal] = useState<{
+    isOpen: boolean;
+    channel: ConsentChannel | null;
+    channelLabel: string;
+    targetGranted: boolean;
+    note: string;
+  }>({
+    isOpen: false,
+    channel: null,
+    channelLabel: "",
+    targetGranted: false,
+    note: "",
+  });
 
   // Propose merge modal state
   const [showMergeModal, setShowMergeModal] = useState(false);
@@ -148,8 +202,46 @@ export function GuestProfileView({
     });
   };
 
-  const { guest, tier, stats, stays, companions, notes, flags, consents, can } =
-    profile;
+  const handleSetTierOverride = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!overrideReason.trim() || overrideReason.trim().length < 10) {
+      toast.error("Vui lòng nhập lý do tối thiểu 10 ký tự");
+      return;
+    }
+
+    startTransition(async () => {
+      const res = await setGuestTierOverrideAction({
+        guestId: profile.guest.id,
+        tierCode: overrideTierCode || null,
+        reason: overrideReason.trim(),
+        until: overrideUntil || null,
+      });
+
+      if (res.ok) {
+        toast.success(
+          overrideTierCode
+            ? `Đã gán hạng thủ công cho khách: ${res.data?.name || overrideTierCode}!`
+            : "Đã hủy gán hạng thủ công, hệ thống sẽ tự tính theo chính sách!",
+        );
+        setShowOverrideModal(false);
+      } else {
+        toast.error(res.error.message || "Không thể lưu gán hạng thủ công");
+      }
+    });
+  };
+
+  const {
+    guest,
+    tier,
+    stats,
+    stays,
+    companions,
+    notes,
+    flags,
+    consents,
+    can,
+    tier_events = [],
+  } = profile;
 
   const handleAddNote = (e: React.FormEvent) => {
     e.preventDefault();
@@ -237,13 +329,51 @@ export function GuestProfileView({
     });
   };
 
-  const handleToggleConsent = (channel: string, currentVal: boolean) => {
+  const openConsentModal = (
+    channel: ConsentChannel,
+    channelLabel: string,
+    currentVal: boolean,
+  ) => {
+    setConsentModal({
+      isOpen: true,
+      channel,
+      channelLabel,
+      targetGranted: !currentVal,
+      note: !currentVal
+        ? "Khách đồng ý nhận tin khi làm thủ tục tại quầy lễ tân"
+        : "Khách yêu cầu rút đồng ý nhận tin",
+    });
+  };
+
+  const handleSaveConsent = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!consentModal.channel) return;
+    const { channel, channelLabel, targetGranted, note } = consentModal;
+
     startTransition(async () => {
-      const res = await setGuestConsentAction(guest.id, channel, !currentVal);
+      const res = await setGuestConsentAction(
+        guest.id,
+        channel,
+        targetGranted,
+        note.trim() || undefined,
+      );
+
       if (res.ok) {
-        toast.success(`Đã cập nhật đồng ý liên hệ kênh ${channel}`);
+        setLocalConsents((prev) => ({ ...prev, [channel]: targetGranted }));
+        setConsentModal((prev) => ({ ...prev, isOpen: false }));
+        toast.success(
+          targetGranted
+            ? `Đã cấp đồng ý nhận tin qua ${channelLabel}`
+            : `Đã ghi nhận rút đồng ý nhận tin qua ${channelLabel}`,
+        );
+
+        // Refresh audit trail
+        const histRes = await getGuestConsentHistoryAction(guest.id);
+        if (histRes.ok) {
+          setLocalConsentHistory(histRes.data);
+        }
       } else {
-        toast.error(res.error.message);
+        toast.error(res.error.message || "Lỗi cập nhật đồng ý nhận tin");
       }
     });
   };
@@ -561,10 +691,90 @@ export function GuestProfileView({
             </div>
           </div>
         </div>
+
+        {/* Loyalty & Tier Overview Banner */}
+        {tier && (
+          <div className="mt-5 p-4 rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
+                  <Award className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  Hạng thành viên: {tier.name} (Ưu đãi giảm {tier.discount_pct}
+                  %)
+                </span>
+                {(tier.is_override || guest.tier_override_code) && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-300">
+                    Gán đặc cách thủ công
+                  </span>
+                )}
+              </div>
+
+              <div className="text-xs text-slate-600 dark:text-slate-400 flex flex-wrap items-center gap-x-4 gap-y-1">
+                <span>
+                  Chính sách:{" "}
+                  <strong className="text-slate-800 dark:text-slate-200">
+                    {tier.policy_name || "Chính sách mặc định"}
+                  </strong>
+                </span>
+                <span>
+                  Tích lũy:{" "}
+                  <strong className="text-slate-800 dark:text-slate-200">
+                    {tier.current_value ??
+                      (tier.basis === "nights"
+                        ? stats?.total_nights
+                        : stats?.total_stays) ??
+                      0}{" "}
+                    {tier.basis === "nights" ? "đêm" : "lượt"}
+                  </strong>
+                </span>
+                {tier.next_tier_name ? (
+                  <span>
+                    Cần thêm{" "}
+                    <strong className="text-amber-600 font-bold">
+                      {tier.value_needed ?? 0}
+                    </strong>{" "}
+                    {tier.basis === "nights" ? "đêm" : "lượt"} để lên hạng{" "}
+                    <strong>{tier.next_tier_name}</strong>
+                  </span>
+                ) : (
+                  <span className="text-emerald-600 font-bold">
+                    Đang ở hạng cao nhất của chính sách
+                  </span>
+                )}
+              </div>
+
+              {(tier.is_override || guest.tier_override_code) &&
+                guest.tier_override_reason && (
+                  <div className="text-[11px] text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/40 px-2.5 py-1 rounded-lg border border-purple-200 dark:border-purple-800 flex items-center gap-1.5">
+                    <span>Lý do gán: {guest.tier_override_reason}</span>
+                    <span>
+                      ·{" "}
+                      {guest.tier_override_until
+                        ? `Hiệu lực đến ${formatDateVN(guest.tier_override_until)}`
+                        : "Hiệu lực vô thời hạn"}
+                    </span>
+                  </div>
+                )}
+            </div>
+
+            {(can.override_tier || canPerm("loyalty.override")) && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowOverrideModal(true)}
+                className="text-xs font-semibold rounded-xl border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10 shrink-0 self-start md:self-auto"
+              >
+                <Award className="w-3.5 h-3.5 mr-1.5" />
+                Gán hạng thủ công
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6 text-sm font-semibold">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6 text-sm font-semibold flex-wrap">
         <button
           type="button"
           onClick={() => setActiveTab("stays")}
@@ -577,6 +787,22 @@ export function GuestProfileView({
           <Building2 className="w-4 h-4" />
           Lịch sử lưu trú ({stays.length})
           {activeTab === "stays" && (
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("tier_history")}
+          className={`pb-3 relative transition flex items-center gap-2 ${
+            activeTab === "tier_history"
+              ? "text-indigo-600 dark:text-indigo-400"
+              : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+          }`}
+        >
+          <Award className="w-4 h-4" />
+          Lịch sử hạng ({tier_events.length})
+          {activeTab === "tier_history" && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
           )}
         </button>
@@ -896,6 +1122,11 @@ export function GuestProfileView({
                       <div className="text-xs text-slate-400">
                         Ở cùng {c.times} lần
                       </div>
+                      {c.last_stay_at && (
+                        <div className="text-[11px] text-slate-400 mt-0.5">
+                          Gần nhất: {formatDateVN(c.last_stay_at)}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-slate-400" />
@@ -1091,65 +1322,328 @@ export function GuestProfileView({
 
       {/* Tab 5: Consents */}
       {activeTab === "consents" && (
-        <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
-          <div>
-            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
-              Đồng thuận tiếp thị & Chăm sóc khách hàng
-            </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Quy định bảo mật: Chỉ gửi tin nhắn chăm sóc qua các kênh khách đã
-              đồng ý nhận.
-            </p>
+        <div className="space-y-6">
+          {/* Decree 13 Compliance Banner */}
+          <div className="p-4 rounded-2xl border border-sky-200 dark:border-sky-900/60 bg-sky-50/50 dark:bg-sky-950/30 flex items-start gap-3.5">
+            <div className="w-9 h-9 rounded-xl bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 mt-0.5">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div className="text-xs space-y-1">
+              <div className="font-bold text-sky-950 dark:text-sky-200 text-sm">
+                Bảo vệ dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP
+              </div>
+              <p className="text-sky-800 dark:text-sky-300/90 leading-relaxed">
+                Khách hàng có toàn quyền đồng ý hoặc rút lại đồng ý nhận tin bất
+                kỳ lúc nào mà không ảnh hưởng đến dịch vụ lưu trú. Mọi thay đổi
+                đều được ghi nhật ký kiểm toán bất biến (Audit Trail) phục vụ
+                công tác thanh kiểm tra tuân thủ.
+              </p>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            {[
-              {
-                id: "zalo",
-                label: "Zalo ZNS / Quan tâm",
-                desc: "Gửi voucher sinh nhật, xác nhận đặt phòng qua Zalo",
-              },
-              {
-                id: "sms",
-                label: "Tin nhắn SMS Brandname",
-                desc: "Thông báo mã xác thực và ưu đãi đặc biệt",
-              },
-              {
-                id: "email",
-                label: "Email Marketing",
-                desc: "Bản tin khuyến mại và báo cáo ưu đãi thành viên",
-              },
-              {
-                id: "phone",
-                label: "Cuộc gọi chăm sóc (Telesales)",
-                desc: "Nhân viên sales gọi điện hỗ trợ trực tiếp",
-              },
-            ].map((channel) => {
-              const isGranted = !!consents[channel.id];
-              return (
-                <div
-                  key={channel.id}
-                  className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3"
-                >
-                  <div>
-                    <div className="font-semibold text-sm text-slate-800 dark:text-slate-200">
-                      {channel.label}
+          {/* 4 Channels Grid */}
+          <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
+            <div>
+              <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
+                Trạng thái đồng thuận tiếp thị & Chăm sóc khách hàng
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Nhân viên chỉ được gửi tin nhắn hoặc gọi điện qua các kênh khách
+                đã cấp đồng ý rõ ràng.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+              {[
+                {
+                  id: "zalo" as ConsentChannel,
+                  label: "Zalo ZNS / Quan tâm",
+                  desc: "Gửi voucher sinh nhật, xác nhận phòng & hỗ trợ qua Zalo OA",
+                  icon: MessageSquare,
+                },
+                {
+                  id: "sms" as ConsentChannel,
+                  label: "Tin nhắn SMS Brandname",
+                  desc: "Thông báo mã xác thực, nhắc lịch và ưu đãi đặc quyền",
+                  icon: MessageSquare,
+                },
+                {
+                  id: "email" as ConsentChannel,
+                  label: "Email Marketing",
+                  desc: "Bản tin khuyến mại, báo cáo ưu đãi và chăm sóc thành viên",
+                  icon: Mail,
+                },
+                {
+                  id: "phone" as ConsentChannel,
+                  label: "Cuộc gọi chăm sóc (Telesales)",
+                  desc: "Nhân viên chăm sóc khách hàng / Telesales gọi điện tư vấn",
+                  icon: Phone,
+                },
+              ].map((channel) => {
+                const isGranted = !!localConsents[channel.id];
+                const IconComponent = channel.icon;
+                return (
+                  <div
+                    key={channel.id}
+                    className={`p-4 rounded-2xl border transition-all flex flex-col justify-between gap-3 ${
+                      isGranted
+                        ? "border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/20 dark:bg-emerald-950/20"
+                        : "border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/40"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                            isGranted
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400"
+                              : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                          }`}
+                        >
+                          <IconComponent className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">
+                            {channel.label}
+                          </div>
+                          <div className="text-xs text-slate-400 mt-0.5 leading-relaxed">
+                            {channel.desc}
+                          </div>
+                        </div>
+                      </div>
+
+                      <span
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold shrink-0 border ${
+                          isGranted
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
+                            : "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"
+                        }`}
+                      >
+                        {isGranted ? (
+                          <>
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            Đã đồng ý
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-3.5 h-3.5" />
+                            Chưa đồng ý
+                          </>
+                        )}
+                      </span>
                     </div>
-                    <div className="text-xs text-slate-400 mt-0.5">
-                      {channel.desc}
+
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-end">
+                      {canPerm("consent.manage") ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openConsentModal(
+                              channel.id,
+                              channel.label,
+                              isGranted,
+                            )
+                          }
+                          disabled={isPending}
+                          className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition-colors ${
+                            isGranted
+                              ? "border-rose-200 text-rose-600 hover:bg-rose-50 dark:border-rose-900/50 dark:hover:bg-rose-950/40 dark:text-rose-400"
+                              : "border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-900/50 dark:hover:bg-emerald-950/40 dark:text-emerald-400"
+                          }`}
+                        >
+                          {isGranted ? "Rút đồng ý" : "Cấp đồng ý"}
+                        </button>
+                      ) : (
+                        <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                          <Lock className="w-3 h-3" /> Cần quyền consent.manage
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <input
-                    type="checkbox"
-                    checked={isGranted}
-                    onChange={() => handleToggleConsent(channel.id, isGranted)}
-                    disabled={isPending}
-                    className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer mt-0.5"
-                  />
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
+
+          {/* Audit Trail Timeline */}
+          <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base flex items-center gap-2">
+                  <History className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  Sổ nhật ký kiểm toán đồng thuận (Audit Trail)
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Lưu trữ bất biến mọi sự kiện cấp/rút quyền gửi tin kèm căn cứ
+                  và người thực hiện.
+                </p>
+              </div>
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                {localConsentHistory.length} sự kiện
+              </span>
+            </div>
+
+            {localConsentHistory.length === 0 ? (
+              <div className="p-8 text-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400 text-xs">
+                Chưa có sự kiện thay đổi đồng thuận nào được ghi nhận cho khách
+                hàng này.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-semibold">
+                      <th className="py-2.5 px-3">Thời gian</th>
+                      <th className="py-2.5 px-3">Kênh liên lạc</th>
+                      <th className="py-2.5 px-3">Hành động</th>
+                      <th className="py-2.5 px-3">Nguồn tiếp nhận</th>
+                      <th className="py-2.5 px-3">Người ghi nhận</th>
+                      <th className="py-2.5 px-3">Căn cứ / Ghi chú</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-slate-700 dark:text-slate-300">
+                    {localConsentHistory.map((item) => {
+                      const channelLabels: Record<string, string> = {
+                        zalo: "Zalo",
+                        sms: "SMS",
+                        email: "Email",
+                        phone: "Cuộc gọi",
+                      };
+                      const sourceLabels: Record<string, string> = {
+                        check_in: "Quầy lễ tân (Check-in)",
+                        guest_profile: "Hồ sơ khách hàng",
+                        call_center: "Tổng đài CSKH",
+                        migration: "Hệ thống ban đầu",
+                      };
+                      return (
+                        <tr
+                          key={item.id}
+                          className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30"
+                        >
+                          <td className="py-3 px-3 whitespace-nowrap font-medium text-slate-900 dark:text-slate-100">
+                            {formatDateVN(item.recorded_at)}
+                          </td>
+                          <td className="py-3 px-3">
+                            <span className="font-semibold uppercase tracking-wider text-[11px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                              {channelLabels[item.channel] || item.channel}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 whitespace-nowrap">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                                item.granted
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
+                                  : "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800"
+                              }`}
+                            >
+                              {item.granted ? "Cấp đồng ý" : "Rút đồng ý"}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 whitespace-nowrap text-slate-600 dark:text-slate-400">
+                            {sourceLabels[item.source] || item.source}
+                          </td>
+                          <td className="py-3 px-3 whitespace-nowrap font-medium text-slate-800 dark:text-slate-200">
+                            {item.recorded_by_name || "Hệ thống"}
+                          </td>
+                          <td className="py-3 px-3 text-slate-600 dark:text-slate-400 max-w-xs truncate">
+                            {item.note || "—"}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Tab 6: Tier History */}
+      {activeTab === "tier_history" && (
+        <div className="space-y-4">
+          {tier_events.length === 0 ? (
+            <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400">
+              Khách hàng chưa có sự kiện thay đổi hạng nào được ghi nhận.
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {tier_events.map((e) => {
+                const kindMeta =
+                  e.kind === "upgrade"
+                    ? {
+                        label: "Tự động nâng hạng",
+                        color:
+                          "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border-emerald-200",
+                      }
+                    : e.kind === "downgrade"
+                      ? {
+                          label: "Hạ hạng",
+                          color:
+                            "bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border-rose-200",
+                        }
+                      : e.kind === "manual_override"
+                        ? {
+                            label: "Gán thủ công",
+                            color:
+                              "bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-400 border-purple-200",
+                          }
+                        : e.kind === "override_expired"
+                          ? {
+                              label: "Hết hạn gán",
+                              color:
+                                "bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border-amber-200",
+                            }
+                          : {
+                              label: "Đổi chính sách",
+                              color:
+                                "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400 border-blue-200",
+                            };
+
+                return (
+                  <div
+                    key={e.id}
+                    className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span
+                          className={`text-[11px] font-bold px-2 py-0.5 rounded-md border ${kindMeta.color}`}
+                        >
+                          {kindMeta.label}
+                        </span>
+                        <span className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                          {e.from_tier
+                            ? `${e.from_tier} → ${e.to_tier}`
+                            : `Lên hạng ${e.to_tier}`}
+                        </span>
+                        <span className="text-xs text-slate-400">
+                          · Chính sách: {e.policy_name}
+                        </span>
+                      </div>
+                      {e.note && (
+                        <p className="text-xs text-slate-600 dark:text-slate-400 pt-0.5">
+                          Lý do / Ghi chú: {e.note}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="text-xs text-slate-400 sm:text-right shrink-0">
+                      <div>
+                        Thực hiện:{" "}
+                        <strong className="text-slate-700 dark:text-slate-300">
+                          {e.actor || "Hệ thống tự động"}
+                        </strong>
+                      </div>
+                      <div className="text-[11px] text-slate-400 mt-0.5">
+                        {formatDateVN(e.at)}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
@@ -1288,6 +1782,211 @@ export function GuestProfileView({
                   className="rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-medium"
                 >
                   {isPending ? "Đang gửi..." : "Gửi đề xuất gộp"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Manual Tier Override Modal */}
+      {showOverrideModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b pb-3 border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                  <Award className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                    Gán hạng thành viên thủ công
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    Áp dụng cho khách:{" "}
+                    <strong className="text-slate-700 dark:text-slate-300">
+                      {guest.full_name}
+                    </strong>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowOverrideModal(false)}
+                className="text-slate-400 hover:text-slate-600 text-sm font-semibold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSetTierOverride} className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  1. Chọn hạng đặc cách:
+                </label>
+                <select
+                  value={overrideTierCode}
+                  onChange={(e) => setOverrideTierCode(e.target.value)}
+                  className="w-full text-xs font-semibold py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 outline-none"
+                >
+                  <option value="">
+                    -- Hủy gán (Quay về tự động tính theo chính sách) --
+                  </option>
+                  {(availableTiers || []).map((t) => (
+                    <option key={t.code} value={t.code}>
+                      Hạng {t.name} (Giảm {t.discountPct}%)
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Khách sẽ được hưởng mức chiết khấu của hạng này khi check-in
+                  tại mọi cơ sở.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  2. Lý do gán hạng (Bắt buộc, tối thiểu 10 ký tự):
+                </label>
+                <textarea
+                  value={overrideReason}
+                  onChange={(e) => setOverrideReason(e.target.value)}
+                  placeholder="Ví dụ: Đối tác doanh nghiệp chiến lược năm 2026, VIP người quen ban giám đốc..."
+                  rows={3}
+                  className="w-full text-xs p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 outline-none resize-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  3. Thời hạn áp dụng (Tùy chọn):
+                </label>
+                <input
+                  type="date"
+                  value={overrideUntil}
+                  onChange={(e) => setOverrideUntil(e.target.value)}
+                  className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 outline-none"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Để trống nếu muốn gán vô thời hạn cho tới khi có quyết định
+                  hủy.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowOverrideModal(false)}
+                  disabled={isPending}
+                  className="text-xs rounded-xl"
+                >
+                  Hủy
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isPending || overrideReason.trim().length < 10}
+                  className="text-xs rounded-xl font-bold bg-amber-600 hover:bg-amber-700 text-white"
+                >
+                  {isPending ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                  ) : null}
+                  Xác nhận lưu
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Consent Grant/Revoke Dialog Modal */}
+      {consentModal.isOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2.5">
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                    consentModal.targetGranted
+                      ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400"
+                      : "bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400"
+                  }`}
+                >
+                  {consentModal.targetGranted ? (
+                    <ShieldCheck className="w-5 h-5" />
+                  ) : (
+                    <ShieldAlert className="w-5 h-5" />
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-slate-900 dark:text-slate-100">
+                    {consentModal.targetGranted
+                      ? `Cấp quyền gửi tin qua ${consentModal.channelLabel}`
+                      : `Rút quyền gửi tin qua ${consentModal.channelLabel}`}
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Tuân thủ Nghị định 13/2023/NĐ-CP về Bảo vệ dữ liệu cá nhân
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveConsent} className="space-y-4 pt-1">
+              <div>
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  Lý do / Căn cứ tiếp nhận yêu cầu:
+                </label>
+                <textarea
+                  rows={3}
+                  value={consentModal.note}
+                  onChange={(e) =>
+                    setConsentModal((prev) => ({
+                      ...prev,
+                      note: e.target.value,
+                    }))
+                  }
+                  placeholder={
+                    consentModal.targetGranted
+                      ? "Ví dụ: Khách đồng ý qua quầy lễ tân hoặc phiếu khảo sát..."
+                      : "Ví dụ: Khách gọi điện yêu cầu hủy nhận tin khuyến mại..."
+                  }
+                  className="w-full text-xs p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 outline-none resize-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Thông tin này sẽ được lưu cố định vào sổ theo dõi kiểm toán
+                  (audit log) phục vụ thanh kiểm tra bảo mật dữ liệu.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    setConsentModal((prev) => ({ ...prev, isOpen: false }))
+                  }
+                  disabled={isPending}
+                  className="text-xs rounded-xl"
+                >
+                  Hủy
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isPending || !consentModal.note.trim()}
+                  className={`text-xs rounded-xl font-bold text-white ${
+                    consentModal.targetGranted
+                      ? "bg-emerald-600 hover:bg-emerald-700"
+                      : "bg-rose-600 hover:bg-rose-700"
+                  }`}
+                >
+                  {isPending ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                  ) : null}
+                  {consentModal.targetGranted
+                    ? "Xác nhận cấp đồng ý"
+                    : "Xác nhận rút đồng ý"}
                 </Button>
               </div>
             </form>

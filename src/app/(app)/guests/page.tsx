@@ -11,7 +11,14 @@ export const metadata: Metadata = {
   title: "Hồ sơ khách hàng & Sales | CRM Khách Sạn",
 };
 
-export default async function GuestsPage() {
+interface PageProps {
+  searchParams: Promise<{
+    consent?: string;
+    tag?: string;
+  }>;
+}
+
+export default async function GuestsPage({ searchParams }: PageProps) {
   const session = await getSession();
   if (!session) {
     redirect("/login");
@@ -21,6 +28,8 @@ export default async function GuestsPage() {
     redirect("/");
   }
 
+  const { consent, tag } = await searchParams;
+
   // Quản lý cơ sở chỉ xem khách thuộc cơ sở của mình
   const canViewChain = session.can("report.view_chain");
   const branchId = canViewChain
@@ -28,7 +37,7 @@ export default async function GuestsPage() {
     : session.currentBranchId || session.branchIds[0];
 
   const [guests, salesUsers] = await Promise.all([
-    getGuestsList({ limit: 100, branchId }),
+    getGuestsList({ limit: 100, branchId, consentChannel: consent, tag }),
     getSalesUsers(),
   ]);
 
@@ -40,6 +49,7 @@ export default async function GuestsPage() {
       salesUsers={salesUsers}
       canExport={canExport}
       currentUserId={session.userId}
+      initialConsentFilter={consent || "all"}
     />
   );
 }

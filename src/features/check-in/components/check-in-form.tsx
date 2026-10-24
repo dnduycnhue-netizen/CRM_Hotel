@@ -10,10 +10,17 @@ import {
   FileText,
   History,
   Loader2,
+  Mail,
+  MessageSquare,
   Percent,
+  Phone as PhoneIcon,
+  Plus,
   Search,
+  ShieldCheck,
   Sparkles,
+  Trash2,
   UserCheck,
+  Users,
 } from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
@@ -39,6 +46,21 @@ import {
 import { normalizeFullName, normalizeVnPhone } from "../domain/normalize";
 import { classifyQuery } from "../domain/query-classifier";
 
+export interface FormCompanion {
+  id: string;
+  guestId?: string;
+  fullName: string;
+  gender: "male" | "female" | "other";
+  dob: string;
+  phone: string;
+  documentType: "cccd" | "passport";
+  documentNumber: string;
+  isChild: boolean;
+  countsForLoyalty: boolean;
+  notes: string;
+  isLookingUp?: boolean;
+}
+
 interface CheckInFormProps {
   currentBranchId: string;
   branchName: string;
@@ -50,12 +72,16 @@ interface CheckInFormProps {
     isBlocked?: boolean;
     isCleaning?: boolean;
   }>;
+  isCompanionsEnabled?: boolean;
+  companionsCountDefault?: boolean;
 }
 
 export function CheckInForm({
   currentBranchId,
   branchName,
   rooms,
+  isCompanionsEnabled = true,
+  companionsCountDefault = true,
 }: CheckInFormProps) {
   const [isPending, startTransition] = useTransition();
   const [isLookingUp, setIsLookingUp] = useState(false);
@@ -76,6 +102,93 @@ export function CheckInForm({
     tomorrow.setDate(tomorrow.getDate() + 1);
     return `${tomorrow.toISOString().split("T")[0]}T12:00`;
   });
+
+  // Consent state (Nghị định 13/2023/NĐ-CP: Mặc định không tích sẵn)
+  const [consents, setConsents] = useState<{
+    zalo: boolean;
+    sms: boolean;
+    email: boolean;
+    phone: boolean;
+  }>({
+    zalo: false,
+    sms: false,
+    email: false,
+    phone: false,
+  });
+
+  // Companions
+  const [companions, setCompanions] = useState<FormCompanion[]>([]);
+
+  const handleAddCompanion = () => {
+    if (companions.length >= 10) {
+      toast.error("Tối đa 10 người đi cùng mỗi lượt ở");
+      return;
+    }
+    setCompanions((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        fullName: "",
+        gender: "male",
+        dob: "",
+        phone: "",
+        documentType: "cccd",
+        documentNumber: "",
+        isChild: false,
+        countsForLoyalty: companionsCountDefault,
+        notes: "",
+      },
+    ]);
+  };
+
+  const handleUpdateCompanion = (id: string, patch: Partial<FormCompanion>) => {
+    setCompanions((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+    );
+  };
+
+  const handleRemoveCompanion = (id: string) => {
+    setCompanions((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  const handleLookupCompanion = async (id: string, query: string) => {
+    const clean = query.trim();
+    if (clean.length < 4) {
+      toast.error("Vui lòng nhập tối thiểu 4 số/chữ để tìm");
+      return;
+    }
+    const { kind, cleanValue } = classifyQuery(clean);
+    if (kind !== "phone" && kind !== "cccd" && kind !== "passport") {
+      toast.error("Vui lòng nhập số điện thoại, CCCD hoặc hộ chiếu hợp lệ");
+      return;
+    }
+
+    handleUpdateCompanion(id, { isLookingUp: true });
+    try {
+      const res = await lookupGuestAction(currentBranchId, kind, cleanValue);
+      if (res.ok && res.data) {
+        const g = res.data;
+        handleUpdateCompanion(id, {
+          guestId: g.guestId,
+          fullName: g.fullName,
+          gender: (g.gender as any) || "male",
+          dob: g.dob || "",
+          phone: g.phone || "",
+          documentType: g.docType === "passport" ? "passport" : "cccd",
+          documentNumber: g.docNumberMasked || "",
+          isLookingUp: false,
+        });
+        toast.success(`Tìm thấy khách cũ: ${g.fullName}`);
+      } else {
+        handleUpdateCompanion(id, { isLookingUp: false });
+        toast.info(
+          "Không tìm thấy hồ sơ cũ, vui lòng nhập thông tin khách mới",
+        );
+      }
+    } catch {
+      handleUpdateCompanion(id, { isLookingUp: false });
+    }
+  };
 
   // Manager backdated mode
   const [isBackdated, setIsBackdated] = useState(false);
@@ -133,6 +246,14 @@ export function CheckInForm({
           if (g.dob) setDob(g.dob);
           if (g.phone) setPhone(g.phone);
           if (g.docNumberMasked) setDocNumber(g.docNumberMasked);
+          if (g.consents) {
+            setConsents({
+              zalo: !!g.consents.zalo,
+              sms: !!g.consents.sms,
+              email: !!g.consents.email,
+              phone: !!g.consents.phone,
+            });
+          }
           toast.success(
             `Nhận diện khách cũ: ${g.fullName} (${g.totalStays} lượt ở)`,
           );
@@ -143,6 +264,7 @@ export function CheckInForm({
             setDob("");
             setGender("male");
           }
+          setConsents({ zalo: false, sms: false, email: false, phone: false });
           if (kind === "phone") {
             setPhone(cleanValue);
             setDocNumber("");
@@ -260,6 +382,23 @@ export function CheckInForm({
         actualCheckInAt: actualCheckIn || undefined,
         actualCheckOutAt: actualCheckOut || undefined,
         blacklistAck,
+        consents,
+        companions: companions.map((c) => ({
+          guestId: c.guestId || undefined,
+          fullName: normalizeFullName(c.fullName),
+          gender: c.gender,
+          dob: c.dob || undefined,
+          nationality: "VN",
+          phone: c.phone ? normalizeVnPhone(c.phone) : undefined,
+          documentType: c.documentType,
+          documentNumber:
+            c.documentNumber && !c.documentNumber.includes("*")
+              ? c.documentNumber
+              : undefined,
+          isChild: c.isChild,
+          countsForLoyalty: c.countsForLoyalty,
+          notes: c.notes || undefined,
+        })),
       });
 
       if (res.ok) {
@@ -278,6 +417,8 @@ export function CheckInForm({
         setGuestId(null);
         setSelectedRoomId("");
         setBlacklistAck(false);
+        setCompanions([]);
+        setConsents({ zalo: false, sms: false, email: false, phone: false });
       } else {
         toast.error(res.error.message || "Lỗi khi thực hiện check-in");
       }
@@ -716,6 +857,271 @@ export function CheckInForm({
                   </div>
                 </div>
 
+                {/* 6. Người đi cùng (Companions) */}
+                {isCompanionsEnabled && (
+                  <div className="space-y-3 pt-2 border-t border-border/40">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                          <Users className="h-4 w-4 text-indigo-500" />
+                          <span>Người đi cùng ({companions.length}/10)</span>
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Thêm khách ở cùng phòng. Có thể tìm khách cũ hoặc tạo
+                          mới.
+                        </p>
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleAddCompanion}
+                        disabled={companions.length >= 10}
+                        className="h-8 text-xs font-bold rounded-xl border-dashed border-indigo-400 text-indigo-600 hover:bg-indigo-500/10"
+                      >
+                        <Plus className="h-3.5 w-3.5 mr-1" />
+                        Thêm người đi cùng
+                      </Button>
+                    </div>
+
+                    {companions.length === 0 ? (
+                      <div className="p-3 text-center rounded-xl border border-dashed border-border/60 bg-muted/10 text-xs text-muted-foreground">
+                        Chưa có người đi cùng (khách đi 1 mình). Nhấn "+ Thêm
+                        người đi cùng" nếu phòng có từ 2 khách trở lên.
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {companions.map((c, idx) => (
+                          <div
+                            key={c.id}
+                            className="p-3.5 rounded-xl border border-border/70 bg-muted/20 space-y-3 relative group"
+                          >
+                            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-xs text-foreground">
+                                  #{idx + 1}. {c.fullName || "Khách đi cùng"}
+                                </span>
+                                {c.isChild && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-[10px] bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300"
+                                  >
+                                    Trẻ em (&lt;14 tuổi)
+                                  </Badge>
+                                )}
+                                {c.guestId && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] border-emerald-500/40 text-emerald-600 bg-emerald-500/10"
+                                  >
+                                    Khách cũ
+                                  </Badge>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveCompanion(c.id)}
+                                className="text-muted-foreground hover:text-rose-500 p-1 rounded-lg transition"
+                                title="Xóa người đi cùng này"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+
+                            {/* Quick lookup input for companion */}
+                            <div className="flex items-center gap-2">
+                              <Input
+                                id={`comp-lookup-${c.id}`}
+                                placeholder="Nhập SĐT hoặc CCCD để tìm nhanh khách cũ..."
+                                className="h-8 text-xs rounded-lg"
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    handleLookupCompanion(
+                                      c.id,
+                                      (e.target as HTMLInputElement).value,
+                                    );
+                                  }
+                                }}
+                              />
+                              <Button
+                                type="button"
+                                variant="secondary"
+                                size="sm"
+                                disabled={c.isLookingUp}
+                                onClick={() => {
+                                  const el = document.getElementById(
+                                    `comp-lookup-${c.id}`,
+                                  ) as HTMLInputElement;
+                                  if (el) handleLookupCompanion(c.id, el.value);
+                                }}
+                                className="h-8 text-xs font-semibold px-3 rounded-lg shrink-0"
+                              >
+                                {c.isLookingUp ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <Search className="h-3 w-3 mr-1" />
+                                )}
+                                Tìm
+                              </Button>
+                            </div>
+
+                            {/* Form fields */}
+                            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+                              <div className="sm:col-span-5 space-y-1">
+                                <Label className="text-[11px] font-semibold">
+                                  Họ và tên *
+                                </Label>
+                                <Input
+                                  value={c.fullName}
+                                  onChange={(e) =>
+                                    handleUpdateCompanion(c.id, {
+                                      fullName: e.target.value,
+                                    })
+                                  }
+                                  placeholder="Nguyễn Văn A"
+                                  className="h-8 text-xs font-semibold rounded-lg"
+                                  required
+                                />
+                              </div>
+
+                              <div className="sm:col-span-4 space-y-1">
+                                <Label className="text-[11px] font-semibold">
+                                  Số điện thoại
+                                </Label>
+                                <Input
+                                  value={c.phone}
+                                  onChange={(e) =>
+                                    handleUpdateCompanion(c.id, {
+                                      phone: e.target.value,
+                                    })
+                                  }
+                                  placeholder="0912345678"
+                                  className="h-8 text-xs font-mono rounded-lg"
+                                />
+                              </div>
+
+                              <div className="sm:col-span-3 space-y-1">
+                                <Label className="text-[11px] font-semibold">
+                                  Giới tính
+                                </Label>
+                                <select
+                                  value={c.gender}
+                                  onChange={(e) =>
+                                    handleUpdateCompanion(c.id, {
+                                      gender: e.target.value as any,
+                                    })
+                                  }
+                                  className="w-full h-8 rounded-lg border border-input bg-background px-2 text-xs font-semibold focus:outline-none"
+                                >
+                                  <option value="male">Nam</option>
+                                  <option value="female">Nữ</option>
+                                  <option value="other">Khác</option>
+                                </select>
+                              </div>
+
+                              <div className="sm:col-span-3 space-y-1">
+                                <Label className="text-[11px] font-semibold">
+                                  Loại giấy tờ
+                                </Label>
+                                <select
+                                  value={c.documentType}
+                                  onChange={(e) =>
+                                    handleUpdateCompanion(c.id, {
+                                      documentType: e.target.value as any,
+                                    })
+                                  }
+                                  className="w-full h-8 rounded-lg border border-input bg-background px-2 text-xs font-semibold focus:outline-none"
+                                >
+                                  <option value="cccd">CCCD / CMND</option>
+                                  <option value="passport">Hộ chiếu</option>
+                                </select>
+                              </div>
+
+                              <div className="sm:col-span-5 space-y-1">
+                                <Label className="text-[11px] font-semibold">
+                                  Số giấy tờ {c.isChild ? "(Miễn trẻ em)" : "*"}
+                                </Label>
+                                <Input
+                                  value={c.documentNumber}
+                                  onChange={(e) =>
+                                    handleUpdateCompanion(c.id, {
+                                      documentNumber: e.target.value,
+                                    })
+                                  }
+                                  placeholder={
+                                    c.isChild
+                                      ? "Không bắt buộc đối với trẻ em"
+                                      : "Nhập 12 số CCCD / Hộ chiếu"
+                                  }
+                                  className="h-8 text-xs font-mono rounded-lg"
+                                  required={!c.isChild}
+                                />
+                              </div>
+
+                              <div className="sm:col-span-4 space-y-1">
+                                <Label className="text-[11px] font-semibold">
+                                  Ngày sinh
+                                </Label>
+                                <Input
+                                  type="date"
+                                  value={c.dob}
+                                  onChange={(e) =>
+                                    handleUpdateCompanion(c.id, {
+                                      dob: e.target.value,
+                                    })
+                                  }
+                                  className="h-8 text-xs rounded-lg"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Checkboxes: Child & Loyalty */}
+                            <div className="pt-1 flex flex-wrap items-center justify-between gap-3 text-xs border-t border-border/30">
+                              <div className="flex items-center gap-2">
+                                <Checkbox
+                                  id={`child-${c.id}`}
+                                  checked={c.isChild}
+                                  onCheckedChange={(checked) =>
+                                    handleUpdateCompanion(c.id, {
+                                      isChild: !!checked,
+                                    })
+                                  }
+                                />
+                                <Label
+                                  htmlFor={`child-${c.id}`}
+                                  className="text-xs cursor-pointer font-medium"
+                                >
+                                  Trẻ em (&lt;14 tuổi)
+                                </Label>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Checkbox
+                                  id={`loyalty-${c.id}`}
+                                  checked={c.countsForLoyalty}
+                                  onCheckedChange={(checked) =>
+                                    handleUpdateCompanion(c.id, {
+                                      countsForLoyalty: !!checked,
+                                    })
+                                  }
+                                />
+                                <Label
+                                  htmlFor={`loyalty-${c.id}`}
+                                  className="text-xs cursor-pointer font-bold text-amber-700 dark:text-amber-400"
+                                >
+                                  Tính lượt cho hạng thành viên
+                                </Label>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Backdated Extra Fields */}
                 {isBackdated && (
                   <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3.5 space-y-3">
@@ -786,6 +1192,99 @@ export function CheckInForm({
                     </div>
                   </div>
                 )}
+
+                {/* Consent & Communication Preferences (Nghị định 13/2023/NĐ-CP) */}
+                <div className="rounded-2xl border border-sky-200 dark:border-sky-900/60 bg-sky-50/30 dark:bg-sky-950/20 p-4 space-y-3.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/60 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+                        <ShieldCheck className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-sky-950 dark:text-sky-200 uppercase tracking-wide">
+                          Đồng thuận tiếp thị & Chăm sóc khách hàng (Nghị định
+                          13/2023/NĐ-CP)
+                        </h4>
+                        <p className="text-[11px] text-sky-700/80 dark:text-sky-300/80">
+                          Tự nguyện, không bắt buộc để lưu trú. Mặc định không
+                          tích sẵn.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Receptionist Script Prompt */}
+                  <div className="text-[11px] bg-white/80 dark:bg-slate-900/80 rounded-xl p-2.5 border border-sky-100 dark:border-sky-900/40 text-slate-600 dark:text-slate-300 italic">
+                    <span className="font-semibold not-italic text-sky-700 dark:text-sky-400 mr-1.5">
+                      Kịch bản lễ tân:
+                    </span>
+                    "Dạ khách sạn xin phép gửi xác nhận đặt phòng, hóa đơn và
+                    voucher ưu đãi qua Zalo hoặc SMS cho anh/chị được không ạ?"
+                  </div>
+
+                  {/* 4 Checkbox Channels */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                    {[
+                      {
+                        id: "zalo" as const,
+                        label: "Zalo ZNS / Quan tâm OA",
+                        desc: "Nhận xác nhận phòng, hoá đơn & ưu đãi",
+                        icon: MessageSquare,
+                      },
+                      {
+                        id: "sms" as const,
+                        label: "SMS Brandname",
+                        desc: "Nhận mã OTP, thông báo và ưu đãi đặc quyền",
+                        icon: MessageSquare,
+                      },
+                      {
+                        id: "email" as const,
+                        label: "Email Marketing",
+                        desc: "Bản tin khuyến mại, ưu đãi sinh nhật",
+                        icon: Mail,
+                      },
+                      {
+                        id: "phone" as const,
+                        label: "Cuộc gọi CSKH (Telesales)",
+                        desc: "Tư vấn viên gọi hỗ trợ và chăm sóc",
+                        icon: PhoneIcon,
+                      },
+                    ].map((ch) => {
+                      const Icon = ch.icon;
+                      const isChecked = consents[ch.id];
+                      return (
+                        <label
+                          key={ch.id}
+                          className={`flex items-start gap-2.5 p-2.5 rounded-xl border cursor-pointer transition-colors ${
+                            isChecked
+                              ? "bg-white dark:bg-slate-900 border-sky-300 dark:border-sky-700 shadow-xs"
+                              : "bg-white/50 dark:bg-slate-900/40 border-slate-200/70 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-900"
+                          }`}
+                        >
+                          <Checkbox
+                            checked={isChecked}
+                            onCheckedChange={(checked) =>
+                              setConsents((prev) => ({
+                                ...prev,
+                                [ch.id]: !!checked,
+                              }))
+                            }
+                            className="mt-0.5"
+                          />
+                          <div className="min-w-0">
+                            <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                              <Icon className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+                              <span>{ch.label}</span>
+                            </div>
+                            <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                              {ch.desc}
+                            </p>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
 
                 {/* Actions Footer */}
                 <div className="pt-4 flex items-center justify-between border-t border-border/50">

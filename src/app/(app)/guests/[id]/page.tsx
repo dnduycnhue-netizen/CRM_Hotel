@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { getActiveBranches } from "@/features/admin/data/branches";
+import { getActiveBranches } from "@/features/admin";
 import {
   GuestProfileView,
+  getGuestConsentHistory,
   getGuestProfile,
   getSalesUsers,
 } from "@/features/guests";
+import { getActiveLoyaltyPolicy, getPolicyTiers } from "@/features/loyalty";
 import { getSession } from "@/shared/auth/server";
 
 interface PageProps {
@@ -35,15 +37,22 @@ export default async function GuestDetailPage({ params }: PageProps) {
   }
 
   const { id } = await params;
-  const [profile, salesUsers, branches] = await Promise.all([
-    getGuestProfile(id),
-    getSalesUsers(),
-    getActiveBranches(),
-  ]);
+  const [profile, salesUsers, branches, activePolicy, consentHistory] =
+    await Promise.all([
+      getGuestProfile(id),
+      getSalesUsers(),
+      getActiveBranches(),
+      getActiveLoyaltyPolicy(),
+      getGuestConsentHistory(id),
+    ]);
 
   if (!profile) {
     notFound();
   }
+
+  const availableTiers = activePolicy?.id
+    ? await getPolicyTiers(activePolicy.id)
+    : [];
 
   return (
     <GuestProfileView
@@ -51,6 +60,8 @@ export default async function GuestDetailPage({ params }: PageProps) {
       salesUsers={salesUsers}
       branches={branches}
       currentUserId={session.userId}
+      availableTiers={availableTiers}
+      consentHistory={consentHistory}
     />
   );
 }

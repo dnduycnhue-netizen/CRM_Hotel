@@ -83,3 +83,40 @@ export interface FacilityReportResponse {
   compare?: any;
   compare_range?: { from: string; to: string };
 }
+
+export interface MonthlyInputFigures {
+  arrivals: number | null;
+  guests: number | null;
+  room_nights: number | null;
+  available_room_nights: number | null;
+  room_revenue: number | null;
+  other_revenue: number | null;
+  note: string | null;
+  entered_by_name?: string | null;
+  entered_at?: string | null;
+  locked_at?: string | null;
+  locked_by_name?: string | null;
+  unlock_reason?: string | null;
+}
+
+export interface MonthlyInputCrmFigures {
+  arrivals: number;
+  guests: number;
+  room_nights: number;
+}
+
+export interface MonthlyInputBranchRow {
+  branch_id: string;
+  branch_name: string;
+  branch_code: string;
+  is_locked: boolean;
+  can_input: boolean;
+  can_lock: boolean;
+  can_unlock: boolean;
+  figures: MonthlyInputFigures;
+  crm_figures: MonthlyInputCrmFigures;
+  suggested_available_room_nights: number;
+  active_rooms: number;
+  days_in_month: number;
+}
+

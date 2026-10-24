@@ -25,6 +25,7 @@ export interface GuestLookupResult {
   discountPct: number;
   hasBlacklist: boolean;
   blacklistReason: string | null;
+  consents?: Record<string, boolean>;
 }
 
 export async function lookupGuestAction(
@@ -82,6 +83,7 @@ export async function lookupGuestAction(
       discountPct: m.tier?.discount_pct ?? 0,
       hasBlacklist: !!bl,
       blacklistReason: bl?.reason || null,
+      consents: m.consents || {},
     };
 
     return ok(result);
@@ -162,7 +164,29 @@ export async function checkInGuestAction(
             }
           : null,
       },
-      companions: [],
+      companions: (data.companions || []).map((c) => {
+        const hasDoc = Boolean(
+          c.documentNumber && c.documentNumber.trim().length >= 6,
+        );
+        return {
+          guest_id: c.guestId || null,
+          full_name: c.fullName,
+          gender: c.gender,
+          dob: c.dob || null,
+          nationality: (c.nationality || "VN").slice(0, 2).toUpperCase(),
+          phone: c.phone || null,
+          document: hasDoc
+            ? {
+                type: c.documentType,
+                number: c.documentNumber?.trim().toUpperCase(),
+                country: (c.nationality || "VN").slice(0, 2).toUpperCase(),
+              }
+            : null,
+          counts_for_loyalty: c.countsForLoyalty,
+          note: c.notes || null,
+        };
+      }),
+      consents: data.consents,
     };
 
     const { data: res, error } = await supabase.rpc("check_in_guest", {

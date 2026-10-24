@@ -9,9 +9,13 @@ import {
   addGuestNoteSchema,
   type CreateGuestInput,
   createGuestSchema,
+  guestTierOverrideSchema,
+  type SetGuestConsentInput,
+  setGuestConsentSchema,
   type UpdateGuestInput,
   updateGuestSchema,
 } from "./schemas";
+import type { ConsentHistoryItem, GuestTierInfo } from "./types";
 
 export async function createGuestAction(
   rawInput: CreateGuestInput,
@@ -206,11 +210,30 @@ export async function assignSalesOwnerAction(
 }
 
 export async function setGuestConsentAction(
-  guestId: string,
-  channel: string,
-  granted: boolean,
+  arg1: string | SetGuestConsentInput,
+  channel?: string,
+  granted?: boolean,
+  note?: string,
 ): Promise<ActionResult<void>> {
   try {
+    let input: SetGuestConsentInput;
+    if (typeof arg1 === "object" && arg1 !== null) {
+      input = arg1 as SetGuestConsentInput;
+    } else {
+      input = {
+        guestId: arg1,
+        channel: channel as any,
+        granted: Boolean(granted),
+        source: "front_desk",
+        note: note || null,
+      };
+    }
+
+    const parsed = setGuestConsentSchema.safeParse(input);
+    if (!parsed.success) {
+      return fail("VALIDATION", toFieldErrors(parsed.error));
+    }
+
     const hasPerm = await requirePermission("consent.manage");
     if (!hasPerm.ok) {
       return hasPerm;
@@ -218,26 +241,52 @@ export async function setGuestConsentAction(
 
     const supabase = await createClient();
     const { error } = await supabase.rpc("set_guest_consent", {
-      p_guest_id: guestId,
-      p_channel: channel,
-      p_granted: granted,
-      p_source: "front_desk",
+      p_guest_id: parsed.data.guestId,
+      p_channel: parsed.data.channel,
+      p_granted: parsed.data.granted,
+      p_source: parsed.data.source || "front_desk",
+      p_note: parsed.data.note || null,
     });
 
     if (error) {
       return fail(error.code);
     }
 
-    revalidatePath(`/guests/${guestId}`);
+    revalidatePath(`/guests/${parsed.data.guestId}`);
     return ok(undefined);
   } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
 }
 
-export async function exportGuestsAction(): Promise<
-  ActionResult<{ filename: string; base64: string; count: number }>
-> {
+export async function getGuestConsentHistoryAction(
+  guestId: string,
+): Promise<ActionResult<ConsentHistoryItem[]>> {
+  try {
+    const hasPerm = await requirePermission("guest.view_summary");
+    if (!hasPerm.ok) {
+      return hasPerm;
+    }
+
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("get_guest_consent_history", {
+      p_guest_id: guestId,
+    });
+
+    if (error) {
+      return fail(error.code);
+    }
+
+    return ok((data as any[]) || []);
+  } catch (_err: unknown) {
+    return fail("UNKNOWN");
+  }
+}
+
+export async function exportGuestsAction(options?: {
+  consentChannel?: string;
+  reason?: string;
+}): Promise<ActionResult<{ filename: string; base64: string; count: number }>> {
   try {
     const hasExportPerm = await requirePermission("guest.export");
     if (!hasExportPerm.ok) {
@@ -246,11 +295,17 @@ export async function exportGuestsAction(): Promise<
 
     const hasExportFullPerm = await requirePermission("guest.export_full");
     const _allowFull = hasExportFullPerm.ok;
+    const consentChannel = options?.consentChannel || null;
 
     const supabase = await createClient();
     const { data, error } = await (supabase.rpc as any)("export_guests", {
-      p_reason: "Xuất danh sách khách hàng phục vụ quản lý chuỗi",
-      p_limit: 500,
+      p_reason:
+        options?.reason ||
+        (consentChannel
+          ? `Xuất danh sách khách đồng ý nhận tin kênh ${consentChannel.toUpperCase()}`
+          : "Xuất danh sách khách hàng phục vụ quản lý chuỗi"),
+      p_limit: 1000,
+      p_consent_channel: consentChannel,
     });
 
     if (error || !data) {
@@ -269,24 +324,40 @@ export async function exportGuestsAction(): Promise<
     workbook.creator = "CRM Chuỗi Khách Sạn";
     workbook.created = new Date();
 
-    const sheet = workbook.addWorksheet("Danh sách khách hàng", {
+    const sheetName = consentChannel
+      ? `Đồng ý ${consentChannel.toUpperCase()}`
+      : "Danh sách khách hàng";
+
+    const sheet = workbook.addWorksheet(sheetName, {
       views: [{ showGridLines: true }],
     });
 
-    sheet.columns = [
+    const columns: any[] = [
       { header: "STT", key: "stt", width: 8 },
       { header: "Họ và tên", key: "full_name", width: 25 },
       { header: "Giới tính", key: "gender", width: 12 },
-      { header: "Số điện thoại", key: "phone", width: 18 },
-      { header: "Số giấy tờ (CCCD/Passport)", key: "doc", width: 24 },
-      { header: "Ngày sinh", key: "dob", width: 15 },
+      { header: "Số điện thoại / Zalo", key: "phone", width: 18 },
+    ];
+
+    if (!consentChannel) {
+      columns.push({
+        header: "Số giấy tờ (CCCD/Passport)",
+        key: "doc",
+        width: 24,
+      });
+      columns.push({ header: "Ngày sinh", key: "dob", width: 15 });
+    }
+
+    columns.push(
       { header: "Email", key: "email", width: 25 },
       { header: "Quốc tịch", key: "nationality", width: 14 },
       { header: "Tổng lượt ở", key: "stays", width: 14 },
       { header: "Tổng số đêm", key: "nights", width: 14 },
       { header: "Nhãn khách (Tags)", key: "tags", width: 22 },
       { header: "Sales phụ trách", key: "sales", width: 20 },
-    ];
+    );
+
+    sheet.columns = columns;
 
     // Style header row
     const headerRow = sheet.getRow(1);
@@ -294,7 +365,7 @@ export async function exportGuestsAction(): Promise<
     headerRow.fill = {
       type: "pattern",
       pattern: "solid",
-      fgColor: { argb: "FF1E1B4B" },
+      fgColor: { argb: consentChannel ? "FF0D9488" : "FF1E1B4B" },
     };
     headerRow.alignment = { vertical: "middle", horizontal: "center" };
     headerRow.height = 26;
@@ -306,25 +377,33 @@ export async function exportGuestsAction(): Promise<
         other: "Khác",
       };
 
-      sheet.addRow({
+      const row: any = {
         stt: idx + 1,
         full_name: g.full_name,
         gender: genderMap[g.gender] || g.gender || "",
         phone: g.phone || "",
-        doc: g.doc_number || "",
-        dob: g.dob || "",
         email: g.email || "",
         nationality: g.nationality || "VN",
         stays: g.total_stays ?? 0,
         nights: g.total_nights ?? 0,
         tags: Array.isArray(g.tags) ? g.tags.join(", ") : "",
         sales: g.sales_name || "",
-      });
+      };
+
+      if (!consentChannel) {
+        row.doc = g.doc_number || "";
+        row.dob = g.dob || "";
+      }
+
+      sheet.addRow(row);
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
     const base64 = Buffer.from(buffer).toString("base64");
-    const filename = `KhachHang_CRM_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const filename = consentChannel
+      ? `DanhSach_DongY_${consentChannel.toUpperCase()}_${dateStr}.xlsx`
+      : `KhachHang_CRM_${dateStr}.xlsx`;
 
     return ok({
       filename,
@@ -460,4 +539,39 @@ export async function proposeGuestMergeAction(params: {
   } catch (_err: unknown) {
     return fail("UNKNOWN");
   }
+}
+
+export async function setGuestTierOverrideAction(
+  rawInput: unknown,
+): Promise<ActionResult<GuestTierInfo>> {
+  const auth = await requirePermission("loyalty.override");
+  if (!auth.ok) return auth;
+
+  const parsed = guestTierOverrideSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return fail("VALIDATION", toFieldErrors(parsed.error));
+  }
+
+  const { data } = parsed;
+  const supabase = await createClient();
+
+  const { data: res, error } = await supabase.rpc("set_guest_tier_override", {
+    p_guest_id: data.guestId,
+    p_tier_id: data.tierId || null,
+    p_reason: data.reason,
+    p_until: data.until || null,
+    p_tier_code: data.tierCode || null,
+  });
+
+  if (error) {
+    let customMsg = "Không thể gán hạng thủ công cho khách";
+    if (error.message?.includes("reason required")) {
+      customMsg = "Lý do gán hạng bắt buộc và tối thiểu 10 ký tự";
+    }
+    return fail(error.code, undefined, customMsg);
+  }
+
+  revalidatePath(`/guests/${data.guestId}`);
+  revalidatePath("/guests");
+  return ok(res as GuestTierInfo);
 }

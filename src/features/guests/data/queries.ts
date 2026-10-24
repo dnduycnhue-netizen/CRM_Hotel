@@ -1,5 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
-import type { GuestListItem, GuestProfile, SalesUser } from "../types";
+import type {
+  ConsentHistoryItem,
+  GuestListItem,
+  GuestProfile,
+  SalesUser,
+} from "../types";
 
 export async function getGuestProfile(
   id: string,
@@ -27,6 +32,7 @@ export async function getGuestsList(options?: {
   tag?: string;
   limit?: number;
   branchId?: string;
+  consentChannel?: string;
 }): Promise<GuestListItem[]> {
   const supabase = await createClient();
   const limit = options?.limit || 50;
@@ -36,6 +42,7 @@ export async function getGuestsList(options?: {
     p_sales_owner_id: options?.salesOwnerId || null,
     p_tag: options?.tag || null,
     p_branch_id: options?.branchId || null,
+    p_consent_channel: options?.consentChannel || null,
   });
 
   if (error || !data) {
@@ -77,4 +84,16 @@ export async function getSalesUsers(): Promise<SalesUser[]> {
 
   if (error || !data) return [];
   return data as unknown as SalesUser[];
+}
+
+export async function getGuestConsentHistory(
+  guestId: string,
+): Promise<ConsentHistoryItem[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_guest_consent_history", {
+    p_guest_id: guestId,
+  });
+
+  if (error || !data) return [];
+  return (data as any[]) || [];
 }

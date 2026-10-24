@@ -117,3 +117,75 @@ export interface RoomBlockItem {
   work_order_number?: number | null;
   created_by_name?: string | null;
 }
+
+export type ComplianceDocStatus = "good" | "expiring" | "expired" | "missing";
+
+export interface ComplianceDocTypeItem {
+  id: string;
+  code: string;
+  name: string;
+  applies_to: "branch" | "asset";
+  remind_days: number;
+  sort: number;
+}
+
+export interface ComplianceMatrixCell {
+  branch_id: string;
+  doc_type_id: string;
+  doc_id?: string | null;
+  number?: string | null;
+  issuer?: string | null;
+  issued_on?: string | null;
+  expires_on?: string | null;
+  file_paths?: string[];
+  file_count: number;
+  note?: string | null;
+  asset_id?: string | null;
+  asset_name?: string | null;
+  status: ComplianceDocStatus;
+  days_remaining?: number | null;
+}
+
+export interface ComplianceMatrixData {
+  branches: Array<{ id: string; name: string; code: string }>;
+  doc_types: ComplianceDocTypeItem[];
+  cells: ComplianceMatrixCell[];
+}
+
+export interface ComplianceDocItem {
+  id: string;
+  branch_id: string;
+  branch_name: string;
+  doc_type_id: string;
+  doc_type_code: string;
+  doc_type_name: string;
+  applies_to: "branch" | "asset";
+  remind_days: number;
+  asset_id?: string | null;
+  asset_name?: string | null;
+  number?: string | null;
+  issuer?: string | null;
+  issued_on?: string | null;
+  expires_on?: string | null;
+  days_remaining?: number | null;
+  status: ComplianceDocStatus;
+  file_paths: string[];
+  file_count: number;
+  note?: string | null;
+  is_current: boolean;
+  created_at: string;
+  created_by_name?: string | null;
+  history_count: number;
+}
+
+export interface ComplianceHistoryItem {
+  id: string;
+  number?: string | null;
+  issuer?: string | null;
+  issued_on?: string | null;
+  expires_on?: string | null;
+  file_paths: string[];
+  note?: string | null;
+  created_at: string;
+  created_by_name?: string | null;
+}

@@ -63,6 +63,7 @@ export default async function MonthlyRevenuePage(
       year={currentYear}
       branches={branches}
       initialBranchId={effectiveBranchId || "all"}
+      canInput={session.can("revenue.input")}
     />
   );
 }

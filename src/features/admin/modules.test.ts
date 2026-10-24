@@ -156,7 +156,10 @@ describe("Module Matrix Logic & Dependencies", () => {
     expect(consentChildren).toContain("vouchers");
 
     // Tắt facilities -> work_orders và preventive bị tắt theo
-    const facilitiesChildren = getTransitiveChildren("facilities", sampleModules);
+    const facilitiesChildren = getTransitiveChildren(
+      "facilities",
+      sampleModules,
+    );
     expect(facilitiesChildren).toContain("work_orders");
     expect(facilitiesChildren).toContain("preventive");
   });

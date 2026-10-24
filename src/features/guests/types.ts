@@ -5,13 +5,38 @@ export interface GuestDocument {
 }
 
 export interface GuestTierInfo {
-  id: string;
+  tier_id?: string;
+  id?: string;
   name: string;
   code: string;
   discount_pct: number;
   min_value: number;
   color?: string;
   benefits?: string[];
+  policy_id?: string;
+  policy_name?: string;
+  basis?: "stays" | "nights";
+  current_value?: number;
+  next_tier_name?: string | null;
+  next_tier_min?: number | null;
+  value_needed?: number | null;
+  is_override?: boolean;
+}
+
+export interface GuestTierEventItem {
+  id: string;
+  from_tier: string | null;
+  to_tier: string;
+  kind:
+    | "upgrade"
+    | "downgrade"
+    | "manual_override"
+    | "override_expired"
+    | "policy_change";
+  policy_name: string;
+  actor: string | null;
+  note: string | null;
+  at: string;
 }
 
 export interface GuestStats {
@@ -42,6 +67,7 @@ export interface GuestCompanionItem {
   id: string;
   full_name: string;
   times: number;
+  last_stay_at?: string | null;
 }
 
 export interface GuestNoteItem {
@@ -72,6 +98,7 @@ export interface GuestPermissions {
   tag: boolean;
   propose_flag: boolean;
   propose_merge: boolean;
+  override_tier?: boolean;
 }
 
 export interface GuestProfile {
@@ -100,8 +127,12 @@ export interface GuestProfile {
       name: string;
       kind: string;
     } | null;
+    tier_override_code?: string | null;
+    tier_override_until?: string | null;
+    tier_override_reason?: string | null;
   };
   tier?: GuestTierInfo | null;
+  tier_events?: GuestTierEventItem[];
   documents: GuestDocument[];
   stats?: GuestStats | null;
   stays: GuestStayItem[];
@@ -109,8 +140,22 @@ export interface GuestProfile {
   notes: GuestNoteItem[];
   flags: GuestFlagItem[];
   consents: Record<string, boolean>;
+  consent_events?: ConsentHistoryItem[];
   can: GuestPermissions;
   redirect_to?: string;
+}
+
+export type ConsentChannel = "zalo" | "sms" | "email" | "phone";
+
+export interface ConsentHistoryItem {
+  id: number;
+  channel: ConsentChannel;
+  granted: boolean;
+  source: string;
+  recorded_by?: string | null;
+  recorded_by_name?: string | null;
+  recorded_at: string;
+  note?: string | null;
 }
 
 export interface GuestListItem {

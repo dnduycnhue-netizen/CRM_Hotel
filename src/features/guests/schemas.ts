@@ -65,6 +65,26 @@ export const addGuestNoteSchema = z.object({
     .max(2000, "Tối đa 2000 ký tự"),
 });
 
+export const guestTierOverrideSchema = z.object({
+  guestId: z.string().uuid("guestId phải là UUID hợp lệ"),
+  tierId: z.string().uuid().optional().nullable(),
+  tierCode: z.string().optional().nullable(),
+  reason: z.string().min(10, "Lý do gán hạng tối thiểu 10 ký tự").max(500),
+  until: z.string().optional().nullable(),
+});
+
+export const setGuestConsentSchema = z.object({
+  guestId: z.string().uuid("Mã khách phải là UUID hợp lệ"),
+  channel: z.enum(["zalo", "sms", "email", "phone"], {
+    message: "Kênh liên lạc không hợp lệ",
+  }),
+  granted: z.boolean(),
+  source: z.string().default("front_desk"),
+  note: z.string().max(500, "Ghi chú tối đa 500 ký tự").optional().nullable(),
+});
+
 export type CreateGuestInput = z.infer<typeof createGuestSchema>;
 export type UpdateGuestInput = z.infer<typeof updateGuestSchema>;
 export type AddGuestNoteInput = z.infer<typeof addGuestNoteSchema>;
+export type GuestTierOverrideInput = z.infer<typeof guestTierOverrideSchema>;
+export type SetGuestConsentInput = z.infer<typeof setGuestConsentSchema>;
