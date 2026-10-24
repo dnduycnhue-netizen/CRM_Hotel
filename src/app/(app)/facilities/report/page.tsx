@@ -17,11 +17,16 @@ export default async function ReportIssuePage() {
   if (!session.can("wo.create")) {
     redirect("/");
   }
-  const [branches, rooms, locations] = await Promise.all([
+  const canViewChain = session.can("report.view_chain");
+  const [allBranches, rooms, locations] = await Promise.all([
     getActiveBranches(),
     getRooms(),
     getFacilityLocations(),
   ]);
+
+  const branches = canViewChain
+    ? allBranches
+    : allBranches.filter((b) => session.branchIds.includes(b.id));
 
   return (
     <ReportIssueForm

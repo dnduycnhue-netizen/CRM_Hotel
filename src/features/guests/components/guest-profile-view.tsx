@@ -248,6 +248,13 @@ export function GuestProfileView({
     });
   };
 
+  const sourceChannelName =
+    guest.source_channel?.name ||
+    (guest.tags || [])
+      .find((t) => /^#?ngu[oồ]n:\s*/i.test(t))
+      ?.replace(/^#?ngu[oồ]n:\s*/i, "") ||
+    null;
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Top Breadcrumb & Actions */}
@@ -317,6 +324,13 @@ export function GuestProfileView({
                   <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
                     <Award className="w-3.5 h-3.5" />
                     Hạng {tier.name} (-{tier.discount_pct}%)
+                  </span>
+                )}
+
+                {sourceChannelName && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-2xs">
+                    <Compass className="w-3.5 h-3.5 text-indigo-500" />
+                    Nguồn: {sourceChannelName}
                   </span>
                 )}
 
@@ -404,12 +418,15 @@ export function GuestProfileView({
                   </span>
                 )}
 
-                {guest.source_channel?.name && (
-                  <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full font-medium bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                    <Compass className="w-3.5 h-3.5" />
-                    Nguồn: {guest.source_channel.name}
+                <span className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300">
+                  <Compass className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                  <span>
+                    Nguồn khách:{" "}
+                    <strong className="text-slate-900 dark:text-slate-100 font-semibold">
+                      {sourceChannelName || "Chưa xác định"}
+                    </strong>
                   </span>
-                )}
+                </span>
               </div>
 
               {/* Tags */}

@@ -131,21 +131,30 @@ export function ReportIssueForm({
             <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
               Khách sạn phát sinh sự cố <span className="text-rose-500">*</span>
             </label>
-            <select
-              value={selectedBranch}
-              onChange={(e) => {
-                setSelectedBranch(e.target.value);
-                setSelectedRoom("");
-                setSelectedLocation("");
-              }}
-              className="w-full text-sm font-medium px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
-            >
-              {branches.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name} ({b.code})
-                </option>
-              ))}
-            </select>
+            {branches.length === 1 ? (
+              <div className="flex items-center gap-2 py-2.5 px-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800/60 font-semibold text-sm text-slate-800 dark:text-slate-200">
+                <Building2 className="w-4 h-4 text-amber-500 shrink-0" />
+                <span>
+                  {branches[0].name} ({branches[0].code})
+                </span>
+              </div>
+            ) : (
+              <select
+                value={selectedBranch}
+                onChange={(e) => {
+                  setSelectedBranch(e.target.value);
+                  setSelectedRoom("");
+                  setSelectedLocation("");
+                }}
+                className="w-full text-sm font-medium px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
+              >
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name} ({b.code})
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           {/* Vị trí sự cố: Phòng hay Khu vực chung */}

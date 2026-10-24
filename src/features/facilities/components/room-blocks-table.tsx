@@ -45,7 +45,11 @@ export function RoomBlocksTable({
     return true;
   });
 
-  const modalRooms = rooms.filter((r) => r.branch_id === modalBranch);
+  const activeBlockedRoomIds = new Set(initialBlocks.map((b) => b.room_id));
+
+  const modalRooms = rooms.filter(
+    (r) => r.branch_id === modalBranch && !activeBlockedRoomIds.has(r.id),
+  );
 
   const handleCreateBlock = (e: React.FormEvent) => {
     e.preventDefault();
@@ -288,20 +292,27 @@ export function RoomBlocksTable({
                 <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
                   Cơ sở khách sạn
                 </label>
-                <select
-                  value={modalBranch}
-                  onChange={(e) => {
-                    setModalBranch(e.target.value);
-                    setModalRoom("");
-                  }}
-                  className="w-full text-xs font-medium px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
-                >
-                  {branches.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name}
-                    </option>
-                  ))}
-                </select>
+                {branches.length === 1 ? (
+                  <div className="flex items-center gap-2 py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800/60 font-semibold text-xs text-slate-800 dark:text-slate-200">
+                    <Building2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    <span>{branches[0].name}</span>
+                  </div>
+                ) : (
+                  <select
+                    value={modalBranch}
+                    onChange={(e) => {
+                      setModalBranch(e.target.value);
+                      setModalRoom("");
+                    }}
+                    className="w-full text-xs font-medium px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
+                  >
+                    {branches.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div>
@@ -312,9 +323,14 @@ export function RoomBlocksTable({
                   required
                   value={modalRoom}
                   onChange={(e) => setModalRoom(e.target.value)}
+                  disabled={modalRooms.length === 0}
                   className="w-full text-xs font-medium px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
                 >
-                  <option value="">-- Chọn số phòng --</option>
+                  <option value="">
+                    {modalRooms.length === 0
+                      ? "-- Không có phòng khả dụng (các phòng đều đang khóa) --"
+                      : "-- Chọn số phòng --"}
+                  </option>
                   {modalRooms.map((r) => (
                     <option key={r.id} value={r.id}>
                       Phòng {r.number} ({r.type})

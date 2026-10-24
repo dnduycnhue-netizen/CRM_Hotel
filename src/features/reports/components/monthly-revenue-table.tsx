@@ -39,16 +39,17 @@ export function MonthlyRevenueTable({
     }).format(val);
   };
 
-  const getVnYear = (iso: string) => {
-    try {
-      const d = new Date(iso);
-      return new Date(d.getTime() + 7 * 3600 * 1000).getUTCFullYear();
-    } catch {
-      return new Date(iso).getFullYear();
-    }
+  const getRowYear = (m: string) => {
+    const parts = m.split("-");
+    return parts[0] ? parseInt(parts[0], 10) : new Date(m).getFullYear();
   };
 
-  const displayRows = initialRows.filter((r) => getVnYear(r.month) === year);
+  const getRowMonthNumber = (m: string) => {
+    const parts = m.split("-");
+    return parts[1] ? parseInt(parts[1], 10) : new Date(m).getMonth() + 1;
+  };
+
+  const displayRows = initialRows.filter((r) => getRowYear(r.month) === year);
 
   return (
     <div className="space-y-6">
@@ -159,8 +160,7 @@ export function MonthlyRevenueTable({
                 </tr>
               ) : (
                 displayRows.map((row) => {
-                  const mDate = new Date(row.month);
-                  const monthName = `Tháng ${mDate.getMonth() + 1}/${mDate.getFullYear()}`;
+                  const monthName = `Tháng ${getRowMonthNumber(row.month)}/${getRowYear(row.month)}`;
 
                   return (
                     <tr
@@ -173,17 +173,19 @@ export function MonthlyRevenueTable({
 
                       <td className="py-3.5 px-4 text-xs">
                         {row.source === "app" ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
                             Hệ thống CRM
                           </span>
                         ) : row.source === "baseline" ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                             Số nền nhập tay
                           </span>
-                        ) : (
-                          <span className="text-slate-400 text-xs">
+                        ) : row.source === "mixed" ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                             Kết hợp
                           </span>
+                        ) : (
+                          <span className="text-slate-400 text-xs">—</span>
                         )}
                       </td>
 

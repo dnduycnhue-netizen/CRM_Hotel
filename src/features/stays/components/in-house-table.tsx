@@ -89,7 +89,7 @@ export function InHouseTable({
       const res = await checkoutStayAction(stayId, currentBranchId);
       if (res.ok) {
         toast.success(
-          `Đã hoàn tất trả phòng ${roomNumber}! Phòng chuyển sang trạng thái dọn dẹp.`,
+          `Đã hoàn tất trả phòng ${roomNumber}! Phòng sẵn sàng đón khách.`,
         );
         setActiveStayList((prev) => prev.filter((s) => s.id !== stayId));
         setCheckoutTarget(null);
@@ -463,8 +463,7 @@ export function InHouseTable({
               <strong className="text-foreground">
                 {checkoutTarget?.guestName}
               </strong>
-              . Phòng sẽ được chuyển sang trạng thái dọn dẹp để sẵn sàng đón
-              khách tiếp theo.
+              . Phòng sẵn sàng để đón khách tiếp theo.
             </DialogDescription>
           </DialogHeader>
 
