@@ -12,6 +12,7 @@ import {
   Compass,
   FileCheck2,
   FileSpreadsheet,
+  Handshake,
   Hotel,
   KeyRound,
   Lock,
@@ -82,6 +83,14 @@ const NAV_GROUPS: NavGroup[] = [
         href: "/guests",
         icon: Users,
         perm: "guest.view_summary",
+      },
+      {
+        title: "Đối tác & Khách đoàn",
+        href: "/partners",
+        icon: Handshake,
+        perms: ["partner.view", "group.manage"],
+        badge: "Sprint 5",
+        badgeVariant: "emerald",
       },
       {
         title: "Duyệt gộp hồ sơ",
