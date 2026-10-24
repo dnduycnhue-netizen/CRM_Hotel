@@ -14,7 +14,11 @@ export async function getGuestProfile(
     p_guest_id: id,
   });
 
-  if (error || !data) {
+  if (error) {
+    console.error("Lỗi get_guest_profile RPC:", error);
+    return null;
+  }
+  if (!data) {
     return null;
   }
 
