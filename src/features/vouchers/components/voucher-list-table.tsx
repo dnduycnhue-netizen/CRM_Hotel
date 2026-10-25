@@ -30,6 +30,7 @@ interface Props {
   initialVouchers: Voucher[];
   branches: Array<{ id: string; name: string }>;
   guests: Array<{ id: string; full_name: string; phone: string | null }>;
+  defaultBranchId?: string;
   onRefresh?: () => void;
 }
 
@@ -37,6 +38,7 @@ export function VoucherListTable({
   initialVouchers,
   branches,
   guests,
+  defaultBranchId,
   onRefresh,
 }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -54,8 +56,15 @@ export function VoucherListTable({
     | undefined
   >(undefined);
 
-  function copyCode(code: string) {
-    navigator.clipboard.writeText(code);
+  async function copyCode(code: string) {
+    try {
+      await navigator.clipboard.writeText(code);
+    } catch {
+      toast.error(
+        "Không thể sao chép tự động, vui lòng chọn và copy mã thủ công",
+      );
+      return;
+    }
     setCopiedCode(code);
     toast.success(`Đã sao chép mã voucher ${code}`);
     setTimeout(() => setCopiedCode(null), 2000);
@@ -380,7 +389,7 @@ export function VoucherListTable({
         branches={branches}
         guests={guests}
         defaultCode={selectedVoucherForRedeem?.code}
-        defaultBranchId={selectedVoucherForRedeem?.branchId}
+        defaultBranchId={selectedVoucherForRedeem?.branchId || defaultBranchId}
         defaultGuestId={selectedVoucherForRedeem?.guestId}
         onSuccess={() => onRefresh?.()}
       />

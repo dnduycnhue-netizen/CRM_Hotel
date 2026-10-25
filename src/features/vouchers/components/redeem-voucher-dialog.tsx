@@ -64,7 +64,7 @@ export function RedeemVoucherDialog({
 
   useEffect(() => {
     if (open) {
-      if (defaultCode) setCode(defaultCode.trim().toUpperCase());
+      setCode(defaultCode ? defaultCode.trim().toUpperCase() : "");
       if (defaultBranchId) setBranchId(defaultBranchId);
       setGuestId((prev) => defaultGuestId || prev || guests[0]?.id || "");
       setGuestSearch("");
@@ -243,6 +243,10 @@ export function RedeemVoucherDialog({
 
               <Select
                 value={guestId}
+                items={guests.map((g) => ({
+                  value: g.id,
+                  label: g.phone ? `${g.full_name} (${g.phone})` : g.full_name,
+                }))}
                 onValueChange={(val) => val && setGuestId(val)}
               >
                 <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs">
@@ -275,6 +279,7 @@ export function RedeemVoucherDialog({
                 </Label>
                 <Select
                   value={branchId}
+                  items={branches.map((b) => ({ value: b.id, label: b.name }))}
                   onValueChange={(val) => val && setBranchId(val)}
                 >
                   <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs">

@@ -13,7 +13,7 @@ export default async function SettingsModulesPage() {
     redirect("/login");
   }
   if (!session.can("settings.modules")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const matrix = await getBranchModuleMatrix();

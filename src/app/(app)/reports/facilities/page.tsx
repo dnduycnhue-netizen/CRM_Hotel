@@ -31,7 +31,7 @@ export default async function FacilitiesReportPage(
     session.can("facility.view");
 
   if (!canView) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const searchParams = await props.searchParams;

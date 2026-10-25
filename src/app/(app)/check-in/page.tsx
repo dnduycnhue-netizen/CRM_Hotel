@@ -18,7 +18,7 @@ export default async function CheckInPage() {
     redirect("/login");
   }
   if (!session.can("stay.create")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
   const branches = await getActiveBranches();
 

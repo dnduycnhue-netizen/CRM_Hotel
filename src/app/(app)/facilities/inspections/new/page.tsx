@@ -21,7 +21,7 @@ export default async function NewInspectionPage() {
     redirect("/login");
   }
   if (!session.can("inspection.perform")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const canViewChain = session.can("report.view_chain");
@@ -59,10 +59,10 @@ export default async function NewInspectionPage() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
           Kiểm Tra Phòng & Cơ Sở Vật Chất
         </h1>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-muted-foreground mt-1">
           Đánh giá chất lượng buồng phòng, trang thiết bị theo bộ tiêu chuẩn
           checklist. Các mục lỗi sẽ tự động sinh phiếu sửa chữa cho kỹ thuật.
         </p>

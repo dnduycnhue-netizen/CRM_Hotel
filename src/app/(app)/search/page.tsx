@@ -14,7 +14,7 @@ export default async function SearchPage() {
   }
 
   if (!session.can("guest.search")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const canViewChain = session.can("report.view_chain");

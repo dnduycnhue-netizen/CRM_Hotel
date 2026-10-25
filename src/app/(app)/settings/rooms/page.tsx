@@ -13,7 +13,7 @@ export default async function SettingsRoomsPage() {
     redirect("/login");
   }
   if (!session.can("settings.rooms")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const [rooms, branches] = await Promise.all([

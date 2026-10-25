@@ -37,7 +37,7 @@ export default async function WorkOrderDetailPage({ params }: PageProps) {
     redirect("/login");
   }
   if (!session.can("wo.view")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const { id } = await params;

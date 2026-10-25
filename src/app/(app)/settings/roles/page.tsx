@@ -13,7 +13,7 @@ export default async function SettingsRolesPage() {
     redirect("/login");
   }
   if (!session.can("settings.roles")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const { roles, permissions } = await getSystemRoles();

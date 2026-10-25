@@ -21,7 +21,7 @@ export default async function SettingsLoyaltyPage() {
   }
 
   if (!session.can("loyalty.view") && !session.can("loyalty.configure")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const [policies, activePolicy] = await Promise.all([

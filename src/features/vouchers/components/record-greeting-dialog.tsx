@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { recordBirthdayGreetingAction } from "../actions";
+import { formatDateVN } from "@/shared/utils/date";
 import { greetingChannelLabels, greetingChannels } from "../schemas";
 import type { UpcomingBirthdayGuest } from "../types";
 
@@ -179,7 +180,10 @@ export function RecordGreetingDialog({
           </div>
           <div className="text-xs text-slate-400 flex flex-wrap gap-x-4 gap-y-1">
             <span>
-              Ngày sinh: <strong className="text-slate-300">{guest.dob}</strong>{" "}
+              Ngày sinh:{" "}
+              <strong className="text-slate-300">
+                {formatDateVN(guest.dob)}
+              </strong>{" "}
               (Tuổi mới: {guest.age})
             </span>
             {guest.phone && (
@@ -230,6 +234,7 @@ export function RecordGreetingDialog({
             </Label>
             <Select
               value={branchId}
+              items={branches.map((b) => ({ value: b.id, label: b.name }))}
               onValueChange={(val) => val && setBranchId(val)}
             >
               <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs">
@@ -251,6 +256,7 @@ export function RecordGreetingDialog({
             </Label>
             <Select
               value={channel}
+              items={greetingChannelLabels}
               onValueChange={(val) =>
                 setChannel(val as (typeof greetingChannels)[number])
               }
@@ -295,7 +301,7 @@ export function RecordGreetingDialog({
                   <span>Phát hành mã Voucher sinh nhật độc quyền</span>
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  Hệ thống tự tạo mã riêng cho khách này (hiệu lực 30 ngày)
+                  Hệ thống tự tạo mã riêng cho khách này (hiệu lực 60 ngày)
                 </p>
               </div>
               <Switch

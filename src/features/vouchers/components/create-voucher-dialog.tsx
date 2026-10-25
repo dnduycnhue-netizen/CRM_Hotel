@@ -202,6 +202,7 @@ export function CreateVoucherDialog({
               <Label className="text-xs text-slate-300">Loại chiết khấu</Label>
               <Select
                 value={discountType}
+                items={discountTypeLabels}
                 onValueChange={(val) =>
                   setDiscountType(val as (typeof discountTypes)[number])
                 }
@@ -325,6 +326,10 @@ export function CreateVoucherDialog({
               <Label className="text-xs text-slate-300">Cơ sở áp dụng</Label>
               <Select
                 value={applicableBranchId}
+                items={[
+                  { value: "all", label: "Toàn bộ chi nhánh khách sạn" },
+                  ...branches.map((b) => ({ value: b.id, label: b.name })),
+                ]}
                 onValueChange={(val) => val && setApplicableBranchId(val)}
               >
                 <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs">
@@ -349,6 +354,15 @@ export function CreateVoucherDialog({
               </Label>
               <Select
                 value={targetGuestId}
+                items={[
+                  { value: "all", label: "Tất cả khách hàng (Public voucher)" },
+                  ...guests.map((g) => ({
+                    value: g.id,
+                    label: g.phone
+                      ? `${g.full_name} (${g.phone})`
+                      : g.full_name,
+                  })),
+                ]}
                 onValueChange={(val) => val && setTargetGuestId(val)}
               >
                 <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs">

@@ -14,7 +14,7 @@ export default async function SettingsBranchesPage() {
     redirect("/login");
   }
   if (!session.can("settings.branches")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const branches = await getActiveBranches();

@@ -14,7 +14,7 @@ export default async function WorkOrdersPage() {
     redirect("/login");
   }
   if (!session.can("wo.view")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
   const canViewChain = session.can("report.view_chain");
   const allBranches = await getActiveBranches();

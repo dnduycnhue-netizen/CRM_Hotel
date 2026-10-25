@@ -14,7 +14,7 @@ export default async function StaysPage() {
     redirect("/login");
   }
   if (!session.can("stay.view")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
   const allBranches = await getActiveBranches();
 

@@ -30,7 +30,7 @@ export default async function ReportsPage(props: ReportsPageProps) {
   const canViewChain = session.can("report.view_chain");
   const canViewBranch = session.can("report.view_branch");
   if (!canViewChain && !canViewBranch) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const canExport = session.can("report.export");

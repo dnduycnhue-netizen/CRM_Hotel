@@ -24,6 +24,7 @@ interface Props {
   redemptions: VoucherRedemption[];
   branches: Array<{ id: string; name: string }>;
   guests: Array<{ id: string; full_name: string; phone: string | null }>;
+  defaultBranchId?: string;
 }
 
 export function RewardsHub({
@@ -33,6 +34,7 @@ export function RewardsHub({
   redemptions,
   branches,
   guests,
+  defaultBranchId,
 }: Props) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<string>("birthdays");
@@ -188,6 +190,7 @@ export function RewardsHub({
           <BirthdayListView
             initialBirthdays={birthdays}
             branches={branches}
+            defaultBranchId={defaultBranchId}
             onRefresh={refreshData}
           />
         </TabsContent>
@@ -198,6 +201,7 @@ export function RewardsHub({
             initialVouchers={vouchers}
             branches={branches}
             guests={guests}
+            defaultBranchId={defaultBranchId}
             onRefresh={refreshData}
           />
         </TabsContent>
@@ -223,6 +227,7 @@ export function RewardsHub({
         onOpenChange={setRedeemDialogOpen}
         branches={branches}
         guests={guests}
+        defaultBranchId={defaultBranchId}
         onSuccess={refreshData}
       />
     </div>

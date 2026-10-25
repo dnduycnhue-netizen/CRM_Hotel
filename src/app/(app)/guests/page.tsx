@@ -25,7 +25,7 @@ export default async function GuestsPage({ searchParams }: PageProps) {
   }
 
   if (!session.can("guest.search")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const { consent, tag } = await searchParams;

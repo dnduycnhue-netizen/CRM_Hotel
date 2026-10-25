@@ -33,7 +33,7 @@ export default async function GuestDetailPage({ params }: PageProps) {
     redirect("/login");
   }
   if (!session.can("guest.view_summary")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const { id } = await params;

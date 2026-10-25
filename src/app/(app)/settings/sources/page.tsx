@@ -17,7 +17,7 @@ export default async function SourcesPage() {
     redirect("/login");
   }
   if (!session.can("settings.sources")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const [channels, partners] = await Promise.all([

@@ -20,7 +20,7 @@ export default async function UsersPage() {
     redirect("/login");
   }
   if (!session.can("settings.users")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const [users, branches, { roles }] = await Promise.all([

@@ -2,6 +2,7 @@ export const messages = {
   errors: {
     UNAUTHENTICATED: "Phiên đăng nhập đã hết hạn hoặc cần xác thực 2 lớp",
     FORBIDDEN: "Bạn không có quyền thực hiện thao tác này",
+    PAGE_FORBIDDEN: "Bạn không có quyền truy cập trang này",
     NOT_FOUND: "Không tìm thấy dữ liệu",
     CONFLICT: "Dữ liệu đã bị người khác thay đổi, vui lòng tải lại",
     DUPLICATE_DOCUMENT: "Số giấy tờ này đã thuộc về khách khác",

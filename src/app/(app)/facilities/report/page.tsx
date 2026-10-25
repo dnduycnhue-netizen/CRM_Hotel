@@ -15,7 +15,7 @@ export default async function ReportIssuePage() {
     redirect("/login");
   }
   if (!session.can("wo.create")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
   const canViewChain = session.can("report.view_chain");
   const [allBranches, rooms, locations] = await Promise.all([

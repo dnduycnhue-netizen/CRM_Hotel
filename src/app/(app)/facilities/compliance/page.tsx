@@ -22,7 +22,7 @@ export default async function CompliancePage() {
     redirect("/login");
   }
   if (!session.can("compliance.view")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const canViewChain =

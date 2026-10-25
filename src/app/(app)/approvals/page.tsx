@@ -22,7 +22,7 @@ export default async function ApprovalsPage() {
   const hasFlagPerm = session.can("blacklist.approve");
 
   if (!hasMergePerm && !hasFlagPerm) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const [mergeRequests, pendingFlags, activeFlags] = await Promise.all([

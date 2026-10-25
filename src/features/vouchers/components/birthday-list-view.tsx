@@ -20,18 +20,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { formatDateVN } from "@/shared/utils/date";
 import type { UpcomingBirthdayGuest } from "../types";
 import { RecordGreetingDialog } from "./record-greeting-dialog";
 
 interface Props {
   initialBirthdays: UpcomingBirthdayGuest[];
   branches: Array<{ id: string; name: string }>;
+  defaultBranchId?: string;
   onRefresh?: () => void;
 }
 
 export function BirthdayListView({
   initialBirthdays,
   branches,
+  defaultBranchId,
   onRefresh,
 }: Props) {
   const [selectedDays, setSelectedDays] = useState<string>("30");
@@ -82,6 +85,13 @@ export function BirthdayListView({
           <div className="flex items-center gap-1.5">
             <Select
               value={selectedDays}
+              items={{
+                "0": "Hôm nay",
+                "7": "7 ngày tới",
+                "14": "14 ngày tới",
+                "30": "30 ngày tới",
+                "60": "60 ngày tới",
+              }}
               onValueChange={(val) => val && setSelectedDays(val)}
             >
               <SelectTrigger className="w-[140px] bg-background border-border text-foreground h-9 text-xs font-semibold rounded-xl">
@@ -188,7 +198,7 @@ export function BirthdayListView({
                       Sinh nhật:
                     </span>
                     <span className="font-semibold text-foreground">
-                      {guest.dob} (Tuổi {guest.age})
+                      {formatDateVN(guest.dob)} (Tuổi {guest.age})
                     </span>
                   </div>
 
@@ -298,6 +308,7 @@ export function BirthdayListView({
           onOpenChange={setGreetingDialogOpen}
           guest={selectedGuestForGreeting}
           branches={branches}
+          defaultBranchId={defaultBranchId}
           onSuccess={() => {
             onRefresh?.();
           }}

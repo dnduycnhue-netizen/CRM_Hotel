@@ -29,7 +29,7 @@ export default async function MonthlyRevenuePage(
     session.can("revenue.view");
 
   if (!canViewReports) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const searchParams = await props.searchParams;

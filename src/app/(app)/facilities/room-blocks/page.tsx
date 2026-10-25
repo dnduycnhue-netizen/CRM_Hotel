@@ -15,7 +15,7 @@ export default async function RoomBlocksPage() {
     redirect("/login");
   }
   if (!session.can("room.block")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
   const canViewChain =
     session.can("report.view_chain") || session.branchIds.length > 1;

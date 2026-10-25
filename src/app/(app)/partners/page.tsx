@@ -21,7 +21,7 @@ export default async function PartnersPage() {
     session.can("commission.view");
 
   if (!canAccess) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const isChainAdmin =

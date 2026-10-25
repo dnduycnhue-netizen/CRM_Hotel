@@ -18,7 +18,7 @@ export default async function SettingsChecklistsPage() {
     redirect("/login");
   }
   if (!session.can("inspection.manage")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const templates = await getChecklistTemplates();

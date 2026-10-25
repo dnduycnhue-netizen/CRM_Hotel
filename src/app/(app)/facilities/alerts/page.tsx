@@ -17,7 +17,7 @@ export default async function ComplianceAlertsPage() {
     redirect("/login");
   }
   if (!session.can("facility.view")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const canViewChain = session.can("report.view_chain");
@@ -31,10 +31,10 @@ export default async function ComplianceAlertsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
           Cảnh báo hết hạn hồ sơ & PCCC
         </h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Theo dõi hạn định kỳ của bảo hiểm cháy nổ, kiểm định thang máy, PCCC
           và bảo hành thiết bị toàn chuỗi (US-32)
         </p>

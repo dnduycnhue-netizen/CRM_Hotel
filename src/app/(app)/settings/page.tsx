@@ -30,5 +30,5 @@ export default async function SettingsPage() {
     redirect("/settings/loyalty");
   }
 
-  redirect("/");
+  redirect("/?denied=1");
 }

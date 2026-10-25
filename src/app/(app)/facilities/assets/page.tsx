@@ -19,7 +19,7 @@ export default async function AssetsPage() {
     redirect("/login");
   }
   if (!session.can("facility.view")) {
-    redirect("/");
+    redirect("/?denied=1");
   }
   const canViewChain =
     session.can("report.view_chain") || session.branchIds.length > 1;

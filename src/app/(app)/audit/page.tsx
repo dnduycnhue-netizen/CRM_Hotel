@@ -18,7 +18,7 @@ export default async function AuditPage() {
   const canViewBranch = session.can("audit.view_branch");
 
   if (!canViewChain && !canViewBranch) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const allBranches = await getActiveBranches();

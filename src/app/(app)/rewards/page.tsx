@@ -29,7 +29,7 @@ export default async function RewardsPage() {
   const canRedeemVoucher = session.can("voucher.redeem");
 
   if (!canViewBirthday && !canIssueVoucher && !canRedeemVoucher) {
-    redirect("/");
+    redirect("/?denied=1");
   }
 
   const isChainAdmin = session.branchIds.length > 1;
@@ -66,6 +66,7 @@ export default async function RewardsPage() {
         redemptions={redemptions}
         branches={branches}
         guests={guests}
+        defaultBranchId={session.currentBranchId || undefined}
       />
     </div>
   );
