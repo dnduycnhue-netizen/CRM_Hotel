@@ -57,6 +57,13 @@ export function InHouseTable({
   const [activeStayList, setActiveStayList] = useState(stays);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "in_house" | "overdue"
+  >("all");
+  const [dateFilter, setDateFilter] = useState<
+    "all" | "today_in" | "today_out"
+  >("all");
+
   // Dialog state cho Trả phòng
   const [checkoutTarget, setCheckoutTarget] = useState<{
     stayId: string;
@@ -68,6 +75,7 @@ export function InHouseTable({
   const [cancelTarget, setCancelTarget] = useState<{
     stayId: string;
     roomNumber: string;
+    checkInAt: string;
   } | null>(null);
   const [cancelReason, setCancelReason] = useState("");
 
@@ -78,15 +86,37 @@ export function InHouseTable({
   } | null>(null);
 
   const filteredStays = useMemo(() => {
-    if (!searchTerm.trim()) return activeStayList;
-    const q = searchTerm.toLowerCase();
-    return activeStayList.filter(
-      (s) =>
-        s.roomNumber.toLowerCase().includes(q) ||
-        s.primaryGuestName.toLowerCase().includes(q) ||
-        s.primaryGuestPhone?.includes(q),
-    );
-  }, [activeStayList, searchTerm]);
+    const todayStr = new Date().toISOString().slice(0, 10);
+    return activeStayList.filter((s) => {
+      // 1. Search term
+      if (searchTerm.trim()) {
+        const q = searchTerm.toLowerCase();
+        const match =
+          s.roomNumber.toLowerCase().includes(q) ||
+          s.primaryGuestName.toLowerCase().includes(q) ||
+          s.primaryGuestPhone?.includes(q);
+        if (!match) return false;
+      }
+
+      // 2. Status filter
+      if (statusFilter === "in_house" && s.isOverdue) return false;
+      if (statusFilter === "overdue" && !s.isOverdue) return false;
+
+      // 3. Date filter
+      if (dateFilter === "today_in") {
+        const inDate = new Date(s.checkInAt).toISOString().slice(0, 10);
+        if (inDate !== todayStr) return false;
+      }
+      if (dateFilter === "today_out") {
+        const outDate = new Date(s.expectedCheckOutAt)
+          .toISOString()
+          .slice(0, 10);
+        if (outDate !== todayStr) return false;
+      }
+
+      return true;
+    });
+  }, [activeStayList, searchTerm, statusFilter, dateFilter]);
 
   const confirmCheckout = () => {
     if (!checkoutTarget) return;
@@ -246,9 +276,9 @@ export function InHouseTable({
               </CardDescription>
             </div>
 
-            {/* Quick search input & Action button */}
-            <div className="flex items-center gap-2.5">
-              <div className="relative w-full sm:w-64">
+            {/* Quick search input & Filters & Action button */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative w-full sm:w-56">
                 <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
                   value={searchTerm}
@@ -257,6 +287,36 @@ export function InHouseTable({
                   className="pl-8.5 h-8.5 text-xs rounded-lg bg-background"
                 />
               </div>
+
+              <select
+                aria-label="Lọc trạng thái lưu trú"
+                value={statusFilter}
+                onChange={(e) =>
+                  setStatusFilter(
+                    e.target.value as "all" | "in_house" | "overdue",
+                  )
+                }
+                className="h-8.5 text-xs rounded-lg border border-input bg-background px-2.5 shadow-xs focus:outline-none focus:ring-1 focus:ring-ring text-muted-foreground"
+              >
+                <option value="all">Tất cả trạng thái</option>
+                <option value="in_house">Đang ở bình thường</option>
+                <option value="overdue">Quá hạn trả phòng</option>
+              </select>
+
+              <select
+                aria-label="Lọc thời gian lưu trú"
+                value={dateFilter}
+                onChange={(e) =>
+                  setDateFilter(
+                    e.target.value as "all" | "today_in" | "today_out",
+                  )
+                }
+                className="h-8.5 text-xs rounded-lg border border-input bg-background px-2.5 shadow-xs focus:outline-none focus:ring-1 focus:ring-ring text-muted-foreground"
+              >
+                <option value="all">Tất cả ngày</option>
+                <option value="today_in">Nhận phòng hôm nay</option>
+                <option value="today_out">Trả phòng hôm nay</option>
+              </select>
 
               <Link
                 href="/check-in"
@@ -441,22 +501,39 @@ export function InHouseTable({
                           <LogOut className="h-3.5 w-3.5 mr-1" />
                           Trả phòng
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setCancelTarget({
-                              stayId: s.id,
-                              roomNumber: s.roomNumber,
-                            });
-                            setCancelReason("");
-                          }}
-                          disabled={isPending}
-                          className="h-8 w-8 p-0 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 rounded-lg"
-                          title="Hủy lượt ở (trong 6h)"
-                        >
-                          <Ban className="h-3.5 w-3.5" />
-                        </Button>
+                        {(() => {
+                          const hoursSinceCheckIn =
+                            (Date.now() - new Date(s.checkInAt).getTime()) /
+                            (3600 * 1000);
+                          const isLateCancel = hoursSinceCheckIn > 6;
+                          return (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setCancelTarget({
+                                  stayId: s.id,
+                                  roomNumber: s.roomNumber,
+                                  checkInAt: s.checkInAt,
+                                });
+                                setCancelReason("");
+                              }}
+                              disabled={isPending}
+                              className={`h-8 w-8 p-0 rounded-lg ${
+                                isLateCancel
+                                  ? "text-amber-600 hover:text-amber-700 hover:bg-amber-500/10"
+                                  : "text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10"
+                              }`}
+                              title={
+                                isLateCancel
+                                  ? "Đã nhận phòng quá 6h (Yêu cầu quyền quản trị chuỗi)"
+                                  : "Hủy lượt ở (trong 6h)"
+                              }
+                            >
+                              <Ban className="h-3.5 w-3.5" />
+                            </Button>
+                          );
+                        })()}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -524,10 +601,30 @@ export function InHouseTable({
               <span>Hủy lượt ở phòng {cancelTarget?.roomNumber}</span>
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground pt-1">
-              Thao tác này chỉ áp dụng trong vòng 6 giờ từ khi tạo. Vui lòng
-              nhập lý do hủy bắt buộc để lưu nhật ký kiểm toán.
+              {cancelTarget?.checkInAt &&
+              (Date.now() - new Date(cancelTarget.checkInAt).getTime()) /
+                (3600 * 1000) >
+                6
+                ? "Lượt ở đã nhận phòng quá 6 giờ. Cần thẩm quyền quản lý chuỗi để thực hiện hủy trễ."
+                : "Thao tác này chỉ áp dụng trong vòng 6 giờ từ khi tạo. Vui lòng nhập lý do hủy bắt buộc để lưu nhật ký kiểm toán."}
             </DialogDescription>
           </DialogHeader>
+
+          {cancelTarget?.checkInAt &&
+            (Date.now() - new Date(cancelTarget.checkInAt).getTime()) /
+              (3600 * 1000) >
+              6 && (
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-700 dark:text-amber-400 text-xs flex items-start gap-2">
+                <Clock className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
+                <div>
+                  <span className="font-semibold">
+                    Cảnh báo hủy trễ (&gt; 6 giờ):
+                  </span>{" "}
+                  Thao tác này sẽ ghi nhận log kiểm toán đặc biệt và yêu cầu
+                  quyền chuỗi.
+                </div>
+              </div>
+            )}
 
           <div className="space-y-2 py-2">
             <Label

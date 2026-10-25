@@ -8,7 +8,7 @@ import type {
   PartnersOverviewStats,
 } from "../types";
 
-export async function getPartnersOverview(): Promise<{
+export async function getPartnersOverview(branchId?: string | null): Promise<{
   partners: Partner[];
   contracts: PartnerContract[];
   groupBookings: GroupBooking[];
@@ -17,6 +17,64 @@ export async function getPartnersOverview(): Promise<{
   stats: PartnersOverviewStats;
 }> {
   const supabase = await createClient();
+
+  let groupsQuery = (supabase.from("group_bookings") as any)
+    .select(`
+      id,
+      code,
+      branch_id,
+      partner_id,
+      group_name,
+      leader_name,
+      leader_phone,
+      leader_email,
+      expected_check_in_at,
+      expected_check_out_at,
+      actual_check_in_at,
+      actual_check_out_at,
+      rooms_count,
+      guests_count,
+      status,
+      estimated_amount,
+      deposit_amount,
+      billing_note,
+      note,
+      created_by,
+      created_at,
+      updated_at,
+      branch:branches(name),
+      partner:partners(name)
+    `)
+    .order("expected_check_in_at", { ascending: false });
+
+  if (branchId) {
+    groupsQuery = groupsQuery.eq("branch_id", branchId);
+  }
+
+  let commissionsQuery = (supabase.from("partner_commissions") as any)
+    .select(`
+      id,
+      partner_id,
+      branch_id,
+      stay_id,
+      group_booking_id,
+      amount,
+      rate_pct,
+      base_revenue,
+      status,
+      paid_at,
+      paid_by,
+      note,
+      created_at,
+      partner:partners(name),
+      branch:branches(name),
+      group_booking:group_bookings(code)
+    `)
+    .order("created_at", { ascending: false });
+
+  if (branchId) {
+    commissionsQuery = commissionsQuery.eq("branch_id", branchId);
+  }
 
   const [partnersRes, contractsRes, groupsRes, commissionsRes, branchesRes] =
     await Promise.all([
@@ -40,56 +98,8 @@ export async function getPartnersOverview(): Promise<{
         partner:partners(name, kind)
       `)
         .order("valid_to", { ascending: false }),
-      supabase
-        .from("group_bookings")
-        .select(`
-        id,
-        code,
-        branch_id,
-        partner_id,
-        group_name,
-        leader_name,
-        leader_phone,
-        leader_email,
-        expected_check_in_at,
-        expected_check_out_at,
-        actual_check_in_at,
-        actual_check_out_at,
-        rooms_count,
-        guests_count,
-        status,
-        estimated_amount,
-        deposit_amount,
-        billing_note,
-        note,
-        created_by,
-        created_at,
-        updated_at,
-        branch:branches(name),
-        partner:partners(name)
-      `)
-        .order("expected_check_in_at", { ascending: false }),
-      supabase
-        .from("partner_commissions")
-        .select(`
-        id,
-        partner_id,
-        branch_id,
-        stay_id,
-        group_booking_id,
-        amount,
-        rate_pct,
-        base_revenue,
-        status,
-        paid_at,
-        paid_by,
-        note,
-        created_at,
-        partner:partners(name),
-        branch:branches(name),
-        group_booking:group_bookings(code)
-      `)
-        .order("created_at", { ascending: false }),
+      groupsQuery,
+      commissionsQuery,
       supabase
         .from("branches")
         .select("id, name, code")

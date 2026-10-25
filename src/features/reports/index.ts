@@ -6,4 +6,3 @@ export { MonthlyRevenueTable } from "./components/monthly-revenue-table";
 export * from "./data/queries";
 export * from "./schemas";
 export * from "./types";
-

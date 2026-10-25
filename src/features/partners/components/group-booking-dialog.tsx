@@ -34,6 +34,7 @@ interface GroupBookingDialogProps {
   partners: Partner[];
   booking?: GroupBooking | null;
   defaultBranchId?: string;
+  readOnly?: boolean;
   onSuccess?: () => void;
 }
 
@@ -44,6 +45,7 @@ export function GroupBookingDialog({
   partners,
   booking,
   defaultBranchId,
+  readOnly = false,
   onSuccess,
 }: GroupBookingDialogProps) {
   const isEditing = Boolean(booking?.id);
@@ -157,17 +159,30 @@ export function GroupBookingDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditing
-              ? `Cập nhật đoàn [${booking?.code}]`
-              : "Tạo mới lịch trình khách đoàn (MICE/Tour)"}
+            {readOnly
+              ? `Chi tiết đoàn [${booking?.code || ""}]`
+              : isEditing
+                ? `Cập nhật đoàn [${booking?.code}]`
+                : "Tạo mới lịch trình khách đoàn (MICE/Tour)"}
           </DialogTitle>
           <DialogDescription>
-            Điều phối phòng, số lượng khách, thông tin trưởng đoàn và tạm ứng
-            đặt cọc.
+            {readOnly
+              ? "Xem thông tin điều phối phòng, lịch trình và tạm ứng đặt cọc của đoàn."
+              : "Điều phối phòng, số lượng khách, thông tin trưởng đoàn và tạm ứng đặt cọc."}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 py-2">
+        <form
+          onSubmit={
+            readOnly
+              ? (e) => {
+                  e.preventDefault();
+                  onOpenChange(false);
+                }
+              : handleSubmit
+          }
+          className="space-y-4 py-2"
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="group-branch">
@@ -176,9 +191,10 @@ export function GroupBookingDialog({
               </Label>
               <select
                 id="group-branch"
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-75"
                 value={branchId}
                 onChange={(e) => setBranchId(e.target.value)}
+                disabled={readOnly || branches.length <= 1}
               >
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
@@ -393,21 +409,29 @@ export function GroupBookingDialog({
           </div>
 
           <DialogFooter className="pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={submitting}
-            >
-              Hủy
-            </Button>
-            <Button type="submit" disabled={submitting}>
-              {submitting
-                ? "Đang lưu..."
-                : isEditing
-                  ? "Cập nhật đoàn"
-                  : "Lưu hồ sơ đoàn"}
-            </Button>
+            {readOnly ? (
+              <Button type="button" onClick={() => onOpenChange(false)}>
+                Đóng
+              </Button>
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={submitting}
+                >
+                  Hủy
+                </Button>
+                <Button type="submit" disabled={submitting}>
+                  {submitting
+                    ? "Đang lưu..."
+                    : isEditing
+                      ? "Cập nhật đoàn"
+                      : "Lưu hồ sơ đoàn"}
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </form>
       </DialogContent>

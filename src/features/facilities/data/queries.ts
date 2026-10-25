@@ -114,6 +114,98 @@ export async function getWorkOrders(options?: {
   });
 }
 
+export async function getWorkOrderById(
+  idOrNumber: string | number,
+): Promise<WorkOrder | null> {
+  const supabase = await createClient();
+  let query = (supabase.from("work_orders") as any).select(`
+    id,
+    number,
+    branch_id,
+    branch:branches(name),
+    kind,
+    title,
+    description,
+    priority,
+    status,
+    room_id,
+    room:rooms(number),
+    location_id,
+    location:facility_locations(name),
+    asset_id,
+    asset:assets(name),
+    blocks_room,
+    reported_by,
+    reporter:profiles!work_orders_reported_by_fkey(full_name),
+    reported_at,
+    assignee_id,
+    assignee:profiles!work_orders_assignee_id_fkey(full_name),
+    vendor_id,
+    due_at,
+    started_at,
+    completed_at,
+    closed_at,
+    resolution,
+    labor_cost,
+    parts_cost,
+    vendor_cost,
+    total_cost,
+    photo_paths
+  `);
+
+  if (typeof idOrNumber === "number" || /^\d+$/.test(String(idOrNumber))) {
+    query = query.eq("number", Number(idOrNumber));
+  } else {
+    query = query.eq("id", String(idOrNumber));
+  }
+
+  const { data, error } = await query.maybeSingle();
+  if (error || !data) return null;
+
+  const w = data;
+  const branch = Array.isArray(w.branch) ? w.branch[0] : w.branch;
+  const room = Array.isArray(w.room) ? w.room[0] : w.room;
+  const location = Array.isArray(w.location) ? w.location[0] : w.location;
+  const asset = Array.isArray(w.asset) ? w.asset[0] : w.asset;
+  const reporter = Array.isArray(w.reporter) ? w.reporter[0] : w.reporter;
+  const assignee = Array.isArray(w.assignee) ? w.assignee[0] : w.assignee;
+
+  return {
+    id: w.id,
+    number: w.number,
+    branch_id: w.branch_id,
+    branch_name: branch?.name,
+    kind: w.kind,
+    title: w.title,
+    description: w.description,
+    priority: w.priority,
+    status: w.status,
+    room_id: w.room_id,
+    room_number: room?.number,
+    location_id: w.location_id,
+    location_name: location?.name,
+    asset_id: w.asset_id,
+    asset_name: asset?.name,
+    blocks_room: w.blocks_room,
+    reported_by: w.reported_by,
+    reporter_name: reporter?.full_name,
+    reported_at: w.reported_at,
+    assignee_id: w.assignee_id,
+    assignee_name: assignee?.full_name,
+    vendor_id: w.vendor_id,
+    due_at: w.due_at,
+    started_at: w.started_at,
+    completed_at: w.completed_at,
+    closed_at: w.closed_at,
+    resolution: w.resolution,
+    labor_cost: Number(w.labor_cost) || 0,
+    parts_cost: Number(w.parts_cost) || 0,
+    vendor_cost: Number(w.vendor_cost) || 0,
+    total_cost: Number(w.total_cost) || 0,
+    photo_paths: w.photo_paths || [],
+  };
+}
+
 export async function getWorkOrderEvents(
   workOrderId: string,
 ): Promise<WorkOrderEvent[]> {

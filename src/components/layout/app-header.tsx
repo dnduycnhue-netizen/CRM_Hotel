@@ -281,6 +281,7 @@ export function AppHeader({
                 className="text-xs cursor-pointer font-semibold py-1.5"
                 onClick={() => {
                   try {
+                    // biome-ignore lint/suspicious/noDocumentCookie: cookie cleanup on logout
                     document.cookie =
                       "branch_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
                     if (typeof window !== "undefined") {

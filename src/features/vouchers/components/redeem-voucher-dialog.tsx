@@ -7,7 +7,7 @@ import {
   Loader2,
   Tag,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -60,6 +60,16 @@ export function RedeemVoucherDialog({
   );
   const [billAmount, setBillAmount] = useState<number | string>(0);
   const [note, setNote] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      if (defaultCode) setCode(defaultCode);
+      if (defaultBranchId) setBranchId(defaultBranchId);
+      setGuestId((prev) => defaultGuestId || prev || guests[0]?.id || "");
+      setErrorMsg(null);
+      setResult(null);
+    }
+  }, [open, defaultCode, defaultBranchId, defaultGuestId, guests]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -197,7 +207,9 @@ export function RedeemVoucherDialog({
                 onValueChange={(val) => val && setGuestId(val)}
               >
                 <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs">
-                  <SelectValue placeholder="Chọn khách hàng" />
+                  <SelectValue placeholder="Chọn khách hàng">
+                    {guests.find((g) => g.id === guestId)?.full_name}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="bg-slate-800 border-slate-700 text-slate-200 text-xs">
                   {guests.map((g) => (
@@ -219,7 +231,9 @@ export function RedeemVoucherDialog({
                   onValueChange={(val) => val && setBranchId(val)}
                 >
                   <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs">
-                    <SelectValue placeholder="Chọn cơ sở" />
+                    <SelectValue placeholder="Chọn cơ sở">
+                      {branches.find((b) => b.id === branchId)?.name}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-700 text-slate-200 text-xs">
                     {branches.map((b) => (

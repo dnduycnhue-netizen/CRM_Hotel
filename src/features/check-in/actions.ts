@@ -245,7 +245,12 @@ export async function checkInGuestAction(
     revalidatePath("/check-in");
     revalidatePath("/reports");
     return ok(res as { stayId: string; guestId: string });
-  } catch {
-    return fail("UNKNOWN");
+  } catch (err: any) {
+    console.error("Lỗi checkInGuestAction:", err);
+    return fail(
+      "UNKNOWN",
+      undefined,
+      err?.message || "Đã có lỗi xảy ra khi thực hiện nhận phòng",
+    );
   }
 }

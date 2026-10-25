@@ -23,6 +23,12 @@ export default async function SettingsPage() {
   if (session.can("settings.rooms")) {
     redirect("/settings/rooms");
   }
+  if (session.can("inspection.manage")) {
+    redirect("/settings/checklists");
+  }
+  if (session.can("loyalty.view") || session.can("loyalty.configure")) {
+    redirect("/settings/loyalty");
+  }
 
   redirect("/");
 }

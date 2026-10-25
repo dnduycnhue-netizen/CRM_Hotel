@@ -24,7 +24,10 @@ export default async function PartnersPage() {
     redirect("/");
   }
 
-  const overview = await getPartnersOverview();
+  const isChainAdmin = session.branchIds.length > 1;
+  const branchId = isChainAdmin ? null : session.currentBranchId;
+
+  const overview = await getPartnersOverview(branchId);
   const allPermissions = Array.from(
     new Set(Object.values(session.access.permissions || {}).flat()),
   );
@@ -39,6 +42,9 @@ export default async function PartnersPage() {
         branches={overview.branches}
         stats={overview.stats}
         userPermissions={allPermissions}
+        currentUserId={session.userId}
+        currentBranchId={session.currentBranchId}
+        isChainAdmin={isChainAdmin}
       />
     </div>
   );

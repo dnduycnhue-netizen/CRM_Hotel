@@ -27,8 +27,10 @@ import {
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { StayCompanionsDialog } from "@/features/stays";
 import { useCan } from "@/shared/auth";
 import { Button } from "@/shared/ui";
 import { formatDateVN } from "@/shared/utils/date";
@@ -79,6 +81,8 @@ export function GuestProfileView({
     "stays" | "notes" | "companions" | "flags" | "consents" | "tier_history"
   >("stays");
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const [companionDialogOpen, setCompanionDialogOpen] = useState(false);
 
   // Tier manual override modal state
   const [showOverrideModal, setShowOverrideModal] = useState(false);
@@ -242,6 +246,11 @@ export function GuestProfileView({
     can,
     tier_events = [],
   } = profile;
+
+  const targetStayForCompanion =
+    stays.find((s) => s.status === "in_house" || s.status === "active") ||
+    stays[0] ||
+    null;
 
   const handleAddNote = (e: React.FormEvent) => {
     e.preventDefault();
@@ -512,7 +521,15 @@ export function GuestProfileView({
                       {profile.documents[0].type}:
                     </span>
                     <code className="font-mono text-slate-700 dark:text-slate-300">
-                      {profile.documents[0].number}
+                      {(() => {
+                        const num = profile.documents[0].number;
+                        if (!num) return "—";
+                        if (num.includes("*")) return num;
+                        if (num.length > 4) {
+                          return "*".repeat(num.length - 4) + num.slice(-4);
+                        }
+                        return num;
+                      })()}
                     </code>
                     {can.view_full ? (
                       <span
@@ -719,7 +736,8 @@ export function GuestProfileView({
                 <span>
                   Tích lũy:{" "}
                   <strong className="text-slate-800 dark:text-slate-200">
-                    {tier.current_value ??
+                    {tier.value ??
+                      tier.current_value ??
                       (tier.basis === "nights"
                         ? stats?.total_nights
                         : stats?.total_stays) ??
@@ -727,14 +745,14 @@ export function GuestProfileView({
                     {tier.basis === "nights" ? "đêm" : "lượt"}
                   </strong>
                 </span>
-                {tier.next_tier_name ? (
+                {tier.next?.name || tier.next_tier_name ? (
                   <span>
                     Cần thêm{" "}
                     <strong className="text-amber-600 font-bold">
-                      {tier.value_needed ?? 0}
+                      {tier.next?.remaining ?? tier.value_needed ?? 0}
                     </strong>{" "}
                     {tier.basis === "nights" ? "đêm" : "lượt"} để lên hạng{" "}
-                    <strong>{tier.next_tier_name}</strong>
+                    <strong>{tier.next?.name || tier.next_tier_name}</strong>
                   </span>
                 ) : (
                   <span className="text-emerald-600 font-bold">
@@ -901,16 +919,20 @@ export function GuestProfileView({
                         </span>
                         <span
                           className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                            stay.status === "in_house" ||
                             stay.status === "active"
-                              ? "bg-emerald-50 text-emerald-600"
-                              : stay.status === "completed"
+                              ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400"
+                              : stay.status === "checked_out" ||
+                                  stay.status === "completed"
                                 ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
-                                : "bg-rose-50 text-rose-600"
+                                : "bg-rose-50 text-rose-600 dark:bg-rose-950/30 dark:text-rose-400"
                           }`}
                         >
-                          {stay.status === "active"
+                          {stay.status === "in_house" ||
+                          stay.status === "active"
                             ? "Đang ở"
-                            : stay.status === "completed"
+                            : stay.status === "checked_out" ||
+                                stay.status === "completed"
                               ? "Đã trả"
                               : "Đã hủy"}
                         </span>
@@ -1098,10 +1120,45 @@ export function GuestProfileView({
       {/* Tab 3: Companions */}
       {activeTab === "companions" && (
         <div className="space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                Người đi cùng ({companions.length})
+              </h3>
+              <p className="text-xs text-slate-400">
+                Danh sách người thân, bạn bè từng lưu trú chung phòng qua các
+                lượt ở
+              </p>
+            </div>
+            {targetStayForCompanion && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setCompanionDialogOpen(true)}
+                className="h-8 text-xs font-semibold gap-1.5 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 rounded-xl"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Thêm người đi cùng</span>
+              </Button>
+            )}
+          </div>
+
           {companions.length === 0 ? (
             <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400">
               Khách chưa có người đi cùng nào được ghi nhận qua các lượt lưu
               trú.
+              {targetStayForCompanion && (
+                <div className="mt-3">
+                  <Button
+                    size="sm"
+                    onClick={() => setCompanionDialogOpen(true)}
+                    className="h-8 text-xs font-semibold gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-xs"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>Thêm khách lưu trú đi cùng</span>
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -1133,6 +1190,29 @@ export function GuestProfileView({
                 </Link>
               ))}
             </div>
+          )}
+
+          {targetStayForCompanion && (
+            <StayCompanionsDialog
+              stayId={targetStayForCompanion.id}
+              roomNumber={
+                targetStayForCompanion.room_number ||
+                targetStayForCompanion.room ||
+                ""
+              }
+              branchId={
+                targetStayForCompanion.branch_id ||
+                branches.find((b) => b.name === targetStayForCompanion.branch)
+                  ?.id ||
+                branches[0]?.id ||
+                ""
+              }
+              isOpen={companionDialogOpen}
+              onClose={() => setCompanionDialogOpen(false)}
+              onGuestsUpdated={() => {
+                router.refresh();
+              }}
+            />
           )}
         </div>
       )}

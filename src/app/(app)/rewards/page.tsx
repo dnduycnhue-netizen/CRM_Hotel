@@ -32,14 +32,19 @@ export default async function RewardsPage() {
     redirect("/");
   }
 
+  const isChainAdmin = session.branchIds.length > 1;
+  const branchId = isChainAdmin
+    ? undefined
+    : session.currentBranchId || undefined;
+
   const [stats, birthdays, vouchers, redemptions, branches, guests] =
     await Promise.all([
-      getRewardsOverview(),
-      getUpcomingBirthdays(60),
-      getVouchersList({ limit: 100 }),
-      getVoucherRedemptionsList({ limit: 100 }),
+      getRewardsOverview(branchId),
+      getUpcomingBirthdays(60, branchId),
+      getVouchersList({ limit: 100, branchId }),
+      getVoucherRedemptionsList({ limit: 100, branchId }),
       getActiveBranches(),
-      getGuestsForSelection(50),
+      getGuestsForSelection(100),
     ]);
 
   return (

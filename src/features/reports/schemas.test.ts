@@ -106,6 +106,8 @@ describe("Monthly Figures Schemas (§14 Revenue Input)", () => {
   });
 
   it("validate saveMonthlyFiguresSchema yêu cầu ít nhất 1 hàng", () => {
-    expect(saveMonthlyFiguresSchema.safeParse({ rows: [] }).success).toBe(false);
+    expect(saveMonthlyFiguresSchema.safeParse({ rows: [] }).success).toBe(
+      false,
+    );
   });
 });

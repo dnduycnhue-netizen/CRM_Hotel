@@ -119,4 +119,3 @@ export interface MonthlyInputBranchRow {
   active_rooms: number;
   days_in_month: number;
 }
-

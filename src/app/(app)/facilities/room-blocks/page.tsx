@@ -43,6 +43,7 @@ export default async function RoomBlocksPage() {
         branch_id: r.branchId,
       }))}
       currentBranchId={branchId || null}
+      isChainAdmin={canViewChain}
     />
   );
 }

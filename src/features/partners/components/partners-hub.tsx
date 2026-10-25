@@ -52,6 +52,9 @@ interface PartnersHubProps {
   branches: BranchOption[];
   stats: PartnersOverviewStats;
   userPermissions: string[];
+  currentUserId?: string;
+  currentBranchId?: string | null;
+  isChainAdmin?: boolean;
 }
 
 export function PartnersHub({
@@ -62,6 +65,9 @@ export function PartnersHub({
   branches,
   stats,
   userPermissions,
+  currentUserId,
+  currentBranchId,
+  isChainAdmin = false,
 }: PartnersHubProps) {
   const [activeTab, setActiveTab] = useState("partners");
 
@@ -469,16 +475,14 @@ export function PartnersHub({
                   <TableHead className="text-right">Hoa hồng (%)</TableHead>
                   <TableHead>Điều khoản thanh toán</TableHead>
                   <TableHead>Trạng thái</TableHead>
-                  {canManageContract && (
-                    <TableHead className="text-right">Thao tác</TableHead>
-                  )}
+                  <TableHead className="text-right">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredContracts.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={canManageContract ? 8 : 7}
+                      colSpan={8}
                       className="h-28 text-center text-muted-foreground"
                     >
                       Chưa có hợp đồng giá B2B nào.
@@ -521,21 +525,19 @@ export function PartnersHub({
                           {contractStatusLabels[c.status] || c.status}
                         </Badge>
                       </TableCell>
-                      {canManageContract && (
-                        <TableCell className="text-right">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 px-2.5 text-xs text-primary"
-                            onClick={() => {
-                              setSelectedContract(c);
-                              setContractDialogOpen(true);
-                            }}
-                          >
-                            Chi tiết
-                          </Button>
-                        </TableCell>
-                      )}
+                      <TableCell className="text-right">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 px-2.5 text-xs text-primary hover:text-primary"
+                          onClick={() => {
+                            setSelectedContract(c);
+                            setContractDialogOpen(true);
+                          }}
+                        >
+                          {canManageContract ? "Sửa" : "Chi tiết"}
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -586,16 +588,14 @@ export function PartnersHub({
                     Dự toán / Tạm ứng
                   </TableHead>
                   <TableHead>Trạng thái</TableHead>
-                  {canManageGroup && (
-                    <TableHead className="text-right">Thao tác</TableHead>
-                  )}
+                  <TableHead className="text-right">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredGroups.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={canManageGroup ? 8 : 7}
+                      colSpan={8}
                       className="h-28 text-center text-muted-foreground"
                     >
                       Chưa có dữ liệu khách đoàn nào.
@@ -671,21 +671,28 @@ export function PartnersHub({
                           {groupBookingStatusLabels[g.status] || g.status}
                         </Badge>
                       </TableCell>
-                      {canManageGroup && (
-                        <TableCell className="text-right">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 px-2.5 text-xs text-primary"
-                            onClick={() => {
-                              setSelectedGroup(g);
-                              setGroupDialogOpen(true);
-                            }}
-                          >
-                            Cập nhật
-                          </Button>
-                        </TableCell>
-                      )}
+                      <TableCell className="text-right">
+                        {(() => {
+                          const canEdit =
+                            canManageGroup &&
+                            (isChainAdmin ||
+                              !g.created_by ||
+                              g.created_by === currentUserId);
+                          return (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 px-2.5 text-xs text-primary hover:text-primary"
+                              onClick={() => {
+                                setSelectedGroup(g);
+                                setGroupDialogOpen(true);
+                              }}
+                            >
+                              {canEdit ? "Cập nhật" : "Chi tiết"}
+                            </Button>
+                          );
+                        })()}
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -724,6 +731,7 @@ export function PartnersHub({
           onOpenChange={setContractDialogOpen}
           partners={initialPartners}
           contract={selectedContract}
+          readOnly={!canManageContract}
           onSuccess={() => {
             window.location.reload();
           }}
@@ -734,9 +742,24 @@ export function PartnersHub({
         <GroupBookingDialog
           open={groupDialogOpen}
           onOpenChange={setGroupDialogOpen}
-          branches={branches}
+          branches={
+            !isChainAdmin && currentBranchId
+              ? branches.filter((b) => b.id === currentBranchId)
+              : branches
+          }
           partners={initialPartners}
           booking={selectedGroup}
+          defaultBranchId={currentBranchId || undefined}
+          readOnly={
+            selectedGroup
+              ? !(
+                  canManageGroup &&
+                  (isChainAdmin ||
+                    !selectedGroup.created_by ||
+                    selectedGroup.created_by === currentUserId)
+                )
+              : false
+          }
           onSuccess={() => {
             window.location.reload();
           }}

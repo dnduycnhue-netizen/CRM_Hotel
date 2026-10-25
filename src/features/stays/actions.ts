@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requirePermission } from "@/shared/auth/server";
 import { type ActionResult, fail, ok } from "@/shared/errors";
+import type { InHouseStay } from "./domain/types";
 
 export async function checkoutStayAction(
   stayId: string,
@@ -98,22 +99,12 @@ export async function getStayGuestsAction(
 ): Promise<ActionResult<StayGuestItem[]>> {
   try {
     const supabase = await createClient();
-    const { data, error } = await (supabase.from("stay_guests") as any)
-      .select(`
-        guest_id,
-        is_primary,
-        counts_for_loyalty,
-        guests (
-          id,
-          full_name,
-          phone,
-          gender,
-          dob,
-          guest_documents (doc_type, doc_number)
-        )
-      `)
-      .eq("stay_id", stayId)
-      .order("is_primary", { ascending: false });
+    const { data, error } = await supabase.rpc(
+      "get_stay_guests" as never,
+      {
+        p_stay_id: stayId,
+      } as never,
+    );
 
     if (error || !data) {
       return fail(
@@ -123,25 +114,7 @@ export async function getStayGuestsAction(
       );
     }
 
-    const items: StayGuestItem[] = (data as any[]).map((sg) => {
-      const g = sg.guests;
-      const doc = Array.isArray(g?.guest_documents)
-        ? g.guest_documents[0]
-        : g?.guest_documents;
-      return {
-        guestId: sg.guest_id,
-        isPrimary: Boolean(sg.is_primary),
-        countsForLoyalty: Boolean(sg.counts_for_loyalty),
-        fullName: g?.full_name || "Khách",
-        phone: g?.phone || null,
-        gender: g?.gender || "other",
-        dob: g?.dob || null,
-        docType: doc?.doc_type || null,
-        docNumber: doc?.doc_number || null,
-      };
-    });
-
-    return ok(items);
+    return ok(data as StayGuestItem[]);
   } catch (err: any) {
     return fail(
       "UNKNOWN",
@@ -158,12 +131,14 @@ export async function addStayCompanionAction(
     guestId?: string;
     fullName: string;
     gender: "male" | "female" | "other";
-    dob?: string;
-    phone?: string;
+    dob?: string | null;
+    phone?: string | null;
+    docType?: "cccd" | "passport";
+    docNumber?: string | null;
     documentType?: "cccd" | "passport";
-    documentNumber?: string;
+    documentNumber?: string | null;
     countsForLoyalty?: boolean;
-    note?: string;
+    note?: string | null;
   },
 ): Promise<ActionResult<{ guestId: string }>> {
   const auth = await requirePermission("companion.manage", branchId);
@@ -171,9 +146,9 @@ export async function addStayCompanionAction(
 
   try {
     const supabase = await createClient();
-    const hasDoc = Boolean(
-      guestData.documentNumber && guestData.documentNumber.trim().length >= 6,
-    );
+    const rawDocNum = guestData.docNumber || guestData.documentNumber;
+    const rawDocType = guestData.docType || guestData.documentType || "cccd";
+    const hasDoc = Boolean(rawDocNum && rawDocNum.trim().length >= 6);
 
     const { data, error } = await supabase.rpc("add_stay_companion", {
       p_stay_id: stayId,
@@ -185,8 +160,8 @@ export async function addStayCompanionAction(
         phone: guestData.phone || null,
         document: hasDoc
           ? {
-              type: guestData.documentType || "cccd",
-              number: guestData.documentNumber?.trim().toUpperCase(),
+              type: rawDocType,
+              number: rawDocNum?.trim().toUpperCase(),
               country: "VN",
             }
           : null,
@@ -203,6 +178,9 @@ export async function addStayCompanionAction(
         customMsg = "Tối đa 10 người đi cùng mỗi lượt ở";
       } else if (error.message?.includes("guest already in stay")) {
         customMsg = "Khách này đã có tên trong phòng";
+      } else if (error.message?.includes("companion needs a document")) {
+        customMsg =
+          "Người đi cùng mới bắt buộc phải nhập số giấy tờ (CCCD/Hộ chiếu)";
       }
       return fail(error.code, undefined, customMsg);
     }
@@ -292,5 +270,71 @@ export async function setCompanionLoyaltyAction(
       undefined,
       err?.message || "Lỗi khi cập nhật tích lũy hạng",
     );
+  }
+}
+
+export async function getInHouseStays(
+  branchId?: string,
+): Promise<InHouseStay[]> {
+  try {
+    const supabase = await createClient();
+    let query = supabase
+      .from("stays")
+      .select(`
+        id,
+        branch_id,
+        branches (name),
+        room_id,
+        check_in_at,
+        expected_check_out_at,
+        source_channel_id,
+        source_channels (name),
+        rooms (number, room_type),
+        stay_guests (
+          is_primary,
+          guests (id, full_name, phone)
+        )
+      `)
+      .eq("status", "in_house")
+      .order("expected_check_out_at", { ascending: true });
+
+    if (branchId) {
+      query = query.eq("branch_id", branchId);
+    }
+
+    const { data, error } = await query;
+
+    if (!error && Array.isArray(data)) {
+      const now = new Date().toISOString();
+      return data.map((s: any) => {
+        const primary = s.stay_guests?.find((sg: any) => sg.is_primary)?.guests;
+        const branch = Array.isArray(s.branches) ? s.branches[0] : s.branches;
+        const room = Array.isArray(s.rooms) ? s.rooms[0] : s.rooms;
+        const channel = Array.isArray(s.source_channels)
+          ? s.source_channels[0]
+          : s.source_channels;
+        return {
+          id: s.id,
+          branchId: s.branch_id,
+          branchName: branch?.name || "",
+          roomId: s.room_id,
+          roomNumber: room?.number || "",
+          roomType: room?.room_type || "Standard",
+          primaryGuestId: primary?.id || "",
+          primaryGuestName: primary?.full_name || "Khách lưu trú",
+          primaryGuestPhone: primary?.phone || null,
+          guestCount: s.stay_guests?.length || 1,
+          checkInAt: s.check_in_at,
+          expectedCheckOutAt: s.expected_check_out_at,
+          isOverdue: s.expected_check_out_at < now,
+          sourceChannelName: channel?.name || "Khách vãng lai (Quầy)",
+        };
+      });
+    }
+
+    return [];
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách khách đang ở:", error);
+    return [];
   }
 }

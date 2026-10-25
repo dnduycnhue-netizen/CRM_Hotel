@@ -11,7 +11,8 @@ import { getSession } from "@/shared/auth/server";
 
 export const metadata: Metadata = {
   title: "Bảo trì định kỳ & Kiểm tra CSVC | CRM Khách Sạn",
-  description: "Theo dõi kế hoạch bảo trì thiết bị và biên bản kiểm tra phòng, khu vực",
+  description:
+    "Theo dõi kế hoạch bảo trì thiết bị và biên bản kiểm tra phòng, khu vực",
 };
 
 export default async function MaintenancePage() {

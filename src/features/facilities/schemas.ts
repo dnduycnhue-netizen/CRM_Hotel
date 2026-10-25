@@ -116,7 +116,12 @@ export const createPmPlanSchema = z.object({
   branch_id: z.string().uuid("Vui lòng chọn cơ sở"),
   name: z.string().min(3, "Tên kế hoạch tối thiểu 3 ký tự").max(160),
   asset_id: z.string().uuid().optional().nullable(),
-  interval_days: z.number().int().min(1, "Chu kỳ tối thiểu 1 ngày").max(3650).default(30),
+  interval_days: z
+    .number()
+    .int()
+    .min(1, "Chu kỳ tối thiểu 1 ngày")
+    .max(3650)
+    .default(30),
   lead_days: z.number().int().min(0).max(90).optional().default(7),
   checklist: z.array(z.string()).optional().default([]),
   default_assignee_id: z.string().uuid().optional().nullable(),
@@ -157,7 +162,9 @@ export const checklistTemplateSchema = z.object({
   id: z.string().uuid().optional().nullable(),
   name: z.string().min(3, "Tên mẫu checklist tối thiểu 3 ký tự").max(150),
   scope: z.enum(["room", "area", "fire_safety", "other"]),
-  items: z.array(checklistItemSchema).min(1, "Mẫu checklist phải có ít nhất 1 mục kiểm tra"),
+  items: z
+    .array(checklistItemSchema)
+    .min(1, "Mẫu checklist phải có ít nhất 1 mục kiểm tra"),
   is_active: z.boolean().default(true),
 });
 
@@ -170,7 +177,10 @@ export const inspectionResultItemSchema = z
   })
   .refine(
     (data) => {
-      if (data.status === "fail" && (!data.note || data.note.trim().length === 0)) {
+      if (
+        data.status === "fail" &&
+        (!data.note || data.note.trim().length === 0)
+      ) {
         return false;
       }
       return true;
@@ -187,7 +197,9 @@ export const submitInspectionSchema = z.object({
   room_id: z.string().uuid().optional().nullable(),
   location_id: z.string().uuid().optional().nullable(),
   note: z.string().max(2000).optional().nullable(),
-  results: z.array(inspectionResultItemSchema).min(1, "Phải có kết quả kiểm tra"),
+  results: z
+    .array(inspectionResultItemSchema)
+    .min(1, "Phải có kết quả kiểm tra"),
 });
 
 export type UpdatePmPlanInput = z.infer<typeof updatePmPlanSchema>;
@@ -201,8 +213,18 @@ export const upsertComplianceDocSchema = z
     branch_id: z.string().uuid("Vui lòng chọn cơ sở khách sạn"),
     doc_type_id: z.string().uuid("Vui lòng chọn loại hồ sơ pháp lý"),
     asset_id: z.string().uuid().optional().nullable(),
-    number: z.string().trim().max(100, "Số văn bản tối đa 100 ký tự").optional().nullable(),
-    issuer: z.string().trim().max(200, "Cơ quan cấp tối đa 200 ký tự").optional().nullable(),
+    number: z
+      .string()
+      .trim()
+      .max(100, "Số văn bản tối đa 100 ký tự")
+      .optional()
+      .nullable(),
+    issuer: z
+      .string()
+      .trim()
+      .max(200, "Cơ quan cấp tối đa 200 ký tự")
+      .optional()
+      .nullable(),
     issued_on: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày cấp phải có định dạng YYYY-MM-DD")
@@ -214,7 +236,12 @@ export const upsertComplianceDocSchema = z
       .optional()
       .nullable(),
     file_paths: z.array(z.string()).optional().default([]),
-    note: z.string().trim().max(1000, "Ghi chú tối đa 1000 ký tự").optional().nullable(),
+    note: z
+      .string()
+      .trim()
+      .max(1000, "Ghi chú tối đa 1000 ký tự")
+      .optional()
+      .nullable(),
     is_renew: z.boolean().optional().default(false),
   })
   .refine(
@@ -230,5 +257,6 @@ export const upsertComplianceDocSchema = z
     },
   );
 
-export type UpsertComplianceDocInput = z.input<typeof upsertComplianceDocSchema>;
-
+export type UpsertComplianceDocInput = z.input<
+  typeof upsertComplianceDocSchema
+>;

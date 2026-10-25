@@ -28,6 +28,7 @@ interface ContractDialogProps {
   partners: Partner[];
   contract?: PartnerContract | null;
   defaultPartnerId?: string;
+  readOnly?: boolean;
   onSuccess?: () => void;
 }
 
@@ -37,6 +38,7 @@ export function ContractDialog({
   partners,
   contract,
   defaultPartnerId,
+  readOnly = false,
   onSuccess,
 }: ContractDialogProps) {
   const isEditing = Boolean(contract?.id);
@@ -135,27 +137,40 @@ export function ContractDialog({
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditing
-              ? "Cập nhật hợp đồng giá B2B"
-              : "Ký mới hợp đồng giá & hoa hồng B2B"}
+            {readOnly
+              ? `Chi tiết hợp đồng [${contract?.contract_number || ""}]`
+              : isEditing
+                ? "Cập nhật hợp đồng giá B2B"
+                : "Ký mới hợp đồng giá & hoa hồng B2B"}
           </DialogTitle>
           <DialogDescription>
-            Thiết lập chính sách chiết khấu buôn, tỷ lệ hoa hồng đại lý và thời
-            hạn hiệu lực.
+            {readOnly
+              ? "Xem thông tin chiết khấu buôn, tỷ lệ hoa hồng đại lý và thời hạn hiệu lực."
+              : "Thiết lập chính sách chiết khấu buôn, tỷ lệ hoa hồng đại lý và thời hạn hiệu lực."}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 py-2">
+        <form
+          onSubmit={
+            readOnly
+              ? (e) => {
+                  e.preventDefault();
+                  onOpenChange(false);
+                }
+              : handleSubmit
+          }
+          className="space-y-4 py-2"
+        >
           <div className="space-y-1.5">
             <Label htmlFor="contract-partner">
               Đối tác liên kết <span className="text-destructive">*</span>
             </Label>
             <select
               id="contract-partner"
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-75"
               value={partnerId}
               onChange={(e) => setPartnerId(e.target.value)}
-              disabled={Boolean(defaultPartnerId) && !isEditing}
+              disabled={readOnly || (Boolean(defaultPartnerId) && !isEditing)}
             >
               {partners.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -311,21 +326,29 @@ export function ContractDialog({
           </div>
 
           <DialogFooter className="pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={submitting}
-            >
-              Hủy
-            </Button>
-            <Button type="submit" disabled={submitting}>
-              {submitting
-                ? "Đang lưu..."
-                : isEditing
-                  ? "Cập nhật"
-                  : "Lưu hợp đồng"}
-            </Button>
+            {readOnly ? (
+              <Button type="button" onClick={() => onOpenChange(false)}>
+                Đóng
+              </Button>
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={submitting}
+                >
+                  Hủy
+                </Button>
+                <Button type="submit" disabled={submitting}>
+                  {submitting
+                    ? "Đang lưu..."
+                    : isEditing
+                      ? "Cập nhật"
+                      : "Lưu hợp đồng"}
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </form>
       </DialogContent>

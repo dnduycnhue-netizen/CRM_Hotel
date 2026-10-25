@@ -313,12 +313,15 @@ export function WorkOrdersTable({
                       className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition group"
                     >
                       <td className="py-3.5 px-4">
-                        <div className="flex items-start gap-2.5">
-                          <span className="font-mono text-xs font-bold text-slate-400 mt-0.5">
+                        <Link
+                          href={`/facilities/work-orders/${wo.number}`}
+                          className="flex items-start gap-2.5 group-hover:text-primary transition-colors"
+                        >
+                          <span className="font-mono text-xs font-bold text-slate-400 group-hover:text-primary mt-0.5">
                             #{wo.number}
                           </span>
                           <div>
-                            <div className="font-semibold text-slate-900 dark:text-slate-100">
+                            <div className="font-semibold text-slate-900 dark:text-slate-100 group-hover:underline">
                               {wo.title}
                             </div>
                             <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
@@ -333,7 +336,7 @@ export function WorkOrdersTable({
                               )}
                             </div>
                           </div>
-                        </div>
+                        </Link>
                       </td>
 
                       <td className="py-3.5 px-4 text-xs">

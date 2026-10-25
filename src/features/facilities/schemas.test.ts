@@ -160,7 +160,12 @@ describe("Facilities Schemas Validation", () => {
         scope: "room",
         items: [
           { key: "bed", label: "Giường nệm phẳng, sạch sẽ", critical: false },
-          { key: "ac", label: "Điều hòa mát, không kêu", critical: true, hint: "Bật 24 độ" },
+          {
+            key: "ac",
+            label: "Điều hòa mát, không kêu",
+            critical: true,
+            hint: "Bật 24 độ",
+          },
         ],
         is_active: true,
       };
@@ -188,7 +193,11 @@ describe("Facilities Schemas Validation", () => {
         room_id: validRoomId,
         results: [
           { key: "bed", status: "pass" },
-          { key: "ac", status: "fail", note: "Điều hòa chảy nước rỉ xuống sàn" },
+          {
+            key: "ac",
+            status: "fail",
+            note: "Điều hòa chảy nước rỉ xuống sàn",
+          },
         ],
       };
       expect(submitInspectionSchema.safeParse(valid).success).toBe(true);
@@ -235,7 +244,9 @@ describe("Facilities Schemas Validation", () => {
       const res = upsertComplianceDocSchema.safeParse(invalid);
       expect(res.success).toBe(false);
       if (!res.success) {
-        expect(res.error.issues[0]?.message).toContain("Ngày hết hạn không được trước ngày cấp");
+        expect(res.error.issues[0]?.message).toContain(
+          "Ngày hết hạn không được trước ngày cấp",
+        );
       }
     });
 
@@ -251,4 +262,3 @@ describe("Facilities Schemas Validation", () => {
     });
   });
 });
-

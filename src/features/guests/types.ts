@@ -8,19 +8,27 @@ export interface GuestTierInfo {
   tier_id?: string;
   id?: string;
   name: string;
-  code: string;
+  code?: string;
+  tier?: string;
   discount_pct: number;
-  min_value: number;
+  min_value?: number;
   color?: string;
-  benefits?: string[];
+  benefits?: string[] | null;
   policy_id?: string;
   policy_name?: string;
   basis?: "stays" | "nights";
   current_value?: number;
+  value?: number;
   next_tier_name?: string | null;
   next_tier_min?: number | null;
   value_needed?: number | null;
+  next?: {
+    name: string;
+    remaining: number;
+    discount_pct: number;
+  } | null;
   is_override?: boolean;
+  source?: string;
 }
 
 export interface GuestTierEventItem {
@@ -52,8 +60,10 @@ export interface GuestStats {
 export interface GuestStayItem {
   id: string;
   branch: string;
+  branch_id?: string;
   room: string;
-  status: "active" | "completed" | "cancelled";
+  room_number?: string;
+  status: "active" | "completed" | "cancelled" | "in_house" | "checked_out";
   check_in_at: string;
   check_out_at: string;
   nights: number;

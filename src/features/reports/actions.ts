@@ -210,7 +210,11 @@ export async function getMonthlyInputMatrixAction(
     const data = await getMonthlyInputMatrix(month, branchId);
     return ok(data);
   } catch (err: any) {
-    return fail("UNKNOWN", undefined, err?.message || "Không thể tải số liệu tháng");
+    return fail(
+      "UNKNOWN",
+      undefined,
+      err?.message || "Không thể tải số liệu tháng",
+    );
   }
 }
 
@@ -260,7 +264,10 @@ export async function lockMonthlyFiguresAction(
       return fail("VALIDATION", toFieldErrors(parsed.error));
     }
 
-    const auth = await requirePermission("revenue.input", parsed.data.branch_id);
+    const auth = await requirePermission(
+      "revenue.input",
+      parsed.data.branch_id,
+    );
     if (!auth.ok) return auth;
 
     const supabase = await createClient();
@@ -270,13 +277,21 @@ export async function lockMonthlyFiguresAction(
     });
 
     if (error) {
-      return fail(error.code, undefined, error.message || "Không thể khóa sổ tháng");
+      return fail(
+        error.code,
+        undefined,
+        error.message || "Không thể khóa sổ tháng",
+      );
     }
 
     revalidatePath("/reports/monthly");
     return ok(data as { locked_at: string });
   } catch (err: any) {
-    return fail("UNKNOWN", undefined, err?.message || "Không thể khóa sổ tháng");
+    return fail(
+      "UNKNOWN",
+      undefined,
+      err?.message || "Không thể khóa sổ tháng",
+    );
   }
 }
 
@@ -289,7 +304,10 @@ export async function unlockMonthlyFiguresAction(
       return fail("VALIDATION", toFieldErrors(parsed.error));
     }
 
-    const auth = await requirePermission("revenue.input", parsed.data.branch_id);
+    const auth = await requirePermission(
+      "revenue.input",
+      parsed.data.branch_id,
+    );
     if (!auth.ok) return auth;
 
     const supabase = await createClient();
@@ -300,13 +318,20 @@ export async function unlockMonthlyFiguresAction(
     });
 
     if (error) {
-      return fail(error.code, undefined, error.message || "Không thể mở khóa sổ tháng");
+      return fail(
+        error.code,
+        undefined,
+        error.message || "Không thể mở khóa sổ tháng",
+      );
     }
 
     revalidatePath("/reports/monthly");
     return ok(data as { unlocked_at: string });
   } catch (err: any) {
-    return fail("UNKNOWN", undefined, err?.message || "Không thể mở khóa sổ tháng");
+    return fail(
+      "UNKNOWN",
+      undefined,
+      err?.message || "Không thể mở khóa sổ tháng",
+    );
   }
 }
-

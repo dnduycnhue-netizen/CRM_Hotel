@@ -18,15 +18,13 @@ export const monthlyFiguresRowSchema = z
       .int()
       .min(1, "Đêm phòng khả dụng phải lớn hơn 0")
       .nullable(),
-    room_revenue: z
-      .number()
-      .min(0, "Doanh thu phòng không được âm")
-      .nullable(),
-    other_revenue: z
-      .number()
-      .min(0, "Doanh thu khác không được âm")
-      .nullable(),
-    note: z.string().max(1000, "Ghi chú tối đa 1000 ký tự").nullable().optional(),
+    room_revenue: z.number().min(0, "Doanh thu phòng không được âm").nullable(),
+    other_revenue: z.number().min(0, "Doanh thu khác không được âm").nullable(),
+    note: z
+      .string()
+      .max(1000, "Ghi chú tối đa 1000 ký tự")
+      .nullable()
+      .optional(),
   })
   .refine(
     (data) => {
@@ -73,4 +71,6 @@ export const unlockMonthlyFiguresSchema = z.object({
 export type MonthlyFiguresRowInput = z.infer<typeof monthlyFiguresRowSchema>;
 export type SaveMonthlyFiguresInput = z.infer<typeof saveMonthlyFiguresSchema>;
 export type LockMonthlyFiguresInput = z.infer<typeof lockMonthlyFiguresSchema>;
-export type UnlockMonthlyFiguresInput = z.infer<typeof unlockMonthlyFiguresSchema>;
+export type UnlockMonthlyFiguresInput = z.infer<
+  typeof unlockMonthlyFiguresSchema
+>;

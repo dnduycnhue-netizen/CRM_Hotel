@@ -11,6 +11,7 @@ import {
   Tag,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,12 +46,18 @@ export function VoucherListTable({
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [redeemDialogOpen, setRedeemDialogOpen] = useState(false);
   const [selectedVoucherForRedeem, setSelectedVoucherForRedeem] = useState<
-    string | undefined
+    | {
+        code: string;
+        branchId?: string;
+        guestId?: string;
+      }
+    | undefined
   >(undefined);
 
   function copyCode(code: string) {
     navigator.clipboard.writeText(code);
     setCopiedCode(code);
+    toast.success(`Đã sao chép mã voucher ${code}`);
     setTimeout(() => setCopiedCode(null), 2000);
   }
 
@@ -284,7 +291,7 @@ export function VoucherListTable({
                         </span>
                         {isOutOfLimit && (
                           <span className="text-rose-400 font-semibold">
-                            Hết lượt
+                            Đã hết lượt
                           </span>
                         )}
                       </div>
@@ -328,7 +335,11 @@ export function VoucherListTable({
                           isExpired || isOutOfLimit || v.status !== "active"
                         }
                         onClick={() => {
-                          setSelectedVoucherForRedeem(v.code);
+                          setSelectedVoucherForRedeem({
+                            code: v.code,
+                            branchId: v.applicable_branch_id || undefined,
+                            guestId: v.target_guest_id || undefined,
+                          });
                           setRedeemDialogOpen(true);
                         }}
                         className="h-7 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
@@ -359,7 +370,9 @@ export function VoucherListTable({
         onOpenChange={setRedeemDialogOpen}
         branches={branches}
         guests={guests}
-        defaultCode={selectedVoucherForRedeem}
+        defaultCode={selectedVoucherForRedeem?.code}
+        defaultBranchId={selectedVoucherForRedeem?.branchId}
+        defaultGuestId={selectedVoucherForRedeem?.guestId}
         onSuccess={() => onRefresh?.()}
       />
     </div>

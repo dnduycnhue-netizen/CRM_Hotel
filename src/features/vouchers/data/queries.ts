@@ -291,14 +291,19 @@ export async function getActiveBranches(): Promise<
  * Lấy danh sách khách hàng để chọn trong dialog
  */
 export async function getGuestsForSelection(
-  limit: number = 20,
+  limit: number = 100,
 ): Promise<Array<{ id: string; full_name: string; phone: string | null }>> {
   const supabase = await createClient();
-  const { data } = await (supabase.from("guests") as any)
+  const { data, error } = await (supabase.from("guests") as any)
     .select("id, full_name, phone")
-    .eq("status", "active")
+    .is("merged_into", null)
     .order("full_name", { ascending: true })
     .limit(limit);
+
+  if (error) {
+    console.error("Lỗi getGuestsForSelection:", error);
+    return [];
+  }
 
   return data || [];
 }

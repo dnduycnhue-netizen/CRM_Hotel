@@ -336,13 +336,15 @@ export function AppSidebar() {
               Hệ thống Live
             </span>
           </div>
-          <Link
-            href="/settings/branches"
-            className="text-[10px] text-muted-foreground hover:text-primary flex items-center gap-0.5 font-medium transition-colors"
-          >
-            <span>Quản lý</span>
-            <ChevronRight className="h-3 w-3" />
-          </Link>
+          {can("settings.branches") && (
+            <Link
+              href="/settings/branches"
+              className="text-[10px] text-muted-foreground hover:text-primary flex items-center gap-0.5 font-medium transition-colors"
+            >
+              <span>Quản lý</span>
+              <ChevronRight className="h-3 w-3" />
+            </Link>
+          )}
         </div>
       </div>
     </aside>

@@ -24,7 +24,8 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
-import React, { useMemo, useState, useTransition } from "react";
+import type React from "react";
+import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   activateLoyaltyPolicyAction,
@@ -226,6 +227,15 @@ export function LoyaltyPoliciesView({
   function handleSaveTier(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedPolicy) return;
+
+    if (tierFormData.discountPct < 0 || tierFormData.discountPct > 100) {
+      toast.error("Tỷ lệ giảm giá (%) phải nằm trong khoảng từ 0% đến 100%");
+      return;
+    }
+    if (tierFormData.minValue < 0) {
+      toast.error("Ngưỡng tích lũy không được là số âm");
+      return;
+    }
 
     startTransition(async () => {
       const res = await upsertLoyaltyTierAction({
