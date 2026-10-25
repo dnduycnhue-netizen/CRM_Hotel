@@ -37,11 +37,8 @@ export function LoginForm() {
   const [emailValue, setEmailValue] = useState("");
   const [passwordValue, setPasswordValue] = useState("");
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleFormAction = async (formData: FormData) => {
     setErrorMessage(null);
-    const formData = new FormData(event.currentTarget);
-
     startTransition(async () => {
       const res = await loginAction(formData);
       if (res && !res.ok) {
@@ -50,6 +47,12 @@ export function LoginForm() {
         );
       }
     });
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    handleFormAction(formData);
   };
 
   const handleQuickFill = (email: string) => {
@@ -93,7 +96,11 @@ export function LoginForm() {
             </Suspense>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form
+            action={handleFormAction}
+            onSubmit={handleSubmit}
+            className="space-y-4"
+          >
             {errorMessage && (
               <div className="rounded-xl bg-rose-500/15 p-3 text-xs font-semibold text-rose-300 border border-rose-500/30 flex items-start gap-2">
                 <span className="shrink-0 text-rose-400 font-bold">⚠️</span>
