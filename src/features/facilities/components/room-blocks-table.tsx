@@ -123,7 +123,12 @@ export function RoomBlocksTable({
         </div>
 
         <Button
-          onClick={() => setShowModal(true)}
+          onClick={() => {
+            if (selectedBranch !== "all") {
+              setModalBranch(selectedBranch);
+            }
+            setShowModal(true);
+          }}
           className="rounded-xl font-medium bg-amber-600 hover:bg-amber-700 text-white"
         >
           <Plus className="w-4 h-4 mr-1.5" />

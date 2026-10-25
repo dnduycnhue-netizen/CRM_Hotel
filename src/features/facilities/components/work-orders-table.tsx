@@ -6,6 +6,7 @@ import {
   CheckSquare,
   Clock,
   DoorOpen,
+  Eye,
   Lock,
   Play,
   Plus,
@@ -441,6 +442,20 @@ export function WorkOrdersTable({
                               Nghiệm thu
                             </Button>
                           )}
+
+                          <Link
+                            href={`/facilities/work-orders/${wo.number}`}
+                            className="inline-flex items-center justify-center"
+                          >
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+                              title="Xem chi tiết phiếu sự cố"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </Button>
+                          </Link>
                         </div>
                       </td>
                     </tr>

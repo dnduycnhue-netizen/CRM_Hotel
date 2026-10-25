@@ -5,28 +5,38 @@ import {
   Boxes,
   Building2,
   DoorOpen,
+  Plus,
   QrCode,
   RefreshCw,
+  X,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/shared/ui";
 import { formatDateVN } from "@/shared/utils/date";
-import { updateAssetStatusAction } from "../actions";
+import { createAssetAction, updateAssetStatusAction } from "../actions";
 import type { Asset, AssetStatus } from "../types";
 
 interface AssetsTableProps {
   initialAssets: Asset[];
   branches: Array<{ id: string; name: string; code: string }>;
+  categories?: Array<{ id: string; code: string; name: string }>;
+  rooms?: Array<{ id: string; number: string; branchId: string }>;
   currentBranchId: string | null;
+  canManage?: boolean;
 }
 
 export function AssetsTable({
   initialAssets,
   branches,
+  categories = [],
+  rooms = [],
   currentBranchId,
+  canManage = true,
 }: AssetsTableProps) {
+  const router = useRouter();
   const [selectedBranch, setSelectedBranch] = useState<string>(
     branches.length === 1 ? branches[0].id : currentBranchId || "all",
   );
@@ -36,6 +46,30 @@ export function AssetsTable({
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [targetStatus, setTargetStatus] = useState<AssetStatus>("in_use");
   const [statusNote, setStatusNote] = useState("");
+
+  // Add Asset modal state
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addErrorMsg, setAddErrorMsg] = useState<string | null>(null);
+  const defaultBranchId =
+    (selectedBranch !== "all" ? selectedBranch : currentBranchId) ||
+    branches[0]?.id ||
+    "";
+  const [formBranchId, setFormBranchId] = useState(defaultBranchId);
+  const [formCategoryId, setFormCategoryId] = useState(
+    categories[0]?.id || "",
+  );
+  const [formName, setFormName] = useState("");
+  const [formCode, setFormCode] = useState("");
+  const [formRoomId, setFormRoomId] = useState("");
+  const [formBrand, setFormBrand] = useState("");
+  const [formModel, setFormModel] = useState("");
+  const [formSerialNo, setFormSerialNo] = useState("");
+  const [formPurchaseDate, setFormPurchaseDate] = useState("");
+  const [formPurchaseCost, setFormPurchaseCost] = useState<string>("");
+  const [formWarrantyUntil, setFormWarrantyUntil] = useState("");
+  const [formQuantity, setFormQuantity] = useState(1);
+  const [formStatus, setFormStatus] = useState<AssetStatus>("in_use");
+  const [formNote, setFormNote] = useState("");
 
   const handleOpenStatusModal = (asset: Asset) => {
     setEditingAsset(asset);
@@ -66,6 +100,91 @@ export function AssetsTable({
         toast.error(
           res.error.message || "Không thể cập nhật trạng thái thiết bị",
         );
+      }
+    });
+  };
+
+  const modalRooms = rooms.filter((r) => r.branchId === formBranchId);
+
+  const handleOpenAddModal = () => {
+    setAddErrorMsg(null);
+    const branch =
+      (selectedBranch !== "all" ? selectedBranch : currentBranchId) ||
+      branches[0]?.id ||
+      "";
+    setFormBranchId(branch);
+    const cat = categories[0]?.id || "";
+    setFormCategoryId(cat);
+    setFormName("");
+    setFormCode("");
+    setFormRoomId("");
+    setFormBrand("");
+    setFormModel("");
+    setFormSerialNo("");
+    setFormPurchaseDate("");
+    setFormPurchaseCost("");
+    setFormWarrantyUntil("");
+    setFormQuantity(1);
+    setFormStatus("in_use");
+    setFormNote("");
+    setShowAddModal(true);
+  };
+
+  const handleCreateAsset = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddErrorMsg(null);
+
+    if (!formBranchId) {
+      setAddErrorMsg("Vui lòng chọn cơ sở quản lý tài sản");
+      return;
+    }
+    if (!formCategoryId) {
+      setAddErrorMsg("Vui lòng chọn nhóm phân loại thiết bị");
+      return;
+    }
+    if (!formName.trim()) {
+      setAddErrorMsg("Vui lòng nhập tên thiết bị");
+      return;
+    }
+
+    const branch = branches.find((b) => b.id === formBranchId);
+    const cat = categories.find((c) => c.id === formCategoryId);
+    const autoCode = `${(cat?.code || "EQ").toUpperCase().slice(0, 4)}-${(branch?.code || "BR").toUpperCase().slice(0, 3)}-${Date.now().toString().slice(-4)}`;
+    const finalCode = (formCode.trim() || autoCode)
+      .toUpperCase()
+      .replace(/[^A-Z0-9-]/g, "");
+
+    if (finalCode.length < 3) {
+      setAddErrorMsg("Mã tài sản phải có tối thiểu 3 ký tự");
+      return;
+    }
+
+    startTransition(async () => {
+      const res = await createAssetAction({
+        branch_id: formBranchId,
+        category_id: formCategoryId,
+        name: formName.trim(),
+        code: finalCode,
+        room_id: formRoomId || null,
+        brand: formBrand.trim() || null,
+        model: formModel.trim() || null,
+        serial_no: formSerialNo.trim() || null,
+        purchase_date: formPurchaseDate || null,
+        purchase_cost: formPurchaseCost ? Number(formPurchaseCost) : null,
+        warranty_until: formWarrantyUntil || null,
+        quantity: Number(formQuantity) || 1,
+        status: formStatus,
+        note: formNote.trim() || null,
+      });
+
+      if (res.ok) {
+        toast.success(`Đã thêm thiết bị ${finalCode} thành công`);
+        setShowAddModal(false);
+        router.refresh();
+      } else {
+        const msg = res.error?.message || "Không thể tạo tài sản";
+        setAddErrorMsg(msg);
+        toast.error(msg);
       }
     });
   };
@@ -140,12 +259,27 @@ export function AssetsTable({
           </p>
         </div>
 
-        <Link href="/facilities/report">
-          <Button className="rounded-xl font-medium bg-indigo-600 hover:bg-indigo-700 text-white">
-            <AlertTriangle className="w-4 h-4 mr-1.5" />
-            Báo hỏng thiết bị
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2.5">
+          {canManage && (
+            <Button
+              onClick={handleOpenAddModal}
+              className="rounded-xl font-medium bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              <Plus className="w-4 h-4 mr-1.5" />
+              Thêm tài sản
+            </Button>
+          )}
+
+          <Link href="/facilities/report">
+            <Button
+              variant="outline"
+              className="rounded-xl font-medium border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              <AlertTriangle className="w-4 h-4 mr-1.5 text-amber-500" />
+              Báo hỏng thiết bị
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Filter toolbar */}
@@ -388,6 +522,263 @@ export function AssetsTable({
                   className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium"
                 >
                   {isPending ? "Đang lưu..." : "Lưu trạng thái"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Asset Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+          <div className="w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <Boxes className="w-5 h-5 text-emerald-600" />
+                Thêm tài sản / Trang thiết bị mới
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {addErrorMsg && (
+              <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 text-xs font-semibold">
+                {addErrorMsg}
+              </div>
+            )}
+
+            <form onSubmit={handleCreateAsset} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                    Cơ sở khách sạn <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    required
+                    value={formBranchId}
+                    onChange={(e) => {
+                      setFormBranchId(e.target.value);
+                      setFormRoomId("");
+                    }}
+                    className="w-full text-xs font-medium px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
+                  >
+                    {branches.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                    Nhóm phân loại <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    required
+                    value={formCategoryId}
+                    onChange={(e) => setFormCategoryId(e.target.value)}
+                    className="w-full text-xs font-medium px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
+                  >
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                    Tên tài sản / Thiết bị{" "}
+                    <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    placeholder="VD: Điều hòa Daikin Inverter 12000BTU, Máy phát điện Cummins 150kVA..."
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                    Mã tài sản / Tem QR (Tùy chọn tự sinh)
+                  </label>
+                  <input
+                    type="text"
+                    value={formCode}
+                    onChange={(e) =>
+                      setFormCode(
+                        e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ""),
+                      )
+                    }
+                    placeholder="Để trống hệ thống sẽ tự sinh mã..."
+                    className="w-full text-xs font-mono uppercase px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                    Phòng lắp đặt (Nếu có)
+                  </label>
+                  <select
+                    value={formRoomId}
+                    onChange={(e) => setFormRoomId(e.target.value)}
+                    className="w-full text-xs font-medium px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
+                  >
+                    <option value="">-- Khu vực chung / Chưa gắn phòng --</option>
+                    {modalRooms.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        Phòng {r.number}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                    Thương hiệu / Hãng sản xuất
+                  </label>
+                  <input
+                    type="text"
+                    value={formBrand}
+                    onChange={(e) => setFormBrand(e.target.value)}
+                    placeholder="VD: Daikin, Mitsubishi, Panasonic..."
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                    Model
+                  </label>
+                  <input
+                    type="text"
+                    value={formModel}
+                    onChange={(e) => setFormModel(e.target.value)}
+                    placeholder="VD: FTKB35XVMV, CU-PU12XKH-8..."
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                    Số Serial
+                  </label>
+                  <input
+                    type="text"
+                    value={formSerialNo}
+                    onChange={(e) => setFormSerialNo(e.target.value)}
+                    placeholder="VD: SN-202488392..."
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                    Ngày mua
+                  </label>
+                  <input
+                    type="date"
+                    value={formPurchaseDate}
+                    onChange={(e) => setFormPurchaseDate(e.target.value)}
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                    Giá trị mua (VND)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1000"
+                    value={formPurchaseCost}
+                    onChange={(e) => setFormPurchaseCost(e.target.value)}
+                    placeholder="VD: 15000000"
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                    Hạn bảo hành
+                  </label>
+                  <input
+                    type="date"
+                    value={formWarrantyUntil}
+                    onChange={(e) => setFormWarrantyUntil(e.target.value)}
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                    Số lượng
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formQuantity}
+                    onChange={(e) => setFormQuantity(Number(e.target.value) || 1)}
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                    Trạng thái ban đầu
+                  </label>
+                  <select
+                    value={formStatus}
+                    onChange={(e) => setFormStatus(e.target.value as AssetStatus)}
+                    className="w-full text-xs font-medium px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
+                  >
+                    <option value="in_use">Đang hoạt động</option>
+                    <option value="in_storage">Trong kho lưu trữ</option>
+                    <option value="under_repair">Đang bảo hành / sửa chữa</option>
+                  </select>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                    Ghi chú chi tiết
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={formNote}
+                    onChange={(e) => setFormNote(e.target.value)}
+                    placeholder="Thông số kỹ thuật bổ sung, nhà cung cấp, hướng dẫn bảo dưỡng..."
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowAddModal(false)}
+                  className="rounded-xl"
+                >
+                  Hủy
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+                >
+                  {isPending ? "Đang lưu..." : "Thêm tài sản"}
                 </Button>
               </div>
             </form>

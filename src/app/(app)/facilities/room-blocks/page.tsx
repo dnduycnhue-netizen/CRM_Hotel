@@ -17,9 +17,10 @@ export default async function RoomBlocksPage() {
   if (!session.can("room.block")) {
     redirect("/");
   }
-  const canViewChain = session.can("report.view_chain");
+  const canViewChain =
+    session.can("report.view_chain") || session.branchIds.length > 1;
   const allBranches = await getActiveBranches();
-  const branches = canViewChain
+  const branches = session.can("report.view_chain")
     ? allBranches
     : allBranches.filter((b) => session.branchIds.includes(b.id));
 
@@ -32,11 +33,21 @@ export default async function RoomBlocksPage() {
     getRooms(branchId),
   ]);
 
+  const visibleBlocks =
+    canViewChain && !session.can("report.view_chain")
+      ? blocks.filter((b) => session.branchIds.includes(b.branch_id))
+      : blocks;
+
+  const visibleRooms =
+    canViewChain && !session.can("report.view_chain")
+      ? rooms.filter((r) => session.branchIds.includes(r.branchId))
+      : rooms;
+
   return (
     <RoomBlocksTable
-      initialBlocks={blocks}
+      initialBlocks={visibleBlocks}
       branches={branches}
-      rooms={rooms.map((r) => ({
+      rooms={visibleRooms.map((r) => ({
         id: r.id,
         number: r.number,
         type: r.roomType || "Standard",

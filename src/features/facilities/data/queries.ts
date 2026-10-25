@@ -425,3 +425,16 @@ export async function getStaffForBranch(
   if (error || !data) return [];
   return data as unknown as Array<{ id: string; full_name: string }>;
 }
+
+export async function getAssetCategories(): Promise<
+  Array<{ id: string; code: string; name: string }>
+> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("asset_categories")
+    .select("id, code, name")
+    .order("name");
+
+  if (error || !data) return [];
+  return data as unknown as Array<{ id: string; code: string; name: string }>;
+}

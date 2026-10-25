@@ -111,13 +111,31 @@ export function ComplianceManager({
   const [quickViewCell, setQuickViewCell] =
     useState<ComplianceMatrixCell | null>(null);
 
-  // Statistics
-  const activeCells = matrix.cells.filter((c) => c.doc_id);
-  const expiredCount = activeCells.filter((c) => c.status === "expired").length;
-  const expiringCount = activeCells.filter(
+  // Statistics (filtered by selectedBranch)
+  const scopedCells = useMemo(() => {
+    return matrix.cells.filter(
+      (c) =>
+        c.doc_id &&
+        (selectedBranch === "all" || c.branch_id === selectedBranch),
+    );
+  }, [matrix.cells, selectedBranch]);
+
+  const expiredCount = scopedCells.filter((c) => c.status === "expired").length;
+  const expiringCount = scopedCells.filter(
     (c) => c.status === "expiring",
   ).length;
-  const goodCount = activeCells.filter((c) => c.status === "good").length;
+  const goodCount = scopedCells.filter((c) => c.status === "good").length;
+
+  const displayBranches = useMemo(() => {
+    const branchMap = new Map<string, { id: string; name: string }>();
+    branches.forEach((b) => branchMap.set(b.id, { id: b.id, name: b.name }));
+    matrix.branches.forEach((b) =>
+      branchMap.set(b.id, { id: b.id, name: b.name }),
+    );
+    return Array.from(branchMap.values()).filter(
+      (b) => selectedBranch === "all" || b.id === selectedBranch,
+    );
+  }, [branches, matrix.branches, selectedBranch]);
 
   const currentSelectedDocType = useMemo(
     () => docTypes.find((dt) => dt.id === formDocTypeId),
@@ -359,7 +377,7 @@ export function ComplianceManager({
               Tổng số hồ sơ hiện có
             </p>
             <p className="text-2xl font-bold text-slate-100 mt-1">
-              {activeCells.length}
+              {scopedCells.length}
             </p>
           </div>
           <span className="p-3 rounded-xl bg-slate-800 text-slate-300">
@@ -424,7 +442,7 @@ export function ComplianceManager({
             }`}
           >
             <LayoutGrid className="w-4 h-4" />
-            <span>Ma trận pháp lý ({matrix.branches.length} cơ sở)</span>
+            <span>Ma trận pháp lý ({displayBranches.length} cơ sở)</span>
           </button>
 
           <button
@@ -505,15 +523,11 @@ export function ComplianceManager({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/80">
-                {matrix.branches
-                  .filter(
-                    (b) => selectedBranch === "all" || b.id === selectedBranch,
-                  )
-                  .map((b) => (
-                    <tr
-                      key={b.id}
-                      className="hover:bg-slate-800/30 transition-colors"
-                    >
+                {displayBranches.map((b) => (
+                  <tr
+                    key={b.id}
+                    className="hover:bg-slate-800/30 transition-colors"
+                  >
                       {/* Branch Name sticky column */}
                       <td className="py-3 px-4 font-semibold text-slate-100 sticky left-0 bg-slate-900 z-10 border-r border-slate-800 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">

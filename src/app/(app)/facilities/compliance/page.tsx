@@ -25,9 +25,10 @@ export default async function CompliancePage() {
     redirect("/");
   }
 
-  const canViewChain = session.can("report.view_chain");
+  const canViewChain =
+    session.can("report.view_chain") || session.branchIds.length > 1;
   const allBranches = await getActiveBranches();
-  const branches = canViewChain
+  const branches = session.can("report.view_chain")
     ? allBranches
     : allBranches.filter((b) => session.branchIds.includes(b.id));
 
@@ -57,7 +58,9 @@ export default async function CompliancePage() {
           code: a.code,
           branch_id: a.branch_id,
         }))}
-        canManage={session.can("compliance.manage")}
+        canManage={
+          session.can("compliance.manage") || session.can("facility.manage")
+        }
       />
     </div>
   );
