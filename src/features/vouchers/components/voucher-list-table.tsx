@@ -94,7 +94,8 @@ export function VoucherListTable({
               Quản lý Voucher & Mã giảm giá ({filteredVouchers.length})
             </h3>
             <p className="text-xs text-muted-foreground">
-              Phát hành ưu đãi, kiểm soát ngân sách chiết khấu và theo dõi lượt đổi
+              Phát hành ưu đãi, kiểm soát ngân sách chiết khấu và theo dõi lượt
+              đổi
             </p>
           </div>
         </div>
@@ -272,6 +273,13 @@ export function VoucherListTable({
                         >
                           Đã hết hạn
                         </Badge>
+                      ) : isOutOfLimit ? (
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] text-amber-600 border-amber-500/30 bg-amber-50 dark:bg-amber-950/20 mt-0.5"
+                        >
+                          Đã dùng hết
+                        </Badge>
                       ) : (
                         <Badge
                           variant="outline"
@@ -317,7 +325,9 @@ export function VoucherListTable({
                             {v.target_guest_name}
                           </span>
                         ) : (
-                          <span className="text-muted-foreground">Tất cả khách</span>
+                          <span className="text-muted-foreground">
+                            Tất cả khách
+                          </span>
                         )}
                       </div>
                       <div className="text-[11px] text-muted-foreground">

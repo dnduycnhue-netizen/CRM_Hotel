@@ -643,25 +643,33 @@ export function DashboardOverview({
 
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                      <div className="text-slate-400 text-[11px]">Đêm phòng bán</div>
+                      <div className="text-slate-400 text-[11px]">
+                        Đêm phòng bán
+                      </div>
                       <div className="text-base font-bold text-slate-800 dark:text-slate-200 mt-0.5">
                         {by_branch[0].current.room_nights}
                       </div>
                     </div>
                     <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                      <div className="text-slate-400 text-[11px]">Lượt khách đến</div>
+                      <div className="text-slate-400 text-[11px]">
+                        Lượt khách đến
+                      </div>
                       <div className="text-base font-bold text-slate-800 dark:text-slate-200 mt-0.5">
                         {by_branch[0].current.arrivals}
                       </div>
                     </div>
                     <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                      <div className="text-slate-400 text-[11px]">Khách quen quay lại</div>
+                      <div className="text-slate-400 text-[11px]">
+                        Khách quen quay lại
+                      </div>
                       <div className="text-base font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
                         {by_branch[0].current.returning_rate}%
                       </div>
                     </div>
                     <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                      <div className="text-slate-400 text-[11px]">Lưu trú BQ (ALOS)</div>
+                      <div className="text-slate-400 text-[11px]">
+                        Lưu trú BQ (ALOS)
+                      </div>
                       <div className="text-base font-bold text-slate-800 dark:text-slate-200 mt-0.5">
                         {by_branch[0].current.alos} đêm
                       </div>

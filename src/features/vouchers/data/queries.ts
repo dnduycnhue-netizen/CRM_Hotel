@@ -288,22 +288,28 @@ export async function getActiveBranches(): Promise<
 }
 
 /**
- * Lấy danh sách khách hàng để chọn trong dialog
+ * Lấy danh sách khách hàng để chọn trong dialog (gọi RPC Security Definer tránh bị RLS chặn)
  */
 export async function getGuestsForSelection(
   limit: number = 100,
+  search?: string,
 ): Promise<Array<{ id: string; full_name: string; phone: string | null }>> {
   const supabase = await createClient();
-  const { data, error } = await (supabase.from("guests") as any)
-    .select("id, full_name, phone")
-    .is("merged_into", null)
-    .order("full_name", { ascending: true })
-    .limit(limit);
+  const { data, error } = await supabase.rpc(
+    "get_guests_for_selection" as never,
+    {
+      p_limit: limit,
+      p_search: search?.trim() || null,
+    } as never,
+  );
 
   if (error) {
-    console.error("Lỗi getGuestsForSelection:", error);
+    console.error("Lỗi getGuestsForSelection RPC:", error);
     return [];
   }
 
-  return data || [];
+  return (
+    (data as Array<{ id: string; full_name: string; phone: string | null }>) ||
+    []
+  );
 }

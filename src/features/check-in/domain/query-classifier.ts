@@ -17,8 +17,8 @@ export function classifyQuery(input: string): {
     return { kind: "phone", cleanValue: phone };
   }
 
-  // 2. CCCD Việt Nam (12 chữ số)
-  if (/^[0-9]{12}$/.test(digitsOnly)) {
+  // 2. CCCD Việt Nam (12 chữ số) hoặc CMND cũ (9 chữ số)
+  if (/^[0-9]{9}$|^[0-9]{12}$/.test(digitsOnly)) {
     return { kind: "cccd", cleanValue: digitsOnly };
   }
 

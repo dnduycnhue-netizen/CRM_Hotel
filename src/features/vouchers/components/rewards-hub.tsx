@@ -57,7 +57,11 @@ export function RewardsHub({
               {stats.birthdaysNext7Days}
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5">
-              Trong 30 ngày: <span className="font-semibold text-foreground">{stats.birthdaysNext30Days}</span> khách
+              Trong 30 ngày:{" "}
+              <span className="font-semibold text-foreground">
+                {stats.birthdaysNext30Days}
+              </span>{" "}
+              khách
             </p>
           </div>
           <span className="p-3 rounded-2xl bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/20">
@@ -93,7 +97,11 @@ export function RewardsHub({
               {stats.activeVouchersCount}
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5">
-              Đã đổi: <span className="font-semibold text-foreground">{stats.totalVouchersRedeemed}</span> lượt
+              Đã đổi:{" "}
+              <span className="font-semibold text-foreground">
+                {stats.totalVouchersRedeemed}
+              </span>{" "}
+              lượt
             </p>
           </div>
           <span className="p-3 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">

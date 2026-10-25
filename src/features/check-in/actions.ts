@@ -112,18 +112,40 @@ export async function checkInGuestAction(
     const supabase = await createClient();
 
     // Resolve channel UUID
-    let channelId = data.sourceChannelCode;
+    let channelCodeOrId = data.sourceChannelCode;
+    const channelAliases: Record<string, string> = {
+      ota_booking: "booking_com",
+      ota_agoda: "agoda",
+      ota_expedia: "expedia",
+      direct_phone: "phone_zalo",
+    };
+    if (channelAliases[channelCodeOrId]) {
+      channelCodeOrId = channelAliases[channelCodeOrId];
+    }
+
+    let channelId = channelCodeOrId;
     const isUuid =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-        channelId,
+        channelCodeOrId,
       );
     if (!isUuid) {
       const { data: ch } = await (supabase.from("source_channels") as any)
         .select("id")
-        .eq("code", channelId)
+        .eq("code", channelCodeOrId)
         .maybeSingle();
       if (ch) {
         channelId = (ch as any).id;
+      } else {
+        // Fallback về walk_in nếu mã kênh không khớp
+        const { data: fallbackCh } = await (
+          supabase.from("source_channels") as any
+        )
+          .select("id")
+          .eq("code", "walk_in")
+          .maybeSingle();
+        if (fallbackCh) {
+          channelId = (fallbackCh as any).id;
+        }
       }
     }
 

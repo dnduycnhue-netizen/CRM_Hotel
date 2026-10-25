@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +26,18 @@ import type {
   GroupBookingStatus,
   Partner,
 } from "../types";
+
+function formatToDateTimeLocal(dateStr?: string | null): string {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "";
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
 
 interface GroupBookingDialogProps {
   open: boolean;
@@ -59,18 +71,22 @@ export function GroupBookingDialog({
   const [leaderPhone, setLeaderPhone] = useState(booking?.leader_phone || "");
   const [leaderEmail, setLeaderEmail] = useState(booking?.leader_email || "");
 
-  // Format ISO strings to datetime-local values (YYYY-MM-DDTHH:mm)
-  const defaultCheckIn = booking?.expected_check_in_at
-    ? new Date(booking.expected_check_in_at).toISOString().slice(0, 16)
-    : new Date(Date.now() + 24 * 3600 * 1000).toISOString().slice(0, 10) +
-      "T14:00";
-  const defaultCheckOut = booking?.expected_check_out_at
-    ? new Date(booking.expected_check_out_at).toISOString().slice(0, 16)
-    : new Date(Date.now() + 4 * 24 * 3600 * 1000).toISOString().slice(0, 10) +
-      "T12:00";
+  const getInitialCheckIn = () =>
+    booking?.expected_check_in_at
+      ? formatToDateTimeLocal(booking.expected_check_in_at)
+      : formatToDateTimeLocal(
+          new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
+        ).slice(0, 10) + "T14:00";
 
-  const [checkIn, setCheckIn] = useState(defaultCheckIn);
-  const [checkOut, setCheckOut] = useState(defaultCheckOut);
+  const getInitialCheckOut = () =>
+    booking?.expected_check_out_at
+      ? formatToDateTimeLocal(booking.expected_check_out_at)
+      : formatToDateTimeLocal(
+          new Date(Date.now() + 4 * 24 * 3600 * 1000).toISOString(),
+        ).slice(0, 10) + "T12:00";
+
+  const [checkIn, setCheckIn] = useState(getInitialCheckIn);
+  const [checkOut, setCheckOut] = useState(getInitialCheckOut);
   const [roomsCount, setRoomsCount] = useState(
     booking?.rooms_count !== undefined ? String(booking.rooms_count) : "5",
   );
@@ -94,6 +110,43 @@ export function GroupBookingDialog({
   const [note, setNote] = useState(booking?.note || "");
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (open) {
+      setBranchId(
+        booking?.branch_id || defaultBranchId || (branches[0]?.id ?? ""),
+      );
+      setPartnerId(booking?.partner_id || "");
+      setGroupName(booking?.group_name || "");
+      setLeaderName(booking?.leader_name || "");
+      setLeaderPhone(booking?.leader_phone || "");
+      setLeaderEmail(booking?.leader_email || "");
+      setCheckIn(getInitialCheckIn());
+      setCheckOut(getInitialCheckOut());
+      setRoomsCount(
+        booking?.rooms_count !== undefined ? String(booking.rooms_count) : "5",
+      );
+      setGuestsCount(
+        booking?.guests_count !== undefined
+          ? String(booking.guests_count)
+          : "10",
+      );
+      setStatus(booking?.status || "confirmed");
+      setEstimatedAmount(
+        booking?.estimated_amount !== undefined
+          ? String(booking.estimated_amount)
+          : "15000000",
+      );
+      setDepositAmount(
+        booking?.deposit_amount !== undefined
+          ? String(booking.deposit_amount)
+          : "5000000",
+      );
+      setBillingNote(booking?.billing_note || "");
+      setNote(booking?.note || "");
+      setErrors({});
+    }
+  }, [open, booking, defaultBranchId, branches]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -193,14 +193,18 @@ export function BirthdayListView({
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground font-medium">Hạng thành viên:</span>
+                    <span className="text-muted-foreground font-medium">
+                      Hạng thành viên:
+                    </span>
                     <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20">
                       {guest.tier_name || "Thành viên"}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground font-medium">Lịch sử lưu trú:</span>
+                    <span className="text-muted-foreground font-medium">
+                      Lịch sử lưu trú:
+                    </span>
                     <span className="text-foreground font-semibold">
                       {guest.total_stays} lượt ở
                     </span>
@@ -242,7 +246,10 @@ export function BirthdayListView({
                       )}
                       {guest.greeting_gift && (
                         <p className="text-[11px] text-muted-foreground">
-                          Quà: <span className="text-foreground font-medium">{guest.greeting_gift}</span>
+                          Quà:{" "}
+                          <span className="text-foreground font-medium">
+                            {guest.greeting_gift}
+                          </span>
                         </p>
                       )}
                     </div>

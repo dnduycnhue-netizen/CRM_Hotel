@@ -55,6 +55,7 @@ export function RedeemVoucherDialog({
 
   const [code, setCode] = useState(defaultCode || "");
   const [guestId, setGuestId] = useState(defaultGuestId || guests[0]?.id || "");
+  const [guestSearch, setGuestSearch] = useState("");
   const [branchId, setBranchId] = useState(
     defaultBranchId || branches[0]?.id || "",
   );
@@ -63,18 +64,39 @@ export function RedeemVoucherDialog({
 
   useEffect(() => {
     if (open) {
-      if (defaultCode) setCode(defaultCode);
+      if (defaultCode) setCode(defaultCode.trim().toUpperCase());
       if (defaultBranchId) setBranchId(defaultBranchId);
       setGuestId((prev) => defaultGuestId || prev || guests[0]?.id || "");
+      setGuestSearch("");
       setErrorMsg(null);
       setResult(null);
     }
   }, [open, defaultCode, defaultBranchId, defaultGuestId, guests]);
 
+  const filteredGuests = guests.filter((g) => {
+    if (!guestSearch.trim()) return true;
+    const q = guestSearch.trim().toLowerCase();
+    return g.full_name?.toLowerCase().includes(q) || g.phone?.includes(q);
+  });
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrorMsg(null);
     setResult(null);
+
+    if (!code.trim()) {
+      setErrorMsg("Vui lòng nhập mã voucher");
+      return;
+    }
+    if (!guestId) {
+      setErrorMsg("Vui lòng chọn khách hàng sử dụng voucher");
+      return;
+    }
+    if (!branchId) {
+      setErrorMsg("Vui lòng chọn cơ sở thực hiện");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -87,7 +109,7 @@ export function RedeemVoucherDialog({
       });
 
       if (!res.ok) {
-        setErrorMsg(res.error.message);
+        setErrorMsg(res.error.message || "Không thể áp dụng mã voucher này");
         return;
       }
 
@@ -199,24 +221,49 @@ export function RedeemVoucherDialog({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300">
-                Khách hàng sử dụng <span className="text-rose-400">*</span>
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-slate-300">
+                  Khách hàng sử dụng <span className="text-rose-400">*</span>
+                </Label>
+                {guests.length > 5 && (
+                  <span className="text-[11px] text-slate-400">
+                    {filteredGuests.length}/{guests.length} khách
+                  </span>
+                )}
+              </div>
+
+              {guests.length > 8 && (
+                <Input
+                  value={guestSearch}
+                  onChange={(e) => setGuestSearch(e.target.value)}
+                  placeholder="Lọc nhanh tên hoặc SĐT khách..."
+                  className="bg-slate-800/80 border-slate-700 text-slate-200 h-8 text-[11px] mb-1.5"
+                />
+              )}
+
               <Select
                 value={guestId}
                 onValueChange={(val) => val && setGuestId(val)}
               >
                 <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs">
                   <SelectValue placeholder="Chọn khách hàng">
-                    {guests.find((g) => g.id === guestId)?.full_name}
+                    {guests.find((g) => g.id === guestId)?.full_name ||
+                      (guests.length === 0
+                        ? "Không có dữ liệu khách hàng"
+                        : "Chọn khách hàng")}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700 text-slate-200 text-xs">
-                  {guests.map((g) => (
+                <SelectContent className="bg-slate-800 border-slate-700 text-slate-200 text-xs max-h-56">
+                  {filteredGuests.map((g) => (
                     <SelectItem key={g.id} value={g.id}>
                       {g.full_name} {g.phone ? `(${g.phone})` : ""}
                     </SelectItem>
                   ))}
+                  {filteredGuests.length === 0 && (
+                    <div className="p-2 text-center text-slate-400 text-xs">
+                      Không tìm thấy khách hàng phù hợp
+                    </div>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -232,7 +279,8 @@ export function RedeemVoucherDialog({
                 >
                   <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs">
                     <SelectValue placeholder="Chọn cơ sở">
-                      {branches.find((b) => b.id === branchId)?.name}
+                      {branches.find((b) => b.id === branchId)?.name ||
+                        "Chọn cơ sở"}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-700 text-slate-200 text-xs">

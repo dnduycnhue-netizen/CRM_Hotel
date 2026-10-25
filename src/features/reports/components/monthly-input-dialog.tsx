@@ -450,7 +450,13 @@ export function MonthlyInputDialog({
                 <input
                   type="month"
                   value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  onChange={(e) => {
+                    const newMonth = e.target.value;
+                    setSelectedMonth(newMonth);
+                    if (newMonth && newMonth.length === 7) {
+                      fetchMatrix(newMonth);
+                    }
+                  }}
                   className="bg-transparent font-bold text-xs text-slate-900 dark:text-slate-100 focus:outline-none cursor-pointer"
                 />
               </div>

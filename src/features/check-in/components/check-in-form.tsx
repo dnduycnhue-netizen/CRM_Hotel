@@ -97,6 +97,8 @@ export function CheckInForm({
   const [docNumber, setDocNumber] = useState("");
   const [selectedRoomId, setSelectedRoomId] = useState("");
   const [sourceChannel, setSourceChannel] = useState("walk_in");
+  const [roomPrice, setRoomPrice] = useState<number | string>("");
+  const [depositAmount, setDepositAmount] = useState<number | string>("");
   const [expectedCheckOut, setExpectedCheckOut] = useState(() => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -399,6 +401,8 @@ export function CheckInForm({
           countsForLoyalty: c.countsForLoyalty,
           notes: c.notes || undefined,
         })),
+        roomPrice: Number(roomPrice || 0),
+        depositAmount: Number(depositAmount || 0),
       });
 
       if (res.ok) {
@@ -416,6 +420,8 @@ export function CheckInForm({
         setGuestData(null);
         setGuestId(null);
         setSelectedRoomId("");
+        setRoomPrice("");
+        setDepositAmount("");
         setBlacklistAck(false);
         setCompanions([]);
         setConsents({ zalo: false, sms: false, email: false, phone: false });
@@ -526,12 +532,12 @@ export function CheckInForm({
                       {isLookingUp
                         ? "Đang tìm hồ sơ..."
                         : detectedKind === "phone"
-                        ? "Loại: Số điện thoại"
-                        : detectedKind === "cccd"
-                        ? "Loại: CCCD / CMND"
-                        : detectedKind === "passport"
-                        ? "Loại: Hộ chiếu"
-                        : "Loại: Tự động nhận diện"}
+                          ? "Loại: Số điện thoại"
+                          : detectedKind === "cccd"
+                            ? "Loại: CCCD / CMND"
+                            : detectedKind === "passport"
+                              ? "Loại: Hộ chiếu"
+                              : "Loại: Tự động nhận diện"}
                     </span>
                   </Label>
                   <div className="relative">
@@ -833,15 +839,24 @@ export function CheckInForm({
                       <option value="walk_in">
                         Khách vãng lai (Quầy lễ tân)
                       </option>
-                      <option value="direct_phone">
-                        Đặt qua hotline / Điện thoại
+                      <option value="phone_zalo">
+                        Đặt qua hotline / Điện thoại / Zalo
                       </option>
-                      <option value="ota_booking">Booking.com</option>
-                      <option value="ota_agoda">Agoda</option>
-                      <option value="ota_expedia">Expedia</option>
+                      <option value="website">Website khách sạn</option>
+                      <option value="social">Fanpage / Mạng xã hội</option>
+                      <option value="booking_com">Booking.com</option>
+                      <option value="agoda">Agoda</option>
+                      <option value="traveloka">Traveloka</option>
+                      <option value="expedia">Expedia</option>
+                      <option value="trip_com">Trip.com</option>
+                      <option value="airbnb">Airbnb</option>
                       <option value="corporate">
                         Hợp đồng công ty / Doanh nghiệp
                       </option>
+                      <option value="partner">
+                        Đối tác tour / Đại lý du lịch
+                      </option>
+                      <option value="other">Kênh khác</option>
                     </select>
                   </div>
 
@@ -859,6 +874,45 @@ export function CheckInForm({
                       onChange={(e) => setExpectedCheckOut(e.target.value)}
                       className="h-9.5 text-xs font-semibold rounded-xl"
                       required
+                    />
+                  </div>
+
+                  {/* Giá phòng & Tiền đặt cọc */}
+                  <div className="sm:col-span-6 space-y-1.5">
+                    <Label
+                      htmlFor="roomPrice"
+                      className="text-xs font-semibold text-muted-foreground"
+                    >
+                      Giá phòng (VNĐ/đêm)
+                    </Label>
+                    <Input
+                      id="roomPrice"
+                      type="number"
+                      min={0}
+                      step={10000}
+                      placeholder="VD: 500.000"
+                      value={roomPrice}
+                      onChange={(e) => setRoomPrice(e.target.value)}
+                      className="h-9.5 text-xs font-semibold rounded-xl"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-6 space-y-1.5">
+                    <Label
+                      htmlFor="depositAmount"
+                      className="text-xs font-semibold text-muted-foreground"
+                    >
+                      Tiền đặt cọc (VNĐ)
+                    </Label>
+                    <Input
+                      id="depositAmount"
+                      type="number"
+                      min={0}
+                      step={10000}
+                      placeholder="VD: 200.000"
+                      value={depositAmount}
+                      onChange={(e) => setDepositAmount(e.target.value)}
+                      className="h-9.5 text-xs font-semibold rounded-xl"
                     />
                   </div>
                 </div>

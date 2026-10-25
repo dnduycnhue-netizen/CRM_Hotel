@@ -56,6 +56,29 @@ export function RecordGreetingDialog({
   const [voucherDiscountPct, setVoucherDiscountPct] = useState(15);
   const [note, setNote] = useState("");
 
+  // Reset state when guest or dialog open state changes to prevent state leakage between guests
+  useEffect(() => {
+    if (open && guest) {
+      setErrorMsg(null);
+      setSuccessMsg(null);
+      setLoading(false);
+      setGiftDescription("");
+      setAutoIssueVoucher(true);
+      setVoucherDiscountPct(15);
+      setNote("");
+      if (!guest.marketing_consent) {
+        setChannel("phone");
+      } else {
+        setChannel("phone");
+      }
+      if (defaultBranchId) {
+        setBranchId(defaultBranchId);
+      } else if (branches.length > 0) {
+        setBranchId(branches[0].id);
+      }
+    }
+  }, [open, guest, defaultBranchId, branches]);
+
   useEffect(() => {
     if (guest && !guest.marketing_consent) {
       if (channel === "sms" || channel === "zalo" || channel === "email") {
@@ -68,13 +91,27 @@ export function RecordGreetingDialog({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!guest) return;
     setErrorMsg(null);
     setSuccessMsg(null);
+
+    // Kiểm tra cứng Nghị định 13 tại UI
+    if (
+      !guest?.marketing_consent &&
+      (channel === "sms" || channel === "zalo" || channel === "email")
+    ) {
+      setErrorMsg(
+        "Khách hàng chưa cấp quyền nhận tin tiếp thị theo Nghị định 13/2023. Kênh SMS, Zalo và Email đã bị khóa. Vui lòng chọn cuộc gọi điện thoại hoặc chúc trực tiếp tại quầy.",
+      );
+      setChannel("phone");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const res = await recordBirthdayGreetingAction({
-        guest_id: guest?.guest_id,
+        guest_id: guest.guest_id,
         branch_id: branchId,
         year: new Date().getFullYear(),
         channel,

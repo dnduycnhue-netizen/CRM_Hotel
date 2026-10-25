@@ -95,6 +95,18 @@ export const checkInSchema = z
         phone: false,
       }),
 
+    // Giá phòng và tiền cọc
+    roomPrice: z.coerce
+      .number()
+      .min(0, "Giá phòng không được âm")
+      .optional()
+      .default(0),
+    depositAmount: z.coerce
+      .number()
+      .min(0, "Tiền cọc không được âm")
+      .optional()
+      .default(0),
+
     notes: z.string().optional(),
   })
   .superRefine((val, ctx) => {
