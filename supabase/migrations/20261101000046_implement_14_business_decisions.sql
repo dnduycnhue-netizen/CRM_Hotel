@@ -186,12 +186,6 @@ begin
       order by valid_from desc
       limit 1;
 
-      if v_contract_rate is null then
-        select default_commission_rate into v_contract_rate
-        from public.partners
-        where id = p_partner_id;
-      end if;
-
       v_rate_pct := coalesce(v_contract_rate, 10);
       v_comm_amount := round(greatest(coalesce(p_estimated_amount, 0), 0) * v_rate_pct / 100.0, 2);
 
@@ -240,12 +234,6 @@ begin
         and (valid_to is null or valid_to >= current_date)
       order by valid_from desc
       limit 1;
-
-      if v_contract_rate is null then
-        select default_commission_rate into v_contract_rate
-        from public.partners
-        where id = p_partner_id;
-      end if;
 
       v_rate_pct := coalesce(v_contract_rate, 10);
       v_comm_amount := round(greatest(coalesce(p_estimated_amount, 0), 0) * v_rate_pct / 100.0, 2);
