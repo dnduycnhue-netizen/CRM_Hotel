@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertCircle, Cake, CheckCircle2, Gift, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -55,6 +55,14 @@ export function RecordGreetingDialog({
   const [autoIssueVoucher, setAutoIssueVoucher] = useState(true);
   const [voucherDiscountPct, setVoucherDiscountPct] = useState(15);
   const [note, setNote] = useState("");
+
+  useEffect(() => {
+    if (guest && !guest.marketing_consent) {
+      if (channel === "sms" || channel === "zalo" || channel === "email") {
+        setChannel("phone");
+      }
+    }
+  }, [guest, channel]);
 
   if (!guest) return null;
 
@@ -214,11 +222,17 @@ export function RecordGreetingDialog({
                 <SelectValue placeholder="Chọn kênh gửi" />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700 text-slate-200 text-xs">
-                {greetingChannels.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {greetingChannelLabels[c]}
-                  </SelectItem>
-                ))}
+                {greetingChannels.map((c) => {
+                  const isAutomated =
+                    c === "sms" || c === "zalo" || c === "email";
+                  const isDisabled = !guest.marketing_consent && isAutomated;
+                  return (
+                    <SelectItem key={c} value={c} disabled={isDisabled}>
+                      {greetingChannelLabels[c]}
+                      {isDisabled && " (Khóa theo NĐ 13)"}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>

@@ -57,7 +57,10 @@ export function WorkOrdersTable({
         ["closed", "cancelled"].includes(wo.status)
       )
         return false;
-      if (statusFilter === "urgent" && wo.priority !== "urgent") return false;
+      if (statusFilter === "urgent") {
+        if (wo.priority !== "urgent") return false;
+        if (["closed", "cancelled", "done"].includes(wo.status)) return false;
+      }
       if (statusFilter === "blocked" && !wo.blocks_room) return false;
       if (statusFilter === "done" && wo.status !== "done") return false;
     }

@@ -158,6 +158,26 @@ export async function recordBirthdayGreetingAction(
 
   const supabase = await createClient();
 
+  // Tuân thủ Nghị định 13/2023: Chặn tự động gửi tin nhắn tiếp thị nếu khách chưa đồng ý
+  const automatedChannels = ["sms", "zalo", "email"];
+  if (automatedChannels.includes(data.channel)) {
+    const { data: consentRows } = await supabase
+      .from("guest_consents")
+      .select("granted")
+      .eq("guest_id", data.guest_id)
+      .in("channel", ["marketing", data.channel])
+      .eq("granted", true)
+      .limit(1);
+
+    if (!consentRows || consentRows.length === 0) {
+      return fail(
+        "MARKETING_CONSENT_REQUIRED",
+        undefined,
+        "Khách hàng chưa đồng ý nhận tin tiếp thị (theo Nghị định 13/2023). Tuyệt đối không gửi tin nhắn tự động qua SMS/Zalo/Email. Vui lòng liên hệ qua cuộc gọi điện thoại, chúc trực tiếp tại quầy hoặc gửi tặng quà.",
+      );
+    }
+  }
+
   const { data: res, error } = await supabase.rpc(
     "record_birthday_greeting" as never,
     {
