@@ -24,8 +24,11 @@ export default async function PartnersPage() {
     redirect("/");
   }
 
-  const isChainAdmin = session.branchIds.length > 1;
-  const branchId = isChainAdmin ? null : session.currentBranchId;
+  const isChainAdmin =
+    session.can("report.view_chain") || session.can("partner.manage");
+  const branchId = isChainAdmin
+    ? null
+    : session.currentBranchId || session.branchIds[0];
 
   const overview = await getPartnersOverview(branchId);
   const allPermissions = Array.from(

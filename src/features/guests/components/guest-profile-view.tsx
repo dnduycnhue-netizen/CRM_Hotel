@@ -83,6 +83,7 @@ export function GuestProfileView({
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const [companionDialogOpen, setCompanionDialogOpen] = useState(false);
+  const [showFullDoc, setShowFullDoc] = useState(false);
 
   // Tier manual override modal state
   const [showOverrideModal, setShowOverrideModal] = useState(false);
@@ -516,7 +517,7 @@ export function GuestProfileView({
                 )}
 
                 {profile.documents.length > 0 && (
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1.5">
                     <span className="uppercase text-slate-400 font-semibold">
                       {profile.documents[0].type}:
                     </span>
@@ -524,23 +525,38 @@ export function GuestProfileView({
                       {(() => {
                         const num = profile.documents[0].number;
                         if (!num) return "—";
+                        if (showFullDoc && can.view_full) return num;
                         if (num.includes("*")) return num;
+                        // Định dạng che chuẩn CCCD: 3 số đầu + 5 sao + 4 số cuối
+                        if (num.length >= 9) {
+                          return `${num.slice(0, 3)}*****${num.slice(-4)}`;
+                        }
                         if (num.length > 4) {
-                          return "*".repeat(num.length - 4) + num.slice(-4);
+                          return `***${num.slice(-4)}`;
                         }
                         return num;
                       })()}
                     </code>
                     {can.view_full ? (
-                      <span
-                        title="Dữ liệu đầy đủ (đã ghi audit log)"
-                        className="inline-flex text-emerald-600"
+                      <button
+                        type="button"
+                        onClick={() => setShowFullDoc((prev) => !prev)}
+                        title={
+                          showFullDoc
+                            ? "Bấm để ẩn số giấy tờ"
+                            : "Bấm để hiện số giấy tờ đầy đủ (đã ghi audit log)"
+                        }
+                        className="inline-flex items-center text-emerald-600 hover:text-emerald-700 transition p-0.5 rounded cursor-pointer"
                       >
-                        <Unlock className="w-3 h-3 ml-0.5" />
-                      </span>
+                        {showFullDoc ? (
+                          <Unlock className="w-3.5 h-3.5" />
+                        ) : (
+                          <Lock className="w-3.5 h-3.5" />
+                        )}
+                      </button>
                     ) : (
                       <span
-                        title="Dữ liệu được che bảo mật"
+                        title="Dữ liệu được che bảo mật theo Nghị định 13/2023"
                         className="inline-flex text-slate-400"
                       >
                         <Lock className="w-3 h-3 ml-0.5" />

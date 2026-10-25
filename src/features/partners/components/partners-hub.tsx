@@ -120,6 +120,8 @@ export function PartnersHub({
   });
 
   const filteredGroups = initialGroupBookings.filter((g) => {
+    const matchesBranch =
+      isChainAdmin || !currentBranchId || g.branch_id === currentBranchId;
     const matchesSearch =
       g.group_name.toLowerCase().includes(groupSearch.toLowerCase()) ||
       g.code.toLowerCase().includes(groupSearch.toLowerCase()) ||
@@ -127,7 +129,7 @@ export function PartnersHub({
       g.partner_name?.toLowerCase().includes(groupSearch.toLowerCase());
     const matchesStatus =
       groupStatusFilter === "all" || g.status === groupStatusFilter;
-    return matchesSearch && matchesStatus;
+    return matchesBranch && matchesSearch && matchesStatus;
   });
 
   return (
@@ -247,7 +249,7 @@ export function PartnersHub({
               <span className="font-semibold text-purple-600">
                 {stats.totalRoomsInGroups}
               </span>{" "}
-              phòng toàn chuỗi
+              {isChainAdmin ? "phòng toàn chuỗi" : "phòng tại cơ sở"}
             </p>
           </CardContent>
         </Card>
@@ -676,11 +678,16 @@ export function PartnersHub({
                       </TableCell>
                       <TableCell className="text-right">
                         {(() => {
+                          const isOwnBranch =
+                            !g.branch_id ||
+                            !currentBranchId ||
+                            g.branch_id === currentBranchId;
                           const canEdit =
                             canManageGroup &&
                             (isChainAdmin ||
-                              !g.created_by ||
-                              g.created_by === currentUserId);
+                              (isOwnBranch &&
+                                (!g.created_by ||
+                                  g.created_by === currentUserId)));
                           return (
                             <Button
                               size="sm"

@@ -54,11 +54,30 @@ export async function cancelStayAction(
     return fail("VALIDATION", undefined, "Lý do hủy phải có ít nhất 5 ký tự");
   }
 
-  const auth = await requirePermission("stay.cancel", branchId);
-  if (!auth.ok) return auth;
-
   try {
     const supabase = await createClient();
+    const { data: stay } = await (supabase.from("stays") as any)
+      .select("created_at, branch_id")
+      .eq("id", stayId)
+      .maybeSingle();
+
+    const targetBranchId = branchId || stay?.branch_id;
+    const isLate = stay?.created_at
+      ? Date.now() - new Date(stay.created_at).getTime() > 6 * 3600 * 1000
+      : false;
+    const requiredPerm = isLate ? "stay.cancel_late" : "stay.cancel";
+
+    const auth = await requirePermission(requiredPerm, targetBranchId);
+    if (!auth.ok) {
+      return fail(
+        "FORBIDDEN",
+        undefined,
+        isLate
+          ? "Lượt ở đã nhận phòng quá 6 giờ. Cần quyền Quản lý/Thẩm quyền chuỗi (stay.cancel_late) để hủy."
+          : "Bạn không có quyền hủy lượt ở này.",
+      );
+    }
+
     const { error } = await supabase.rpc("cancel_stay", {
       p_stay_id: stayId,
       p_reason: reason.trim(),
@@ -141,11 +160,22 @@ export async function addStayCompanionAction(
     note?: string | null;
   },
 ): Promise<ActionResult<{ guestId: string }>> {
-  const auth = await requirePermission("companion.manage", branchId);
-  if (!auth.ok) return auth;
-
   try {
     const supabase = await createClient();
+    let targetBranchId = branchId;
+    if (!targetBranchId) {
+      const { data: stay } = await (supabase.from("stays") as any)
+        .select("branch_id")
+        .eq("id", stayId)
+        .maybeSingle();
+      if (stay?.branch_id) {
+        targetBranchId = stay.branch_id;
+      }
+    }
+
+    const auth = await requirePermission("companion.manage", targetBranchId);
+    if (!auth.ok) return auth;
+
     const rawDocNum = guestData.docNumber || guestData.documentNumber;
     const rawDocType = guestData.docType || guestData.documentType || "cccd";
     const hasDoc = Boolean(rawDocNum && rawDocNum.trim().length >= 6);
@@ -201,11 +231,22 @@ export async function removeStayCompanionAction(
   branchId: string,
   guestId: string,
 ): Promise<ActionResult<void>> {
-  const auth = await requirePermission("companion.manage", branchId);
-  if (!auth.ok) return auth;
-
   try {
     const supabase = await createClient();
+    let targetBranchId = branchId;
+    if (!targetBranchId) {
+      const { data: stay } = await (supabase.from("stays") as any)
+        .select("branch_id")
+        .eq("id", stayId)
+        .maybeSingle();
+      if (stay?.branch_id) {
+        targetBranchId = stay.branch_id;
+      }
+    }
+
+    const auth = await requirePermission("companion.manage", targetBranchId);
+    if (!auth.ok) return auth;
+
     const { error } = await supabase.rpc("remove_stay_companion", {
       p_stay_id: stayId,
       p_guest_id: guestId,
