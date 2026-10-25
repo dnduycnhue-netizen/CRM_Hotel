@@ -50,10 +50,10 @@ export default async function RewardsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
           Sinh nhật & Voucher ưu đãi
         </h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Theo dõi sinh nhật khách hàng VIP, gửi lời chúc mừng & thiệp quà, phát
           hành và áp dụng mã voucher giảm giá khi check-in hoặc thanh toán.
         </p>

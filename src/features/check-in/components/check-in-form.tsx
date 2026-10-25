@@ -522,10 +522,16 @@ export function CheckInForm({
                       <Sparkles className="h-3.5 w-3.5 text-amber-500" />
                       1. Ô Tra Cứu Nhanh (SĐT / CCCD 12 số / Passport) *
                     </span>
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400">
+                    <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-amber-500/15 text-amber-800 dark:text-amber-400">
                       {isLookingUp
-                        ? "Đang tìm..."
-                        : `Loại: ${detectedKind.toUpperCase()}`}
+                        ? "Đang tìm hồ sơ..."
+                        : detectedKind === "phone"
+                        ? "Loại: Số điện thoại"
+                        : detectedKind === "cccd"
+                        ? "Loại: CCCD / CMND"
+                        : detectedKind === "passport"
+                        ? "Loại: Hộ chiếu"
+                        : "Loại: Tự động nhận diện"}
                     </span>
                   </Label>
                   <div className="relative">
@@ -558,7 +564,7 @@ export function CheckInForm({
                       id="fullName"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="NGUYỄN VĂN A"
+                      placeholder="Ví dụ: NGUYỄN VĂN AN"
                       className="h-9.5 text-xs uppercase font-bold rounded-xl"
                       required
                     />
@@ -1451,7 +1457,7 @@ export function CheckInForm({
                           Đồng
                         </span>
                         <span className="text-[10px] text-muted-foreground">
-                          ≥ 2 lần · -3%
+                          ≥ 2 đêm · -3%
                         </span>
                       </div>
                       <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30">
@@ -1459,7 +1465,7 @@ export function CheckInForm({
                           Bạc
                         </span>
                         <span className="text-[10px] text-muted-foreground">
-                          ≥ 5 lần · -5%
+                          ≥ 5 đêm · -5%
                         </span>
                       </div>
                       <div className="p-2.5 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
@@ -1467,7 +1473,7 @@ export function CheckInForm({
                           Vàng
                         </span>
                         <span className="text-[10px] text-muted-foreground">
-                          ≥ 10 lần · -10%
+                          ≥ 10 đêm · -10%
                         </span>
                       </div>
                     </div>

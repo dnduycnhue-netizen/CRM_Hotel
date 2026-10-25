@@ -62,16 +62,16 @@ export function BirthdayListView({
   return (
     <div className="space-y-4">
       {/* Bộ lọc thanh công cụ */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 bg-slate-900 border border-slate-800 rounded-xl">
-        <div className="flex items-center gap-2">
-          <span className="p-2 rounded-lg bg-pink-500/10 text-pink-400">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 bg-card border border-border/80 rounded-2xl shadow-2xs">
+        <div className="flex items-center gap-2.5">
+          <span className="p-2.5 rounded-xl bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/20">
             <Cake className="w-5 h-5" />
           </span>
           <div>
-            <h3 className="text-sm font-semibold text-slate-100">
+            <h3 className="text-sm font-bold text-foreground">
               Danh sách Sinh nhật khách hàng ({filteredGuests.length})
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted-foreground">
               Theo dõi và chủ động gửi thiệp mừng, set quà & voucher độc quyền
             </p>
           </div>
@@ -84,10 +84,10 @@ export function BirthdayListView({
               value={selectedDays}
               onValueChange={(val) => val && setSelectedDays(val)}
             >
-              <SelectTrigger className="w-[140px] bg-slate-800 border-slate-700 text-slate-200 h-8 text-xs">
+              <SelectTrigger className="w-[140px] bg-background border-border text-foreground h-9 text-xs font-semibold rounded-xl">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700 text-slate-200 text-xs">
+              <SelectContent className="bg-popover border-border text-popover-foreground text-xs rounded-xl">
                 <SelectItem value="0">Hôm nay</SelectItem>
                 <SelectItem value="7">7 ngày tới</SelectItem>
                 <SelectItem value="14">14 ngày tới</SelectItem>
@@ -103,21 +103,23 @@ export function BirthdayListView({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Tìm tên hoặc SĐT..."
-            className="h-8 px-3 text-xs rounded-md bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            className="h-9 px-3 text-xs rounded-xl bg-background border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 font-medium transition"
           />
         </div>
       </div>
 
       {/* Danh sách thẻ sinh nhật */}
       {filteredGuests.length === 0 ? (
-        <div className="p-12 text-center bg-slate-900/50 border border-slate-800 rounded-xl space-y-3">
-          <Cake className="w-10 h-10 text-slate-600 mx-auto" />
-          <h4 className="text-sm font-medium text-slate-300">
+        <div className="p-12 text-center bg-card border border-dashed border-border/80 rounded-2xl space-y-3 shadow-2xs">
+          <div className="w-12 h-12 rounded-2xl bg-pink-500/10 text-pink-600 dark:text-pink-400 flex items-center justify-center mx-auto border border-pink-500/20">
+            <Cake className="w-6 h-6" />
+          </div>
+          <h4 className="text-sm font-bold text-foreground">
             Không có khách hàng nào có sinh nhật trong khoảng thời gian đã chọn
           </h4>
-          <p className="text-xs text-slate-500 max-w-md mx-auto">
+          <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
             Hãy thử mở rộng khoảng thời gian xem (ví dụ: 30 ngày hoặc 60 ngày
-            tới) để lên kế hoạch chuẩn bị quà tặng.
+            tới) để lên kế hoạch chuẩn bị quà tặng và lời chúc.
           </p>
         </div>
       ) : (
@@ -129,31 +131,31 @@ export function BirthdayListView({
             return (
               <Card
                 key={guest.guest_id}
-                className={`p-4 bg-slate-900 border transition-all ${
+                className={`p-4.5 bg-card border transition-all rounded-2xl shadow-2xs hover:shadow-xs ${
                   isToday
-                    ? "border-pink-500/60 shadow-lg shadow-pink-500/10"
+                    ? "border-pink-500 shadow-sm shadow-pink-500/10 ring-1 ring-pink-500/20"
                     : isSoon
-                      ? "border-amber-500/40"
-                      : "border-slate-800 hover:border-slate-700"
+                      ? "border-amber-500/50"
+                      : "border-border/80 hover:border-border"
                 }`}
               >
                 {/* Header card */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${
                         isToday
-                          ? "bg-pink-500 text-white animate-pulse"
-                          : "bg-slate-800 text-slate-300 border border-slate-700"
+                          ? "bg-pink-600 text-white animate-pulse shadow-sm shadow-pink-500/30"
+                          : "bg-muted text-foreground border border-border"
                       }`}
                     >
                       {guest.full_name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold text-slate-100 flex items-center gap-1.5">
+                      <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
                         {guest.full_name}
                       </h4>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-muted-foreground font-mono">
                         {guest.phone || "Chưa có SĐT"}
                       </p>
                     </div>
@@ -161,17 +163,17 @@ export function BirthdayListView({
 
                   {/* Badge đếm ngược ngày */}
                   {isToday ? (
-                    <Badge className="bg-pink-500 text-white font-semibold text-[11px] gap-1 px-2.5 py-0.5">
+                    <Badge className="bg-pink-600 text-white font-bold text-[11px] gap-1 px-2.5 py-0.5 rounded-full shadow-2xs">
                       <Sparkles className="w-3 h-3" /> Hôm nay!
                     </Badge>
                   ) : isSoon ? (
-                    <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] px-2">
+                    <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 font-semibold text-[11px] px-2.5 py-0.5 rounded-full">
                       Còn {guest.days_until} ngày
                     </Badge>
                   ) : (
                     <Badge
                       variant="outline"
-                      className="text-slate-400 border-slate-700 text-[11px] px-2"
+                      className="text-muted-foreground border-border text-[11px] px-2.5 py-0.5 rounded-full"
                     >
                       Sau {guest.days_until} ngày
                     </Badge>
@@ -179,42 +181,42 @@ export function BirthdayListView({
                 </div>
 
                 {/* Thông tin sinh nhật & Hạng VIP */}
-                <div className="mt-3 pt-3 border-t border-slate-800/80 space-y-2 text-xs">
-                  <div className="flex items-center justify-between text-slate-300">
-                    <span className="flex items-center gap-1 text-slate-400">
-                      <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                <div className="mt-3 pt-3 border-t border-border/60 space-y-2 text-xs">
+                  <div className="flex items-center justify-between text-foreground">
+                    <span className="flex items-center gap-1.5 text-muted-foreground font-medium">
+                      <Calendar className="w-3.5 h-3.5 text-pink-500" />
                       Sinh nhật:
                     </span>
-                    <span className="font-medium text-slate-200">
+                    <span className="font-semibold text-foreground">
                       {guest.dob} (Tuổi {guest.age})
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Hạng thành viên:</span>
-                    <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                    <span className="text-muted-foreground font-medium">Hạng thành viên:</span>
+                    <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20">
                       {guest.tier_name || "Thành viên"}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Lịch sử lưu trú:</span>
-                    <span className="text-slate-300 font-medium">
+                    <span className="text-muted-foreground font-medium">Lịch sử lưu trú:</span>
+                    <span className="text-foreground font-semibold">
                       {guest.total_stays} lượt ở
                     </span>
                   </div>
 
                   {/* Quyền riêng tư theo Nghị định 13/2023 */}
                   <div className="flex items-center justify-between pt-1">
-                    <span className="text-[11px] text-slate-400">
+                    <span className="text-[11px] text-muted-foreground font-medium">
                       Quyền nhận tin (NĐ 13):
                     </span>
                     {guest.marketing_consent ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                         <CheckCircle className="w-3 h-3" /> Đã đồng ý
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-[11px] text-amber-400">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
                         <ShieldAlert className="w-3 h-3" /> Chưa đồng ý
                       </span>
                     )}
@@ -222,31 +224,31 @@ export function BirthdayListView({
                 </div>
 
                 {/* Trạng thái chăm sóc & Lời chúc */}
-                <div className="mt-3 p-2.5 rounded-lg bg-slate-800/50 border border-slate-700/50 text-xs">
+                <div className="mt-3 p-2.5 rounded-xl bg-muted/50 border border-border/60 text-xs">
                   {guest.greeting_status === "sent" ? (
                     <div className="space-y-1">
-                      <div className="flex items-center gap-1.5 text-emerald-400 font-medium text-[11px]">
+                      <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold text-[11px]">
                         <CheckCircle className="w-3.5 h-3.5" />
                         <span>Đã chúc mừng sinh nhật năm nay</span>
                       </div>
                       {guest.greeting_voucher_code && (
-                        <div className="text-[11px] text-slate-300 flex items-center gap-1">
-                          <Gift className="w-3 h-3 text-pink-400" />
+                        <div className="text-[11px] text-muted-foreground flex items-center gap-1">
+                          <Gift className="w-3 h-3 text-pink-500" />
                           <span>Voucher tặng: </span>
-                          <span className="font-mono text-pink-400 font-semibold">
+                          <span className="font-mono text-pink-600 dark:text-pink-400 font-bold">
                             {guest.greeting_voucher_code}
                           </span>
                         </div>
                       )}
                       {guest.greeting_gift && (
-                        <p className="text-[11px] text-slate-400">
-                          Quà: {guest.greeting_gift}
+                        <p className="text-[11px] text-muted-foreground">
+                          Quà: <span className="text-foreground font-medium">{guest.greeting_gift}</span>
                         </p>
                       )}
                     </div>
                   ) : (
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-400 text-[11px]">
+                      <span className="text-muted-foreground text-[11px]">
                         Chưa ghi nhận chăm sóc năm nay
                       </span>
                     </div>
@@ -264,10 +266,10 @@ export function BirthdayListView({
                       setSelectedGuestForGreeting(guest);
                       setGreetingDialogOpen(true);
                     }}
-                    className={`w-full h-8 text-xs gap-1.5 ${
+                    className={`w-full h-8.5 text-xs font-semibold gap-1.5 rounded-xl transition ${
                       guest.greeting_status === "sent"
-                        ? "border-slate-700 text-slate-300 hover:bg-slate-800"
-                        : "bg-pink-600 hover:bg-pink-500 text-white"
+                        ? "border-border text-foreground hover:bg-muted"
+                        : "bg-pink-600 hover:bg-pink-700 text-white shadow-2xs shadow-pink-600/20"
                     }`}
                   >
                     <Cake className="w-3.5 h-3.5" />

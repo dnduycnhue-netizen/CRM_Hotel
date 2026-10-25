@@ -4,11 +4,14 @@ import {
   ArrowRight,
   Award,
   Building2,
+  CreditCard,
   Loader2,
   Lock,
   Phone,
   Search,
   ShieldAlert,
+  ShieldCheck,
+  Sparkles,
   User,
 } from "lucide-react";
 import Link from "next/link";
@@ -48,7 +51,7 @@ export function SearchView({ canViewChain = true }: SearchViewProps) {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
           {canViewChain
             ? "Tra cứu khách hàng toàn chuỗi"
             : "Tra cứu khách hàng"}
@@ -61,16 +64,16 @@ export function SearchView({ canViewChain = true }: SearchViewProps) {
       </div>
 
       {/* Search Bar & Filters */}
-      <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
+      <div className="p-4 rounded-2xl border border-border/80 bg-card shadow-2xs space-y-4">
         <form onSubmit={handleSearch} className="flex gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Nhập họ tên, số điện thoại (VD: 0912...), CCCD/Passport (VD: 079...)..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition placeholder:text-muted-foreground"
             />
           </div>
           <Button
@@ -88,7 +91,7 @@ export function SearchView({ canViewChain = true }: SearchViewProps) {
         </form>
 
         <div className="flex items-center gap-2 flex-wrap text-xs">
-          <span className="text-slate-400 font-medium mr-1">Chế độ tìm:</span>
+          <span className="text-muted-foreground font-medium mr-1">Chế độ tìm:</span>
           {(
             [
               { id: "auto", label: "Tự động nhận diện" },
@@ -104,8 +107,8 @@ export function SearchView({ canViewChain = true }: SearchViewProps) {
               onClick={() => setMode(item.id)}
               className={`px-3 py-1 rounded-lg border transition ${
                 mode === item.id
-                  ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-medium"
-                  : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  ? "border-primary bg-primary/10 text-primary font-medium"
+                  : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
               {item.label}
@@ -220,6 +223,74 @@ export function SearchView({ canViewChain = true }: SearchViewProps) {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Khi chưa tìm kiếm: Hướng dẫn tra cứu & Tính năng nổi bật */}
+      {!searched && (
+        <div className="space-y-4 pt-2">
+          <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
+            <span>Hướng dẫn & Khả năng tra cứu đa kênh</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-4 rounded-2xl border border-border/80 bg-card shadow-2xs space-y-2 hover:border-primary/40 transition">
+              <div className="flex items-center gap-2.5">
+                <span className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                  <Phone className="w-4 h-4" />
+                </span>
+                <h4 className="text-sm font-semibold text-foreground">
+                  Tra cứu theo Số điện thoại
+                </h4>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Hỗ trợ nhận diện tự động đầu số chuẩn Việt Nam (09x, 08x, 07x, 03x, 05x) và quốc tế (+84). Tìm kiếm tức thì trong chưa đầy 0.1 giây.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl border border-border/80 bg-card shadow-2xs space-y-2 hover:border-primary/40 transition">
+              <div className="flex items-center gap-2.5">
+                <span className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                  <CreditCard className="w-4 h-4" />
+                </span>
+                <h4 className="text-sm font-semibold text-foreground">
+                  Số CCCD / CMND / Hộ chiếu
+                </h4>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Tự động nhận dạng dãy 12 số CCCD hoặc mã Passport quốc tế. Tìm chính xác hồ sơ đã lưu và đối chiếu ngay tại quầy lễ tân.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl border border-border/80 bg-card shadow-2xs space-y-2 hover:border-primary/40 transition">
+              <div className="flex items-center gap-2.5">
+                <span className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  <Building2 className="w-4 h-4" />
+                </span>
+                <h4 className="text-sm font-semibold text-foreground">
+                  Hợp nhất dữ liệu 8 khách sạn
+                </h4>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Đồng bộ hồ sơ khách từ Boutique, Grand, Xavia, Eco, Ngô Mây, Aloha, Sun, Bãi Xếp. Nhận diện khách VIP ngay khi họ đặt chân đến cơ sở mới.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl border border-border/80 bg-card shadow-2xs space-y-2 hover:border-primary/40 transition">
+              <div className="flex items-center gap-2.5">
+                <span className="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                  <ShieldCheck className="w-4 h-4" />
+                </span>
+                <h4 className="text-sm font-semibold text-foreground">
+                  Tuân thủ Nghị định 13/2023
+                </h4>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Dữ liệu cá nhân nhạy cảm được che mờ (masking) tự động. Mọi truy vấn và giải mã đều được ghi vết an toàn (audit log).
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>

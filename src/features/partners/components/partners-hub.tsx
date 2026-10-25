@@ -139,9 +139,9 @@ export function PartnersHub({
             <h1 className="text-2xl font-bold tracking-tight">
               Đối tác lữ hành & Khách đoàn
             </h1>
-            <Badge variant="outline" className="border-primary/50 text-primary">
-              <Sparkles className="h-3 w-3 mr-1" />
-              Sprint 5
+            <Badge variant="outline" className="border-amber-500/30 text-amber-700 dark:text-amber-400 bg-amber-500/10 font-semibold">
+              <Handshake className="h-3 w-3 mr-1" />
+              Kênh B2B & MICE
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground mt-1">

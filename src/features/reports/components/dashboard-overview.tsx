@@ -526,7 +526,7 @@ export function DashboardOverview({
             </div>
 
             {/* Simple SVG / CSS Trend Bars */}
-            <div className="pt-4 h-64 flex items-end gap-1.5 overflow-x-auto pb-2">
+            <div className="pt-6 h-72 flex items-end gap-1.5 overflow-x-auto pb-4">
               {series.map((point, idx) => {
                 const curH = Math.min(point.cur?.occupancy || 0, 100);
                 const cmpH = Math.min(point.cmp?.occupancy || 0, 100);
@@ -534,7 +534,7 @@ export function DashboardOverview({
                 return (
                   <div
                     key={idx}
-                    className="flex-1 min-w-[20px] flex flex-col items-center gap-1 h-full justify-end group relative"
+                    className="flex-1 min-w-[22px] flex flex-col items-center gap-1.5 h-full justify-end group relative"
                   >
                     {/* Tooltip */}
                     <div className="absolute -top-12 bg-slate-900 text-white text-[10px] py-1 px-2 rounded-lg opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-20">
@@ -554,7 +554,7 @@ export function DashboardOverview({
                         style={{ height: `${curH}%` }}
                       />
                     </div>
-                    <span className="text-[9px] text-slate-400 truncate max-w-full">
+                    <span className="text-[10px] font-medium text-slate-500 truncate max-w-full">
                       {new Date(point.bucket).getDate()}
                     </span>
                   </div>
@@ -563,55 +563,113 @@ export function DashboardOverview({
             </div>
           </div>
 
-          {/* Top 3 & Bottom 3 Branches Quick Rank */}
+          {/* Top 3 & Bottom 3 Branches Quick Rank or Single Branch Overview */}
           <div className="p-6 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4">
-            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
-              Xếp hạng công suất 8 khách sạn
-            </h3>
-            <div className="space-y-3 pt-1">
-              {[...by_branch]
-                .sort((a, b) => b.current.occupancy - a.current.occupancy)
-                .map((b, idx) => (
-                  <div
-                    key={b.branch_id}
-                    className="p-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`w-6 h-6 rounded-lg text-xs font-bold flex items-center justify-center ${
-                          idx === 0
-                            ? "bg-amber-500 text-white"
-                            : idx === 1
-                              ? "bg-slate-400 text-white"
-                              : idx === 2
-                                ? "bg-amber-700 text-white"
-                                : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
-                        }`}
-                      >
-                        {idx + 1}
-                      </span>
-                      <div>
-                        <div className="font-bold text-xs text-slate-900 dark:text-slate-100">
-                          {b.branch}
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
+                {by_branch.length > 1
+                  ? `Xếp hạng công suất ${by_branch.length} khách sạn`
+                  : `Hiệu suất ${by_branch[0]?.branch || "Cơ sở"}`}
+              </h3>
+              {by_branch.length === 1 && (
+                <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900/40">
+                  Cơ sở đang lọc
+                </span>
+              )}
+            </div>
+
+            {by_branch.length > 1 ? (
+              <div className="space-y-3 pt-1">
+                {[...by_branch]
+                  .sort((a, b) => b.current.occupancy - a.current.occupancy)
+                  .map((b, idx) => (
+                    <div
+                      key={b.branch_id}
+                      className="p-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`w-6 h-6 rounded-lg text-xs font-bold flex items-center justify-center ${
+                            idx === 0
+                              ? "bg-amber-500 text-white"
+                              : idx === 1
+                                ? "bg-slate-400 text-white"
+                                : idx === 2
+                                  ? "bg-amber-700 text-white"
+                                  : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+                          }`}
+                        >
+                          {idx + 1}
+                        </span>
+                        <div>
+                          <div className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                            {b.branch}
+                          </div>
+                          <div className="text-[10px] text-slate-400">
+                            {b.current.room_nights} đêm phòng đã bán
+                          </div>
                         </div>
-                        <div className="text-[10px] text-slate-400">
-                          {b.current.room_nights} đêm phòng đã bán
+                      </div>
+                      <div className="text-right">
+                        <div className="font-extrabold text-sm text-indigo-600 dark:text-indigo-400">
+                          {b.current.occupancy}%
                         </div>
+                        {b.compare && (
+                          <div className="text-[10px] text-slate-400">
+                            Cùng kỳ: {b.compare.occupancy}%
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="font-extrabold text-sm text-indigo-600 dark:text-indigo-400">
-                        {b.current.occupancy}%
+                  ))}
+              </div>
+            ) : (
+              by_branch[0] && (
+                <div className="space-y-3 pt-1">
+                  <div className="p-4 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40">
+                    <div className="text-xs text-indigo-700 dark:text-indigo-300 font-semibold mb-1">
+                      Công suất buồng phòng cơ sở
+                    </div>
+                    <div className="text-3xl font-extrabold text-indigo-900 dark:text-indigo-100">
+                      {by_branch[0].current.occupancy}%
+                    </div>
+                    {by_branch[0].compare && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Cùng kỳ năm trước:{" "}
+                        <strong>{by_branch[0].compare.occupancy}%</strong>
                       </div>
-                      {b.compare && (
-                        <div className="text-[10px] text-slate-400">
-                          Cùng kỳ: {b.compare.occupancy}%
-                        </div>
-                      )}
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                      <div className="text-slate-400 text-[11px]">Đêm phòng bán</div>
+                      <div className="text-base font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                        {by_branch[0].current.room_nights}
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                      <div className="text-slate-400 text-[11px]">Lượt khách đến</div>
+                      <div className="text-base font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                        {by_branch[0].current.arrivals}
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                      <div className="text-slate-400 text-[11px]">Khách quen quay lại</div>
+                      <div className="text-base font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                        {by_branch[0].current.returning_rate}%
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                      <div className="text-slate-400 text-[11px]">Lưu trú BQ (ALOS)</div>
+                      <div className="text-base font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                        {by_branch[0].current.alos} đêm
+                      </div>
                     </div>
                   </div>
-                ))}
-            </div>
+                </div>
+              )
+            )}
           </div>
         </div>
       )}

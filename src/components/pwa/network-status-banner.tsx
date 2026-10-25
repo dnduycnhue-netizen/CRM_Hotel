@@ -43,7 +43,15 @@ export function NetworkStatusBanner() {
       const handleBeforeInstallPrompt = (e: Event) => {
         e.preventDefault();
         setDeferredPrompt(e as unknown as BeforeInstallPromptEvent);
-        setShowInstallPrompt(true);
+        try {
+          const isDismissed =
+            localStorage.getItem("pwa_install_dismissed") === "true";
+          if (!isDismissed) {
+            setShowInstallPrompt(true);
+          }
+        } catch {
+          setShowInstallPrompt(true);
+        }
       };
 
       window.addEventListener("online", handleOnline);
@@ -67,8 +75,18 @@ export function NetworkStatusBanner() {
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === "accepted") {
       setShowInstallPrompt(false);
+      try {
+        localStorage.setItem("pwa_install_dismissed", "true");
+      } catch {}
     }
     setDeferredPrompt(null);
+  };
+
+  const handleDismiss = () => {
+    setShowInstallPrompt(false);
+    try {
+      localStorage.setItem("pwa_install_dismissed", "true");
+    } catch {}
   };
 
   return (
@@ -96,26 +114,28 @@ export function NetworkStatusBanner() {
 
       {/* PWA Install Banner (US-20) */}
       {showInstallPrompt && (
-        <div className="bg-indigo-950 border-b border-indigo-800 text-indigo-200 px-4 py-2 text-xs flex items-center justify-between z-40">
-          <div className="flex items-center gap-2">
-            <Download className="w-4 h-4 text-indigo-400" />
-            <span>
-              Cài đặt ứng dụng CRM Chuỗi Khách Sạn lên màn hình chính máy quầy
-              để thao tác nhanh hơn
+        <div className="bg-card border-b border-border/80 text-foreground px-4 py-2.5 text-xs flex items-center justify-between z-40 shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <span className="p-1 rounded-md bg-primary/10 text-primary">
+              <Download className="w-3.5 h-3.5" />
+            </span>
+            <span className="font-medium text-foreground">
+              Cài đặt ứng dụng CRM Chuỗi Khách Sạn lên màn hình chính máy quầy để thao tác nhanh hơn
             </span>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleInstallClick}
-              className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded font-medium text-xs shadow-sm transition"
+              className="px-3 py-1 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-medium text-xs shadow-2xs transition"
             >
               Cài ứng dụng
             </button>
             <button
               type="button"
-              onClick={() => setShowInstallPrompt(false)}
-              className="p-1 hover:text-white"
+              onClick={handleDismiss}
+              className="p-1 text-muted-foreground hover:text-foreground rounded-md transition"
+              title="Đóng thông báo"
             >
               <X className="w-3.5 h-3.5" />
             </button>

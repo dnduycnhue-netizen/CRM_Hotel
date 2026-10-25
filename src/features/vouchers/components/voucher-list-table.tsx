@@ -84,31 +84,30 @@ export function VoucherListTable({
   return (
     <div className="space-y-4">
       {/* Action Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 bg-slate-900 border border-slate-800 rounded-xl">
-        <div className="flex items-center gap-2">
-          <span className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 bg-card border border-border/80 rounded-2xl shadow-2xs">
+        <div className="flex items-center gap-3">
+          <span className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/15">
             <Tag className="w-5 h-5" />
           </span>
           <div>
-            <h3 className="text-sm font-semibold text-slate-100">
+            <h3 className="text-sm font-semibold text-foreground">
               Quản lý Voucher & Mã giảm giá ({filteredVouchers.length})
             </h3>
-            <p className="text-xs text-slate-400">
-              Phát hành ưu đãi, kiểm soát ngân sách chiết khấu và theo dõi lượt
-              đổi
+            <p className="text-xs text-muted-foreground">
+              Phát hành ưu đãi, kiểm soát ngân sách chiết khấu và theo dõi lượt đổi
             </p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" />
+            <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-muted-foreground" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Tìm theo mã hoặc tên..."
-              className="h-8 pl-8 pr-3 text-xs rounded-md bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              className="h-8.5 pl-8 pr-3 text-xs rounded-xl bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition"
             />
           </div>
 
@@ -119,16 +118,16 @@ export function VoucherListTable({
               setSelectedVoucherForRedeem(undefined);
               setRedeemDialogOpen(true);
             }}
-            className="h-8 border-slate-700 text-slate-200 hover:bg-slate-800 gap-1.5 text-xs"
+            className="h-8.5 rounded-xl border-border text-foreground hover:bg-muted gap-1.5 text-xs font-medium"
           >
-            <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+            <DollarSign className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             Áp dụng Voucher
           </Button>
 
           <Button
             size="sm"
             onClick={() => setCreateDialogOpen(true)}
-            className="h-8 bg-indigo-600 hover:bg-indigo-500 text-white gap-1.5 text-xs"
+            className="h-8.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 text-xs font-medium shadow-2xs"
           >
             <Plus className="w-3.5 h-3.5" />
             Tạo Voucher mới
@@ -137,42 +136,42 @@ export function VoucherListTable({
       </div>
 
       {/* Bảng danh sách voucher */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+      <div className="bg-card border border-border/80 rounded-2xl shadow-2xs overflow-hidden">
         <Table>
-          <TableHeader className="bg-slate-800/60">
-            <TableRow className="border-slate-800 hover:bg-transparent">
-              <TableHead className="text-xs text-slate-400 font-medium">
+          <TableHeader className="bg-muted/40">
+            <TableRow className="border-border/60 hover:bg-transparent">
+              <TableHead className="text-xs text-muted-foreground font-semibold">
                 Mã Voucher
               </TableHead>
-              <TableHead className="text-xs text-slate-400 font-medium">
+              <TableHead className="text-xs text-muted-foreground font-semibold">
                 Chương trình / Tiêu đề
               </TableHead>
-              <TableHead className="text-xs text-slate-400 font-medium">
+              <TableHead className="text-xs text-muted-foreground font-semibold">
                 Mức giảm
               </TableHead>
-              <TableHead className="text-xs text-slate-400 font-medium">
+              <TableHead className="text-xs text-muted-foreground font-semibold">
                 Hạn mức & Đơn tối thiểu
               </TableHead>
-              <TableHead className="text-xs text-slate-400 font-medium">
+              <TableHead className="text-xs text-muted-foreground font-semibold">
                 Thời hạn hiệu lực
               </TableHead>
-              <TableHead className="text-xs text-slate-400 font-medium">
+              <TableHead className="text-xs text-muted-foreground font-semibold">
                 Lượt dùng
               </TableHead>
-              <TableHead className="text-xs text-slate-400 font-medium">
+              <TableHead className="text-xs text-muted-foreground font-semibold">
                 Phạm vi áp dụng
               </TableHead>
-              <TableHead className="text-xs text-slate-400 font-medium text-right">
+              <TableHead className="text-xs text-muted-foreground font-semibold text-right">
                 Thao tác
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredVouchers.length === 0 ? (
-              <TableRow className="border-slate-800">
+              <TableRow className="border-border/60">
                 <TableCell
                   colSpan={8}
-                  className="text-center py-12 text-slate-500 text-xs"
+                  className="text-center py-12 text-muted-foreground text-xs"
                 >
                   Không tìm thấy voucher nào phù hợp
                 </TableCell>
@@ -185,22 +184,22 @@ export function VoucherListTable({
                 return (
                   <TableRow
                     key={v.id}
-                    className="border-slate-800 hover:bg-slate-800/40 transition-colors"
+                    className="border-border/60 hover:bg-muted/30 transition-colors"
                   >
                     {/* Mã Voucher */}
-                    <TableCell className="font-mono text-xs font-semibold text-indigo-300">
+                    <TableCell className="font-mono text-xs font-semibold">
                       <div className="flex items-center gap-1.5">
-                        <span className="px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20">
+                        <span className="px-2 py-0.5 rounded-lg bg-primary/10 text-primary border border-primary/20">
                           {v.code}
                         </span>
                         <button
                           type="button"
                           onClick={() => copyCode(v.code)}
                           title="Sao chép mã"
-                          className="text-slate-500 hover:text-slate-300 transition-colors"
+                          className="text-muted-foreground hover:text-foreground transition-colors"
                         >
                           {copiedCode === v.code ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                           ) : (
                             <Copy className="w-3.5 h-3.5" />
                           )}
@@ -210,11 +209,11 @@ export function VoucherListTable({
 
                     {/* Tên chương trình */}
                     <TableCell>
-                      <div className="text-xs font-medium text-slate-200">
+                      <div className="text-xs font-medium text-foreground">
                         {v.title}
                       </div>
                       {v.note && (
-                        <div className="text-[11px] text-slate-400 line-clamp-1">
+                        <div className="text-[11px] text-muted-foreground line-clamp-1">
                           {v.note}
                         </div>
                       )}
@@ -223,11 +222,11 @@ export function VoucherListTable({
                     {/* Mức giảm */}
                     <TableCell className="text-xs font-semibold">
                       {v.discount_type === "percent" ? (
-                        <span className="text-emerald-400">
+                        <span className="text-emerald-600 dark:text-emerald-400">
                           Giảm {v.discount_value}%
                         </span>
                       ) : (
-                        <span className="text-emerald-400">
+                        <span className="text-emerald-600 dark:text-emerald-400">
                           -
                           {new Intl.NumberFormat("vi-VN").format(
                             v.discount_value,
@@ -238,17 +237,17 @@ export function VoucherListTable({
                     </TableCell>
 
                     {/* Hạn mức & Tối thiểu */}
-                    <TableCell className="text-xs text-slate-300">
+                    <TableCell className="text-xs text-foreground">
                       <div>
                         Đơn tối thiểu:{" "}
-                        <strong className="text-slate-200">
+                        <strong className="text-foreground">
                           {v.min_spend_amount > 0
                             ? `${new Intl.NumberFormat("vi-VN").format(v.min_spend_amount)} đ`
                             : "0 đ"}
                         </strong>
                       </div>
                       {v.max_discount_amount && (
-                        <div className="text-[11px] text-slate-400">
+                        <div className="text-[11px] text-muted-foreground">
                           Tối đa:{" "}
                           {new Intl.NumberFormat("vi-VN").format(
                             v.max_discount_amount,
@@ -259,9 +258,9 @@ export function VoucherListTable({
                     </TableCell>
 
                     {/* Hạn hiệu lực */}
-                    <TableCell className="text-xs text-slate-300">
+                    <TableCell className="text-xs text-foreground">
                       <div className="flex items-center gap-1 text-[11px]">
-                        <Calendar className="w-3 h-3 text-slate-500" />
+                        <Calendar className="w-3 h-3 text-muted-foreground" />
                         <span>
                           {v.valid_from} → {v.valid_to}
                         </span>
@@ -269,14 +268,14 @@ export function VoucherListTable({
                       {isExpired ? (
                         <Badge
                           variant="outline"
-                          className="text-[10px] text-rose-400 border-rose-500/30 mt-0.5"
+                          className="text-[10px] text-rose-600 border-rose-500/30 bg-rose-50 dark:bg-rose-950/20 mt-0.5"
                         >
                           Đã hết hạn
                         </Badge>
                       ) : (
                         <Badge
                           variant="outline"
-                          className="text-[10px] text-emerald-400 border-emerald-500/30 mt-0.5"
+                          className="text-[10px] text-emerald-600 border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/20 mt-0.5"
                         >
                           Đang hiệu lực
                         </Badge>
@@ -284,21 +283,21 @@ export function VoucherListTable({
                     </TableCell>
 
                     {/* Lượt dùng */}
-                    <TableCell className="text-xs text-slate-300">
+                    <TableCell className="text-xs text-foreground">
                       <div className="flex items-center justify-between text-[11px] mb-1">
                         <span>
                           {v.used_count} / {v.usage_limit}
                         </span>
                         {isOutOfLimit && (
-                          <span className="text-rose-400 font-semibold">
+                          <span className="text-rose-600 dark:text-rose-400 font-semibold">
                             Đã hết lượt
                           </span>
                         )}
                       </div>
-                      <div className="w-20 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                      <div className="w-20 bg-muted rounded-full h-1.5 overflow-hidden">
                         <div
                           className={`h-full rounded-full ${
-                            isOutOfLimit ? "bg-rose-500" : "bg-indigo-500"
+                            isOutOfLimit ? "bg-rose-500" : "bg-primary"
                           }`}
                           style={{
                             width: `${Math.min(
@@ -311,17 +310,17 @@ export function VoucherListTable({
                     </TableCell>
 
                     {/* Phạm vi áp dụng */}
-                    <TableCell className="text-xs text-slate-300">
+                    <TableCell className="text-xs text-foreground">
                       <div>
                         {v.target_guest_name ? (
-                          <span className="text-indigo-300 font-medium">
+                          <span className="text-primary font-medium">
                             {v.target_guest_name}
                           </span>
                         ) : (
-                          <span className="text-slate-400">Tất cả khách</span>
+                          <span className="text-muted-foreground">Tất cả khách</span>
                         )}
                       </div>
-                      <div className="text-[11px] text-slate-500">
+                      <div className="text-[11px] text-muted-foreground">
                         {v.applicable_branch_name || "Toàn chuỗi"}
                       </div>
                     </TableCell>
@@ -342,7 +341,7 @@ export function VoucherListTable({
                           });
                           setRedeemDialogOpen(true);
                         }}
-                        className="h-7 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
+                        className="h-7 text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 font-medium"
                       >
                         Đổi mã
                       </Button>

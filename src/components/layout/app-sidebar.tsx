@@ -90,8 +90,6 @@ const NAV_GROUPS: NavGroup[] = [
         href: "/partners",
         icon: Handshake,
         perms: ["partner.view", "group.manage"],
-        badge: "Sprint 5",
-        badgeVariant: "emerald",
       },
       {
         title: "Duyệt gộp hồ sơ",
@@ -104,8 +102,6 @@ const NAV_GROUPS: NavGroup[] = [
         href: "/rewards",
         icon: Gift,
         perms: ["birthday.view", "voucher.issue", "voucher.redeem"],
-        badge: "Sprint 6",
-        badgeVariant: "emerald",
       },
     ],
   },
