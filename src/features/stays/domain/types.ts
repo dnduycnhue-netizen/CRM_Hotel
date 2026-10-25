@@ -15,4 +15,8 @@ export interface InHouseStay {
   sourceChannelName: string;
   tierName?: string;
   discountPct?: number;
+  status?: "in_house" | "checked_out" | "cancelled" | string;
+  createdAt?: string;
+  checkedOutAt?: string | null;
+  cancelReason?: string | null;
 }

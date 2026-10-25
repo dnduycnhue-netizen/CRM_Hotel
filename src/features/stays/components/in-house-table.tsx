@@ -58,7 +58,7 @@ export function InHouseTable({
   const [searchTerm, setSearchTerm] = useState("");
 
   const [statusFilter, setStatusFilter] = useState<
-    "all" | "in_house" | "overdue"
+    "all" | "in_house" | "overdue" | "checked_out" | "cancelled"
   >("all");
   const [dateFilter, setDateFilter] = useState<
     "all" | "today_in" | "today_out"
@@ -99,8 +99,17 @@ export function InHouseTable({
       }
 
       // 2. Status filter
-      if (statusFilter === "in_house" && s.isOverdue) return false;
-      if (statusFilter === "overdue" && !s.isOverdue) return false;
+      if (statusFilter === "in_house") {
+        if (s.status && s.status !== "in_house") return false;
+        if (s.isOverdue) return false;
+      } else if (statusFilter === "overdue") {
+        if (s.status && s.status !== "in_house") return false;
+        if (!s.isOverdue) return false;
+      } else if (statusFilter === "checked_out") {
+        if (s.status !== "checked_out") return false;
+      } else if (statusFilter === "cancelled") {
+        if (s.status !== "cancelled") return false;
+      }
 
       // 3. Date filter
       if (dateFilter === "today_in") {
@@ -128,7 +137,17 @@ export function InHouseTable({
         toast.success(
           `Đã hoàn tất trả phòng ${roomNumber}! Phòng sẵn sàng đón khách.`,
         );
-        setActiveStayList((prev) => prev.filter((s) => s.id !== stayId));
+        setActiveStayList((prev) =>
+          prev.map((s) =>
+            s.id === stayId
+              ? {
+                  ...s,
+                  status: "checked_out",
+                  checkedOutAt: new Date().toISOString(),
+                }
+              : s,
+          ),
+        );
         setCheckoutTarget(null);
       } else {
         toast.error(res.error.message);
@@ -148,7 +167,17 @@ export function InHouseTable({
       const res = await cancelStayAction(stayId, currentBranchId, cancelReason);
       if (res.ok) {
         toast.success(`Đã hủy lượt ở phòng ${roomNumber}!`);
-        setActiveStayList((prev) => prev.filter((s) => s.id !== stayId));
+        setActiveStayList((prev) =>
+          prev.map((s) =>
+            s.id === stayId
+              ? {
+                  ...s,
+                  status: "cancelled",
+                  cancelReason: cancelReason.trim(),
+                }
+              : s,
+          ),
+        );
         setCancelTarget(null);
         setCancelReason("");
       } else {
@@ -157,8 +186,19 @@ export function InHouseTable({
     });
   };
 
+  const inHouseCount = activeStayList.filter(
+    (s) => !s.status || s.status === "in_house",
+  ).length;
   const overdueCount = activeStayList.filter((s) => s.isOverdue).length;
-  const totalGuests = activeStayList.reduce((sum, s) => sum + s.guestCount, 0);
+  const checkedOutCount = activeStayList.filter(
+    (s) => s.status === "checked_out",
+  ).length;
+  const cancelledCount = activeStayList.filter(
+    (s) => s.status === "cancelled",
+  ).length;
+  const totalGuests = activeStayList
+    .filter((s) => !s.status || s.status === "in_house")
+    .reduce((sum, s) => sum + s.guestCount, 0);
 
   return (
     <div className="space-y-5">
@@ -176,10 +216,10 @@ export function InHouseTable({
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-3xl font-extrabold text-foreground tracking-tight">
-              {activeStayList.length}
+              {inHouseCount}
             </span>
             <span className="text-xs text-muted-foreground font-medium">
-              phòng đang ở
+              phòng đang ở {activeStayList.length > inHouseCount && `(tổng ${activeStayList.length} lượt)`}
             </span>
           </div>
           <div className="mt-2 h-1 w-full bg-blue-500/20 rounded-full overflow-hidden">
@@ -293,14 +333,16 @@ export function InHouseTable({
                 value={statusFilter}
                 onChange={(e) =>
                   setStatusFilter(
-                    e.target.value as "all" | "in_house" | "overdue",
+                    e.target.value as "all" | "in_house" | "overdue" | "checked_out" | "cancelled",
                   )
                 }
-                className="h-8.5 text-xs rounded-lg border border-input bg-background px-2.5 shadow-xs focus:outline-none focus:ring-1 focus:ring-ring text-muted-foreground"
+                className="h-8.5 text-xs rounded-lg border border-input bg-background px-2.5 shadow-xs focus:outline-none focus:ring-1 focus:ring-ring text-muted-foreground font-medium"
               >
-                <option value="all">Tất cả trạng thái</option>
-                <option value="in_house">Đang ở bình thường</option>
-                <option value="overdue">Quá hạn trả phòng</option>
+                <option value="all">Tất cả trạng thái ({activeStayList.length})</option>
+                <option value="in_house">Đang ở ({inHouseCount})</option>
+                <option value="overdue">Quá hạn trả ({overdueCount})</option>
+                <option value="checked_out">Đã trả phòng ({checkedOutCount})</option>
+                <option value="cancelled">Đã hủy ({cancelledCount})</option>
               </select>
 
               <select
@@ -466,7 +508,31 @@ export function InHouseTable({
                     </TableCell>
 
                     <TableCell>
-                      {s.isOverdue ? (
+                      {s.status === "cancelled" ? (
+                        <div className="flex flex-col gap-0.5">
+                          <Badge
+                            variant="destructive"
+                            className="text-[10px] bg-rose-500/10 text-rose-600 border border-rose-500/30 font-bold w-fit"
+                          >
+                            Đã hủy
+                          </Badge>
+                          {s.cancelReason && (
+                            <span
+                              className="text-[10px] text-muted-foreground truncate max-w-[120px]"
+                              title={s.cancelReason}
+                            >
+                              {s.cancelReason}
+                            </span>
+                          )}
+                        </div>
+                      ) : s.status === "checked_out" ? (
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold"
+                        >
+                          Đã trả phòng
+                        </Badge>
+                      ) : s.isOverdue ? (
                         <Badge
                           variant="destructive"
                           className="text-[10px] animate-pulse"
@@ -484,57 +550,68 @@ export function InHouseTable({
                     </TableCell>
 
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            setCheckoutTarget({
-                              stayId: s.id,
-                              roomNumber: s.roomNumber,
-                              guestName: s.primaryGuestName,
-                            })
-                          }
-                          disabled={isPending}
-                          className="h-8 text-xs font-bold px-3 text-emerald-700 dark:text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/10 hover:border-emerald-500 transition-all rounded-lg"
-                        >
-                          <LogOut className="h-3.5 w-3.5 mr-1" />
-                          Trả phòng
-                        </Button>
-                        {(() => {
-                          const hoursSinceCheckIn =
-                            (Date.now() - new Date(s.checkInAt).getTime()) /
-                            (3600 * 1000);
-                          const isLateCancel = hoursSinceCheckIn > 6;
-                          return (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setCancelTarget({
-                                  stayId: s.id,
-                                  roomNumber: s.roomNumber,
-                                  checkInAt: s.checkInAt,
-                                });
-                                setCancelReason("");
-                              }}
-                              disabled={isPending}
-                              className={`h-8 w-8 p-0 rounded-lg ${
-                                isLateCancel
-                                  ? "text-amber-600 hover:text-amber-700 hover:bg-amber-500/10"
-                                  : "text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10"
-                              }`}
-                              title={
-                                isLateCancel
-                                  ? "Đã nhận phòng quá 6h (Yêu cầu quyền quản trị chuỗi)"
-                                  : "Hủy lượt ở (trong 6h)"
-                              }
-                            >
-                              <Ban className="h-3.5 w-3.5" />
-                            </Button>
-                          );
-                        })()}
-                      </div>
+                      {s.status === "checked_out" ? (
+                        <span className="text-[11px] text-muted-foreground italic font-mono">
+                          {s.checkedOutAt ? `Trả: ${formatDateTimeVN(s.checkedOutAt)}` : "Đã thanh toán"}
+                        </span>
+                      ) : s.status === "cancelled" ? (
+                        <span className="text-[11px] text-rose-500/80 italic font-mono">
+                          Đã hủy lượt ở
+                        </span>
+                      ) : (
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setCheckoutTarget({
+                                stayId: s.id,
+                                roomNumber: s.roomNumber,
+                                guestName: s.primaryGuestName,
+                              })
+                            }
+                            disabled={isPending}
+                            className="h-8 text-xs font-bold px-3 text-emerald-700 dark:text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/10 hover:border-emerald-500 transition-all rounded-lg"
+                          >
+                            <LogOut className="h-3.5 w-3.5 mr-1" />
+                            Trả phòng
+                          </Button>
+                          {(() => {
+                            const refTime = s.createdAt || s.checkInAt;
+                            const hoursSinceCheckIn =
+                              (Date.now() - new Date(refTime).getTime()) /
+                              (3600 * 1000);
+                            const isLateCancel = hoursSinceCheckIn > 6;
+                            return (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setCancelTarget({
+                                    stayId: s.id,
+                                    roomNumber: s.roomNumber,
+                                    checkInAt: refTime,
+                                  });
+                                  setCancelReason("");
+                                }}
+                                disabled={isPending}
+                                className={`h-8 w-8 p-0 rounded-lg ${
+                                  isLateCancel
+                                    ? "text-amber-600 hover:text-amber-700 hover:bg-amber-500/10"
+                                    : "text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10"
+                                }`}
+                                title={
+                                  isLateCancel
+                                    ? `Đã nhận phòng quá 6h (${Math.round(hoursSinceCheckIn)}h) - Cần quyền Quản lý/Chuỗi (stay.cancel_late)`
+                                    : "Hủy lượt ở (trong 6h)"
+                                }
+                              >
+                                <Ban className="h-3.5 w-3.5" />
+                              </Button>
+                            );
+                          })()}
+                        </div>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))

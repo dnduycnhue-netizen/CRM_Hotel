@@ -34,7 +34,7 @@ export default async function StaysPage() {
     branches.find((b) => b.id === currentBranchId) ||
     branches[0] ||
     allBranches[0];
-  const stays = await getInHouseStays(currentBranchId);
+  const stays = await getInHouseStays(currentBranchId, "all");
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">

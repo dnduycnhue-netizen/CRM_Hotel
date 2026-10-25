@@ -245,7 +245,9 @@ export function FacilitiesReportView({
                 <span className="text-xs text-slate-400">phiếu</span>
               </div>
               <div className="mt-3 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-2.5">
-                <span>Đã nghiệm thu xong:</span>
+                <span title="Bao gồm các phiếu sự cố có trạng thái Hoàn thành hoặc Đã đóng">
+                  Đã nghiệm thu xong:
+                </span>
                 <span className="font-bold text-emerald-600 dark:text-emerald-400">
                   {curr.completed} phiếu (
                   {curr.created > 0
@@ -268,7 +270,7 @@ export function FacilitiesReportView({
               </div>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
-                  {curr.on_time_rate}%
+                  {curr.on_time_rate != null ? `${curr.on_time_rate}%` : "—"}
                 </span>
               </div>
               <div className="mt-3 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-2.5">
@@ -291,9 +293,13 @@ export function FacilitiesReportView({
               </div>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-3xl font-extrabold text-slate-900 dark:text-slate-100">
-                  {curr.avg_resolve_hours}
+                  {curr.avg_resolve_hours != null
+                    ? `${curr.avg_resolve_hours}`
+                    : "—"}
                 </span>
-                <span className="text-xs text-slate-400">giờ / sự cố</span>
+                <span className="text-xs text-slate-400">
+                  {curr.avg_resolve_hours != null ? "giờ / sự cố" : "chưa có phát sinh"}
+                </span>
               </div>
               <div className="mt-3 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-2.5">
                 <span>Khẩn cấp (&le; 4h) / Bình thường (&le; 72h)</span>
@@ -332,14 +338,18 @@ export function FacilitiesReportView({
               </div>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">
-                  {curr.pm_on_time_rate}%
+                  {curr.pm_due > 0 && curr.pm_on_time_rate != null
+                    ? `${curr.pm_on_time_rate}%`
+                    : "—"}
                 </span>
-                <span className="text-xs text-slate-400">đúng hạn</span>
+                <span className="text-xs text-slate-400">
+                  {curr.pm_due > 0 ? "đúng hạn" : "không có kỳ hạn"}
+                </span>
               </div>
               <div className="mt-3 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-2.5">
                 <span>Kế hoạch tới hạn kỳ này:</span>
                 <span className="font-bold text-slate-700 dark:text-slate-300">
-                  {curr.pm_due} lượt
+                  {curr.pm_due > 0 ? `${curr.pm_due} lượt` : "Không có kế hoạch tới hạn"}
                 </span>
               </div>
             </div>

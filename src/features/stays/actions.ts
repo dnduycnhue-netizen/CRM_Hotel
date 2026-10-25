@@ -62,8 +62,9 @@ export async function cancelStayAction(
       .maybeSingle();
 
     const targetBranchId = branchId || stay?.branch_id;
-    const isLate = stay?.created_at
-      ? Date.now() - new Date(stay.created_at).getTime() > 6 * 3600 * 1000
+    const refTime = stay?.created_at || stay?.check_in_at;
+    const isLate = refTime
+      ? Date.now() - new Date(refTime).getTime() > 6 * 3600 * 1000
       : false;
     const requiredPerm = isLate ? "stay.cancel_late" : "stay.cancel";
 
@@ -316,6 +317,7 @@ export async function setCompanionLoyaltyAction(
 
 export async function getInHouseStays(
   branchId?: string,
+  statusFilter?: "all" | "in_house" | "checked_out" | "cancelled",
 ): Promise<InHouseStay[]> {
   try {
     const supabase = await createClient();
@@ -326,8 +328,12 @@ export async function getInHouseStays(
         branch_id,
         branches (name),
         room_id,
+        status,
         check_in_at,
         expected_check_out_at,
+        checked_out_at,
+        cancel_reason,
+        created_at,
         source_channel_id,
         source_channels (name),
         rooms (number, room_type),
@@ -335,12 +341,21 @@ export async function getInHouseStays(
           is_primary,
           guests (id, full_name, phone)
         )
-      `)
-      .eq("status", "in_house")
-      .order("expected_check_out_at", { ascending: true });
+      `);
+
+    if (statusFilter && statusFilter !== "all") {
+      query = query.eq("status", statusFilter);
+    }
 
     if (branchId) {
       query = query.eq("branch_id", branchId);
+    }
+
+    // Nếu chỉ xem đang ở thì xếp theo expected_check_out_at, nếu xem tất cả thì xếp theo check_in_at gần nhất
+    if (statusFilter === "in_house") {
+      query = query.order("expected_check_out_at", { ascending: true });
+    } else {
+      query = query.order("check_in_at", { ascending: false }).limit(100);
     }
 
     const { data, error } = await query;
@@ -367,7 +382,11 @@ export async function getInHouseStays(
           guestCount: s.stay_guests?.length || 1,
           checkInAt: s.check_in_at,
           expectedCheckOutAt: s.expected_check_out_at,
-          isOverdue: s.expected_check_out_at < now,
+          checkedOutAt: s.checked_out_at || null,
+          cancelReason: s.cancel_reason || null,
+          createdAt: s.created_at || s.check_in_at,
+          status: s.status || "in_house",
+          isOverdue: s.status === "in_house" && s.expected_check_out_at < now,
           sourceChannelName: channel?.name || "Khách vãng lai (Quầy)",
         };
       });
