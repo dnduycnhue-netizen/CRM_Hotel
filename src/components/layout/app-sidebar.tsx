@@ -20,6 +20,7 @@ import {
   Search,
   Settings,
   ShieldCheck,
+  Target,
   UserCheck,
   Users,
   Wrench,
@@ -90,6 +91,12 @@ const NAV_GROUPS: NavGroup[] = [
         href: "/partners",
         icon: Handshake,
         perms: ["partner.view", "group.manage"],
+      },
+      {
+        title: "Khách tiềm năng B2B",
+        href: "/prospects",
+        icon: Target,
+        perm: "prospect.view",
       },
       {
         title: "Duyệt gộp hồ sơ",

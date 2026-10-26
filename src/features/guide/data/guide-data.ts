@@ -812,4 +812,62 @@ export const MODULE_GUIDES: ModuleGuide[] = [
       },
     ],
   },
+  {
+    id: "mod-prospects",
+    title: "Khách hàng tiềm năng B2B",
+    route: "/prospects",
+    iconName: "Target",
+    summary:
+      "Nơi lưu công ty tour, đại lý, doanh nghiệp chưa hợp tác. Mỗi công ty chỉ có một sales phụ trách để tránh gọi chồng chéo; khi đồng ý hợp tác thì chuyển thành Đối tác.",
+    rolesInvolved: ["Sales", "Quản lý", "Chủ chuỗi"],
+    features: [
+      {
+        name: "Thêm khách tiềm năng & chống trùng",
+        description:
+          "Hệ thống tự chuẩn hóa SĐT, tên công ty, website, MST rồi so với cả khách tiềm năng lẫn đối tác đã có.",
+        howTo: [
+          "Bấm 'Thêm khách tiềm năng', nhập tên công ty và ít nhất số điện thoại hoặc email.",
+          "Trùng MST hoặc SĐT: hệ thống chặn và hiện bản ghi đã có để bạn mở chăm sóc tiếp.",
+          "Nghi trùng (tên giống + cùng tỉnh, hoặc cùng website): chọn mở bản ghi cũ, gộp thông tin vào bản cũ, hoặc vẫn tạo mới kèm lý do bắt buộc.",
+        ],
+      },
+      {
+        name: "Chăm sóc & nhật ký liên hệ",
+        description:
+          "Mỗi lần gọi / Zalo / gặp đều được ghi lại; hệ thống tự cập nhật lần liên hệ cuối và ngày hẹn tiếp.",
+        howTo: [
+          "Mở hồ sơ, điền 'Ghi nhận lần liên hệ' (hình thức, kết quả, ghi chú, hẹn tiếp).",
+          "Trạng thái 'Đang chăm sóc' và 'Đang đàm phán' bắt buộc có ngày hẹn.",
+          "Quá ngày hẹn mà chưa có liên hệ mới thì công ty rơi vào danh sách 'Quá hạn chăm sóc'.",
+          "SĐT của khách tiềm năng do sales khác phụ trách bị che (090****232); muốn gọi hãy hỏi người phụ trách trước.",
+        ],
+      },
+      {
+        name: "Chuyển thành đối tác",
+        description:
+          "Khi công ty đồng ý hợp tác, bấm một nút để tạo hồ sơ Đối tác với đầy đủ thông tin đã thu thập.",
+        howTo: [
+          "Trong hồ sơ (hoặc ở dòng danh sách), bấm 'Chuyển thành đối tác' và xác nhận.",
+          "Hồ sơ khách tiềm năng chuyển sang 'Đã chuyển đổi' và bị khóa; làm tiếp hợp đồng giá, đoàn, hoa hồng tại 'Đối tác & Khách đoàn'.",
+          "Không cần quản lý duyệt bước này. Bấm lần 2 không tạo thêm đối tác.",
+        ],
+      },
+      {
+        name: "Nhập từ Excel / CSV",
+        description:
+          "Nhập tối đa 500 công ty mỗi lần, luôn xem trước phân loại trùng rồi mới ghi.",
+        howTo: [
+          "Bấm 'Nhập Excel/CSV', tải 'file mẫu' để dùng đúng cột.",
+          "Xem bảng phân loại: Mới / Nghi trùng / Trùng cứng; chỉ tick những dòng muốn ghi.",
+          "Dòng nghi trùng phải ghi lý do; dòng trùng cứng tự bị loại. Dòng tạo dù nghi trùng nằm trong 'Chờ xử lý trùng' để quản lý xem xét.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Vì sao tôi không sửa được khách tiềm năng này?",
+        a: "Chỉ người phụ trách và quản lý được sửa, ghi liên hệ hoặc chuyển đổi. Hãy nhờ quản lý chuyển phụ trách nếu bạn tiếp quản.",
+      },
+    ],
+  },
 ];

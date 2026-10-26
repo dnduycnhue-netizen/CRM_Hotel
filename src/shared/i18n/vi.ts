@@ -27,6 +27,20 @@ export const messages = {
     SERVICE_UNAVAILABLE:
       "Không kết nối được dịch vụ đăng nhập. Vui lòng thử lại sau ít phút.",
   },
+  prospects: {
+    GENERIC: "Không thể xử lý yêu cầu, vui lòng thử lại sau ít phút.",
+    NO_FILE: "Chưa chọn file để nhập.",
+    FILE_TOO_LARGE: "File quá lớn (tối đa 2 MB).",
+    FILE_TYPE: "Chỉ hỗ trợ file .xlsx hoặc .csv.",
+    FILE_UNREADABLE:
+      "Không đọc được file. Hãy dùng file mẫu và lưu dạng .xlsx hoặc .csv (UTF-8).",
+    EMPTY_FILE: "File không có dòng dữ liệu.",
+    MISSING_NAME_COLUMN:
+      'Không tìm thấy cột tên công ty (ví dụ: "Tên công ty"). Hãy dùng file mẫu.',
+    TOO_MANY_ROWS: "Mỗi lần nhập tối đa 500 dòng. Hãy chia nhỏ file.",
+    DUP_PHONE: "Số điện thoại này đã có trong hệ thống",
+    DUP_TAX: "Mã số thuế này đã có trong hệ thống",
+  },
   common: {
     save: "Lưu",
     cancel: "Hủy",

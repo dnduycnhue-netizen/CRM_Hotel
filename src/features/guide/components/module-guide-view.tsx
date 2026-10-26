@@ -9,6 +9,7 @@ import {
   Lightbulb,
   Settings,
   Sparkles,
+  Target,
   UserCheck,
   Users,
   Wrench,
@@ -43,6 +44,8 @@ export function ModuleGuideView() {
         return BarChart3;
       case "mod-approvals":
         return CheckSquare;
+      case "mod-prospects":
+        return Target;
       case "mod-settings":
         return Settings;
       default:
