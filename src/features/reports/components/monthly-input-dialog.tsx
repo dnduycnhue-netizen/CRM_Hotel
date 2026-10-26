@@ -99,10 +99,12 @@ export function MonthlyInputDialog({
   const fetchMatrix = React.useCallback(async (monthStr: string) => {
     setIsLoading(true);
     const dateStr = `${monthStr}-01`;
-    const res = await getMonthlyInputMatrixAction(dateStr);
-    setIsLoading(false);
-
-    if (res.ok) {
+    try {
+      const res = await getMonthlyInputMatrixAction(dateStr);
+      if (!res.ok) {
+        toast.error(res.error.message || "Không thể tải bảng số liệu cơ sở");
+        return;
+      }
       const mapped: FormRow[] = res.data.map((b) => ({
         branch_id: b.branch_id,
         branch_name: b.branch_name,
@@ -149,8 +151,10 @@ export function MonthlyInputDialog({
         unlock_reason: b.figures.unlock_reason,
       }));
       setRows(mapped);
-    } else {
-      toast.error(res.error.message || "Không thể tải bảng số liệu cơ sở");
+    } catch {
+      toast.error("Không thể đọc dữ liệu bảng số liệu cơ sở");
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 

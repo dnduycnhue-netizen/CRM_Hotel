@@ -143,7 +143,17 @@ export async function getMonthlyInputMatrix(
     });
 
     if (error || !data) return [];
-    return data as MonthlyInputBranchRow[];
+    // RPC trả số liệu CRM dạng phẳng (crm_arrivals, crm_guests, crm_room_nights)
+    // nên gom lại thành crm_figures theo đúng kiểu MonthlyInputBranchRow.
+    return (data as Array<Record<string, any>>).map((r) => ({
+      ...r,
+      figures: r.figures ?? {},
+      crm_figures: r.crm_figures ?? {
+        arrivals: Number(r.crm_arrivals ?? 0),
+        guests: Number(r.crm_guests ?? 0),
+        room_nights: Number(r.crm_room_nights ?? 0),
+      },
+    })) as MonthlyInputBranchRow[];
   } catch {
     return [];
   }

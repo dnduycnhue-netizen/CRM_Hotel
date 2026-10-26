@@ -131,7 +131,17 @@ export async function redeemVoucherAction(
 
   revalidatePath("/rewards");
   revalidatePath("/check-in");
-  return ok(res as RedeemVoucherResult);
+  // RPC trả `code` (không có voucher_code / final_amount) nên chuẩn hóa tại đây
+  // để dialog luôn nhận đủ trường theo RedeemVoucherResult.
+  const raw = res as Record<string, unknown>;
+  const discountApplied = Number(raw.discount_applied ?? 0);
+  return ok({
+    redemption_id: String(raw.redemption_id ?? ""),
+    voucher_id: String(raw.voucher_id ?? ""),
+    voucher_code: String(raw.voucher_code ?? raw.code ?? data.code),
+    discount_applied: discountApplied,
+    final_amount: Math.max(Number(data.bill_amount || 0) - discountApplied, 0),
+  });
 }
 
 /**

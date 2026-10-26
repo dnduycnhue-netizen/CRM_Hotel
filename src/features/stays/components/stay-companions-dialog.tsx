@@ -86,26 +86,38 @@ export function StayCompanionsDialog({
     setCountsForLoyalty(true);
   }, []);
 
-  // Load guests when dialog opens
+  // Giữ callback của cha trong ref: nếu để trong deps, mỗi lần cha render lại
+  // (hàm inline mới) effect sẽ chạy lại, đóng form thêm và tải lại danh sách.
+  const onGuestsUpdatedRef = React.useRef(onGuestsUpdated);
   useEffect(() => {
-    if (isOpen && stayId) {
-      setIsLoading(true);
-      setShowAddForm(false);
-      resetForm();
+    onGuestsUpdatedRef.current = onGuestsUpdated;
+  }, [onGuestsUpdated]);
 
-      getStayGuestsAction(stayId).then((res) => {
-        setIsLoading(false);
-        if (res.ok) {
-          setGuests(res.data);
-          onGuestsUpdated?.(res.data.length);
-        } else {
-          toast.error(
-            res.error.message || "Không thể tải danh sách người trong phòng",
-          );
-        }
-      });
-    }
-  }, [isOpen, stayId, resetForm, onGuestsUpdated]);
+  // Load guests chỉ khi dialog mở / đổi lượt ở
+  useEffect(() => {
+    if (!isOpen || !stayId) return;
+    let cancelled = false;
+    setIsLoading(true);
+    setShowAddForm(false);
+    resetForm();
+
+    getStayGuestsAction(stayId).then((res) => {
+      if (cancelled) return;
+      setIsLoading(false);
+      if (res.ok) {
+        setGuests(res.data);
+        onGuestsUpdatedRef.current?.(res.data.length);
+      } else {
+        toast.error(
+          res.error.message || "Không thể tải danh sách người trong phòng",
+        );
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, stayId, resetForm]);
 
   // Tra cứu nhanh khách cũ
   async function handleLookup() {
