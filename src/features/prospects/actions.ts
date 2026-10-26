@@ -6,6 +6,7 @@ import { type ActionResult, fail, ok, toFieldErrors } from "@/shared/errors";
 import { messages } from "@/shared/i18n/vi";
 import { parseProspectImportFile } from "./data/import-file";
 import { callRpc as rpc, type RpcError } from "./data/rpc";
+import { buildImportSavePayload } from "./domain/import-payload";
 import {
   type CheckDuplicatesInput,
   type CommitImportInput,
@@ -14,6 +15,7 @@ import {
   type SaveProspectData,
   type SaveProspectRequest,
   type SetProspectStatusInput,
+  UNASSIGNED_FILTER,
   assignProspectSchema,
   checkDuplicatesSchema,
   commitImportSchema,
@@ -24,6 +26,7 @@ import {
   prospectIdSchema,
   saveProspectRequestSchema,
   setProspectStatusSchema,
+  unassignProspectsSchema,
 } from "./schemas";
 import type {
   ConvertProspectOutcome,
@@ -76,7 +79,16 @@ const nz = (v: string | null | undefined): string | null => {
 };
 
 function toPayload(d: SaveProspectData): Record<string, unknown> {
+  // assigned_to: null = CỐ Ý không gán (key có mặt, giá trị null); uuid = gán người đó;
+  // undefined / "" = để mặc định → KHÔNG đưa key vào payload (RPC phân biệt bằng `?`)
+  const assignment: Record<string, unknown> =
+    d.assigned_to === null
+      ? { assigned_to: null }
+      : d.assigned_to
+        ? { assigned_to: d.assigned_to }
+        : {};
   return {
+    ...assignment,
     id: nz(d.id),
     company_name: d.company_name,
     kind: d.kind,
@@ -92,7 +104,6 @@ function toPayload(d: SaveProspectData): Record<string, unknown> {
     source: nz(d.source),
     estimated_groups_per_year: d.estimated_groups_per_year,
     estimated_guests_per_year: d.estimated_guests_per_year,
-    assigned_to: nz(d.assigned_to),
     priority: d.priority,
     next_follow_up_at: nz(d.next_follow_up_at),
     note: nz(d.note),
@@ -117,7 +128,11 @@ export async function listProspectsAction(
     p_status: nz(f.status),
     p_kind: nz(f.kind),
     p_province: nz(f.province),
-    p_assigned_to: nz(f.assigned_to),
+    p_assigned_to:
+      f.assigned_to && f.assigned_to !== UNASSIGNED_FILTER
+        ? f.assigned_to
+        : null,
+    p_unassigned_only: f.assigned_to === UNASSIGNED_FILTER,
     p_overdue_only: f.overdue_only ?? false,
     p_dup_pending: f.dup_pending ?? false,
   });
@@ -267,9 +282,10 @@ export async function setProspectStatusAction(
   return ok({ id: d.id });
 }
 
+/** assignee = null → "Không gán": về trạng thái chưa gán, sales có thể tự nhận */
 export async function assignProspectAction(raw: {
   id: string;
-  assignee: string;
+  assignee: string | null;
 }): Promise<ActionResult<{ id: string }>> {
   const parsed = assignProspectSchema.safeParse(raw);
   if (!parsed.success) return fail("VALIDATION", toFieldErrors(parsed.error));
@@ -283,6 +299,27 @@ export async function assignProspectAction(raw: {
   if (error) return failFromRpc(error);
   revalidatePath("/prospects");
   return ok({ id: parsed.data.id });
+}
+
+/** Bỏ gán hàng loạt (quản lý/owner): dọn dữ liệu đã import, mỗi dòng ghi timeline + audit */
+export async function unassignProspectsAction(raw: { ids: string[] }): Promise<
+  ActionResult<{
+    unassigned: number;
+    skipped: Array<{ id: string; reason: string }>;
+  }>
+> {
+  const parsed = unassignProspectsSchema.safeParse(raw);
+  if (!parsed.success) return fail("VALIDATION", toFieldErrors(parsed.error));
+  const auth = await requirePermission("prospect.assign");
+  if (!auth.ok) return auth;
+
+  const { data, error } = await rpc<{
+    unassigned: number;
+    skipped: Array<{ id: string; reason: string }>;
+  }>("unassign_prospects", { p_ids: parsed.data.ids });
+  if (error) return failFromRpc(error);
+  revalidatePath("/prospects");
+  return ok(data ?? { unassigned: 0, skipped: [] });
 }
 
 /** Sales tự nhận prospect chưa có người phụ trách (không cần prospect.assign) */
@@ -419,6 +456,12 @@ export async function commitProspectImportAction(
   if (!importAuth.ok) return importAuth;
   const manageAuth = await requirePermission("prospect.manage");
   if (!manageAuth.ok) return manageAuth;
+  // "Để trống người phụ trách" chỉ dành cho quản lý/owner (sales luôn là chính mình)
+  if (parsed.data.leave_unassigned) {
+    const assignAuth = await requirePermission("prospect.assign");
+    if (!assignAuth.ok) return assignAuth;
+  }
+  const leaveUnassigned = parsed.data.leave_unassigned;
 
   const report: ImportCommitReport = {
     created: 0,
@@ -434,20 +477,7 @@ export async function commitProspectImportAction(
     const chunk = items.slice(i, i + CHUNK);
     const outcomes = await Promise.all(
       chunk.map(async ({ row, force, force_reason }) => {
-        const payload = {
-          company_name: row.company_name,
-          kind: row.kind,
-          phone: nz(row.phone),
-          email: nz(row.email),
-          address: nz(row.address),
-          province: nz(row.province),
-          website: nz(row.website),
-          source: nz(row.source),
-          contact_name: nz(row.contact_name),
-          tax_code: nz(row.tax_code),
-          note: nz(row.note),
-          priority: "medium",
-        };
+        const payload = buildImportSavePayload(row, leaveUnassigned);
         const { data, error } = await rpc<{
           status: "saved" | "possible_duplicates";
         }>("save_prospect", {

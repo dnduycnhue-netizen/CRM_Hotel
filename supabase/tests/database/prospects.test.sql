@@ -1,7 +1,7 @@
 -- pgTAP: khách hàng tiềm năng B2B (migration 52)
 -- Chạy bằng `pnpm supabase test db`
 begin;
-select plan(32);
+select plan(35);
 
 -- 1. Hàm chuẩn hóa dùng chung
 select is(private.normalize_phone('090 978 92 32'), '0909789232', 'SĐT: bỏ khoảng trắng');
@@ -30,7 +30,10 @@ select has_function('public', 'log_prospect_interaction', array['uuid', 'text', 
 select has_function('public', 'claim_prospect', array['uuid'], 'có claim_prospect (tự nhận chăm sóc)');
 select ok((select prosecdef from pg_proc where proname = 'claim_prospect'), 'claim_prospect là security definer');
 select has_function('public', 'convert_prospect_to_partner', array['uuid'], 'có convert_prospect_to_partner');
-select has_function('public', 'get_prospects', array['text', 'text', 'text', 'text', 'uuid', 'boolean', 'boolean', 'integer'], 'có get_prospects');
+select has_function('public', 'get_prospects', array['text', 'text', 'text', 'text', 'uuid', 'boolean', 'boolean', 'integer', 'boolean'], 'có get_prospects (có bộ lọc chưa gán)');
+select is((select count(*)::int from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'get_prospects'), 1, 'get_prospects chỉ còn 1 overload');
+select has_function('public', 'unassign_prospects', array['uuid[]'], 'có unassign_prospects (bỏ gán hàng loạt)');
+select ok((select prosecdef from pg_proc where proname = 'unassign_prospects'), 'unassign_prospects là security definer');
 select has_function('public', 'preview_prospect_import', array['jsonb'], 'có preview_prospect_import');
 select ok((select prosecdef from pg_proc where proname = 'save_prospect'), 'save_prospect là security definer');
 select ok((select prosecdef from pg_proc where proname = 'convert_prospect_to_partner'), 'convert là security definer');

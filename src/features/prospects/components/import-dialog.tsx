@@ -44,6 +44,8 @@ interface ImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onImported: () => void;
+  /** Quản lý/owner: được chọn "để trống người phụ trách" */
+  canAssign?: boolean;
 }
 
 type Step = "select" | "preview" | "done";
@@ -91,6 +93,7 @@ export function ImportDialog({
   open,
   onOpenChange,
   onImported,
+  canAssign = false,
 }: ImportDialogProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState<Step>("select");
@@ -100,6 +103,7 @@ export function ImportDialog({
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [reasons, setReasons] = useState<Record<string, string>>({});
   const [bulkReason, setBulkReason] = useState("");
+  const [leaveUnassigned, setLeaveUnassigned] = useState(false);
   const [ignored, setIgnored] = useState<string[]>([]);
   const [report, setReport] = useState<ImportCommitReport | null>(null);
 
@@ -110,6 +114,7 @@ export function ImportDialog({
     setSelected({});
     setReasons({});
     setBulkReason("");
+    setLeaveUnassigned(false);
     setIgnored([]);
     setReport(null);
     if (fileRef.current) fileRef.current.value = "";
@@ -186,6 +191,7 @@ export function ImportDialog({
     setBusy(true);
     try {
       const res = await commitProspectImportAction({
+        leave_unassigned: canAssign && leaveUnassigned,
         rows: chosen.map((row) => {
           const isSoft = preview[row.row_id]?.classification === "soft";
           return {
@@ -415,6 +421,22 @@ export function ImportDialog({
                 </TableBody>
               </Table>
             </div>
+
+            {canAssign && (
+              <label className="flex items-start gap-2 rounded-lg border p-3 text-sm cursor-pointer">
+                <Checkbox
+                  checked={leaveUnassigned}
+                  onCheckedChange={(c) => setLeaveUnassigned(Boolean(c))}
+                />
+                <span>
+                  <strong>Để trống người phụ trách (sales tự nhận sau)</strong>
+                  <span className="block text-xs text-muted-foreground">
+                    Bật: các dòng ghi lần này sẽ chưa gán, sales bấm "Nhận chăm
+                    sóc". Tắt: các dòng thuộc về người nhập file.
+                  </span>
+                </span>
+              </label>
+            )}
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={reset}>

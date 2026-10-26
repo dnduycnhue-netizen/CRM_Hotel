@@ -71,6 +71,9 @@ beforeAll(async () => {
   await db.exec(m41.slice(start, end));
 
   await db.exec(read("supabase/migrations/20261101000052_prospects.sql"));
+  await db.exec(
+    read("supabase/migrations/20261101000053_prospect_unassigned_option.sql"),
+  );
   await db.exec(`
     insert into public.profiles values
       ('${SALES1}','Sales Một',true),('${SALES2}','Sales Hai',true),('${MANAGER}','Quản Lý',true);
@@ -958,5 +961,290 @@ describe("prospect chưa gán: không RPC nào trả null cho cờ / lộ SĐT",
       company_name: "Công ty Quá Hạn",
       is_overdue: true,
     });
+  });
+});
+
+describe("phương án A: lựa chọn 'Không gán' (migration 53)", () => {
+  const mk = (n: number, extra: Record<string, unknown> = {}) => ({
+    company_name: `Công ty Phương Án A ${n}`,
+    kind: "tour_operator",
+    phone: `0988${String(100000 + n)}`,
+    ...extra,
+  });
+  const assignedOf = async (id: string) =>
+    (
+      await one("select assigned_to from public.tour_prospects where id=$1", [
+        id,
+      ])
+    ).assigned_to;
+  const idOf = (r: unknown) => (r as { v: { id: string } }).v.id;
+
+  it("quản lý: key assigned_to = null → tạo ra dòng chưa gán", async () => {
+    await db.exec(
+      "delete from public.tour_prospects; delete from public.partners;",
+    );
+    await as(MANAGER, MANAGER_PERMS);
+    const r = await save(mk(1, { assigned_to: null }));
+    expect(r.ok && r.v.status).toBe("saved");
+    expect(await assignedOf(idOf(r))).toBeNull();
+  });
+
+  it("quản lý: KHÔNG truyền key → vẫn gán người tạo (regression); truyền uuid → gán người đó", async () => {
+    await as(MANAGER, MANAGER_PERMS);
+    const def = await save(mk(2));
+    expect(await assignedOf(idOf(def))).toBe(MANAGER);
+    const other = await save(mk(3, { assigned_to: SALES2 }));
+    expect(await assignedOf(idOf(other))).toBe(SALES2);
+    // chuỗi rỗng cũng là "cố ý không gán" khi key có mặt
+    const empty = await save(mk(4, { assigned_to: "" }));
+    expect(await assignedOf(idOf(empty))).toBeNull();
+  });
+
+  it("sales: dù truyền assigned_to = null hay người khác vẫn luôn là chính mình", async () => {
+    await as(SALES1, SALES_PERMS);
+    const nul = await save(mk(5, { assigned_to: null }));
+    expect(await assignedOf(idOf(nul))).toBe(SALES1);
+    const other = await save(mk(6, { assigned_to: SALES2 }));
+    expect(await assignedOf(idOf(other))).toBe(SALES1);
+  });
+
+  it("assign_prospect null: về chưa gán, giữ nguyên trạng thái, log '→ chưa gán'; gọi lại không ghi log thêm", async () => {
+    await as(MANAGER, MANAGER_PERMS);
+    const p = await save(mk(7, { assigned_to: SALES1 }));
+    const id = idOf(p);
+    await db.query(
+      "update public.tour_prospects set status='nurturing', next_follow_up_at=current_date+2 where id=$1",
+      [id],
+    );
+
+    const r = await call<{ assigned_to: string | null; unchanged: boolean }>(
+      "select public.assign_prospect($1,null) as v",
+      [id],
+    );
+    expect(r.ok && r.v).toMatchObject({ assigned_to: null, unchanged: false });
+    expect(await assignedOf(id)).toBeNull();
+    expect(
+      (await one("select status from public.tour_prospects where id=$1", [id]))
+        .status,
+    ).toBe("nurturing");
+    const log = await one(
+      "select note from public.prospect_interactions where prospect_id=$1 and entry_type='status_change' order by created_at desc limit 1",
+      [id],
+    );
+    expect(String(log.note)).toBe(
+      "Chuyển người phụ trách: Sales Một → chưa gán",
+    );
+
+    const logsBefore = (
+      await one(
+        "select count(*)::int c from public.prospect_interactions where prospect_id=$1",
+        [id],
+      )
+    ).c;
+    const again = await call<{ unchanged: boolean }>(
+      "select public.assign_prospect($1,null) as v",
+      [id],
+    );
+    expect(again.ok && again.v.unchanged).toBe(true);
+    expect(
+      (
+        await one(
+          "select count(*)::int c from public.prospect_interactions where prospect_id=$1",
+          [id],
+        )
+      ).c,
+    ).toBe(logsBefore);
+  });
+
+  it("assign_prospect: sales bị chặn kể cả khi truyền null; người nhận không hợp lệ vẫn bị từ chối", async () => {
+    const id = (
+      await one(
+        "select id from public.tour_prospects where company_name='Công ty Phương Án A 7'",
+      )
+    ).id as string;
+    await as(SALES1, SALES_PERMS);
+    expect(
+      await call("select public.assign_prospect($1,null) as v", [id]),
+    ).toMatchObject({ ok: false, code: "P0403" });
+    await as(MANAGER, MANAGER_PERMS);
+    expect(
+      await call("select public.assign_prospect($1,gen_random_uuid()) as v", [
+        id,
+      ]),
+    ).toMatchObject({ ok: false, code: "P0422" });
+  });
+
+  it("claim dòng chưa gán: nhận được; sales thứ 2 bị chặn kèm tên; dòng đã chuyển đổi bị chặn", async () => {
+    await as(MANAGER, MANAGER_PERMS);
+    const id = idOf(await save(mk(8, { assigned_to: null })));
+
+    await as(SALES1, SALES_PERMS);
+    expect((await call("select public.claim_prospect($1) as v", [id])).ok).toBe(
+      true,
+    );
+    expect(await assignedOf(id)).toBe(SALES1);
+    // sau khi nhận: sửa + ghi nhật ký như người phụ trách
+    expect((await save({ ...mk(8), id, note: "đã nhận" })).ok).toBe(true);
+    expect(
+      (
+        await call(
+          "select public.log_prospect_interaction($1,'call','interested','ok',null) as v",
+          [id],
+        )
+      ).ok,
+    ).toBe(true);
+
+    await as(SALES2, SALES_PERMS);
+    const second = await call("select public.claim_prospect($1) as v", [id]);
+    expect(second).toMatchObject({ ok: false, code: "P0409" });
+    expect((second as { msg: string }).msg).toContain("Sales Một");
+
+    await as(SALES1, SALES_PERMS);
+    expect(
+      (await call("select public.convert_prospect_to_partner($1) as v", [id]))
+        .ok,
+    ).toBe(true);
+    await as(SALES2, SALES_PERMS);
+    expect(
+      await call("select public.claim_prospect($1) as v", [id]),
+    ).toMatchObject({ ok: false, code: "P0422" });
+  });
+
+  it("dòng chưa gán tạo bằng đường mới: sales thấy cờ boolean thật + SĐT bị che ở danh sách, chi tiết, ứng viên trùng", async () => {
+    await as(MANAGER, MANAGER_PERMS);
+    const id = idOf(
+      await save(
+        mk(9, {
+          assigned_to: null,
+          province: "Huế",
+          website: "https://khonggan.vn",
+        }),
+      ),
+    );
+
+    await as(SALES2, SALES_PERMS);
+    const list = await call<Array<Record<string, unknown>>>(
+      "select public.get_prospects() as v",
+    );
+    const row = (list as { v: Array<Record<string, unknown>> }).v.find(
+      (x) => x.id === id,
+    ) as Record<string, unknown>;
+    for (const key of [
+      "is_masked",
+      "can_edit",
+      "can_claim",
+      "is_overdue",
+      "dup_reviewed",
+    ]) {
+      expect(typeof row[key], key).toBe("boolean");
+    }
+    expect(row).toMatchObject({
+      is_masked: true,
+      can_edit: false,
+      can_claim: true,
+      phone_display: "098****009",
+    });
+
+    const detail = await call<{ prospect: Record<string, unknown> }>(
+      "select public.get_prospect_detail($1) as v",
+      [id],
+    );
+    expect(
+      (detail as { v: { prospect: Record<string, unknown> } }).v.prospect,
+    ).toMatchObject({
+      is_masked: true,
+      can_claim: true,
+      phone_display: "098****009",
+    });
+
+    const dup = await call<Array<{ phone: string | null }>>(
+      "select public.check_prospect_duplicates($1,$2,null,$3,$4) as v",
+      ["Công ty Phương Án A 9", "0988100009", "https://khonggan.vn", "Huế"],
+    );
+    const hits = (dup as { v: Array<{ phone: string | null }> }).v;
+    expect(hits.length).toBeGreaterThan(0);
+    for (const h of hits) expect(h.phone).toBe("098****009");
+
+    await as(MANAGER, MANAGER_PERMS);
+    const mgr = await call<Array<Record<string, unknown>>>(
+      "select public.get_prospects() as v",
+    );
+    expect(
+      (mgr as { v: Array<Record<string, unknown>> }).v.find((x) => x.id === id),
+    ).toMatchObject({ is_masked: false, phone_display: "0988100009" });
+  });
+
+  it("bộ lọc 'Chưa gán' (p_unassigned_only)", async () => {
+    await as(MANAGER, MANAGER_PERMS);
+    const r = await call<Array<{ assigned_to: string | null }>>(
+      "select public.get_prospects(null,null,null,null,null,false,false,500,true) as v",
+    );
+    const rows = (r as { v: Array<{ assigned_to: string | null }> }).v;
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.every((x) => x.assigned_to === null)).toBe(true);
+  });
+
+  it("bỏ gán hàng loạt: N dòng về NULL, đủ N dòng log + audit, bỏ qua dòng không hợp lệ; sales bị chặn", async () => {
+    await as(MANAGER, MANAGER_PERMS);
+    await db.exec("delete from public.audit_logs");
+    const ids: string[] = [];
+    for (let i = 0; i < 3; i++)
+      ids.push(idOf(await save(mk(20 + i, { assigned_to: SALES1 }))));
+    const none = idOf(await save(mk(30, { assigned_to: null })));
+    const conv = idOf(await save(mk(31, { assigned_to: SALES1 })));
+    await as(SALES1, SALES_PERMS);
+    expect(
+      (await call("select public.convert_prospect_to_partner($1) as v", [conv]))
+        .ok,
+    ).toBe(true);
+
+    await as(SALES2, SALES_PERMS);
+    expect(
+      await call("select public.unassign_prospects($1::uuid[]) as v", [ids]),
+    ).toMatchObject({ ok: false, code: "P0403" });
+
+    await as(MANAGER, MANAGER_PERMS);
+    await db.exec("delete from public.audit_logs");
+    const r = await call<{
+      unassigned: number;
+      skipped: Array<{ id: string; reason: string }>;
+    }>("select public.unassign_prospects($1::uuid[]) as v", [
+      [...ids, none, conv, "00000000-0000-0000-0000-000000000000"],
+    ]);
+    expect(r.ok && r.v.unassigned).toBe(3);
+    const reasons = Object.fromEntries(
+      (
+        r as { v: { skipped: Array<{ id: string; reason: string }> } }
+      ).v.skipped.map((x) => [x.id, x.reason]),
+    );
+    expect(reasons[none]).toBe("already_unassigned");
+    expect(reasons[conv]).toBe("converted");
+    expect(reasons["00000000-0000-0000-0000-000000000000"]).toBe("not_found");
+
+    for (const id of ids) expect(await assignedOf(id)).toBeNull();
+    expect(await assignedOf(conv)).toBe(SALES1);
+    const logs = await one(
+      "select count(*)::int c from public.prospect_interactions where prospect_id = any($1::uuid[]) and note like 'Bỏ gán hàng loạt: Sales Một → chưa gán'",
+      [ids],
+    );
+    expect(logs.c).toBe(3);
+    const audits = await one(
+      "select count(*)::int c from public.audit_logs where entity='tour_prospects' and action='update'",
+    );
+    expect(audits.c).toBeGreaterThanOrEqual(3);
+  });
+
+  it("bỏ gán hàng loạt: danh sách rỗng hoặc quá 500 dòng bị từ chối", async () => {
+    await as(MANAGER, MANAGER_PERMS);
+    expect(
+      await call("select public.unassign_prospects('{}'::uuid[]) as v"),
+    ).toMatchObject({ ok: false, code: "P0422" });
+    const many = Array.from(
+      { length: 501 },
+      () => "00000000-0000-0000-0000-000000000001",
+    );
+    expect(
+      await call("select public.unassign_prospects($1::uuid[]) as v", [many]),
+    ).toMatchObject({ ok: false, code: "P0422" });
   });
 });

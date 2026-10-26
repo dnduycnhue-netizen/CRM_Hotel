@@ -840,6 +840,8 @@ export const MODULE_GUIDES: ModuleGuide[] = [
           "Trạng thái 'Đang chăm sóc' và 'Đang đàm phán' bắt buộc có ngày hẹn.",
           "Quá ngày hẹn mà chưa có liên hệ mới thì công ty rơi vào danh sách 'Quá hạn chăm sóc'.",
           "SĐT của khách tiềm năng do sales khác phụ trách bị che (090****232); muốn gọi hãy hỏi người phụ trách trước.",
+          "Dòng 'Chưa gán' (quản lý chọn 'Không gán' khi tạo / nhập file / chuyển phụ trách): bất kỳ sales nào cũng bấm 'Nhận chăm sóc' để thành người phụ trách; người đến sau bị chặn kèm tên người đã nhận.",
+          "Quản lý có thể chọn nhiều dòng rồi 'Bỏ gán các dòng đã chọn' để trả về trạng thái chưa gán.",
         ],
       },
       {

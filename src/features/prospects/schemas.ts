@@ -176,7 +176,9 @@ export const saveProspectSchema = z
     source: optionalText,
     estimated_groups_per_year: optionalCount,
     estimated_guests_per_year: optionalCount,
-    assigned_to: z.string().uuid().optional().nullable().or(z.literal("")),
+    // undefined / "" = mặc định (người tạo); null = CỐ Ý không gán (chỉ quản lý/owner);
+    // uuid = gán cho người đó. Server Action phân biệt null với undefined.
+    assigned_to: z.string().uuid().nullable().optional().or(z.literal("")),
     priority: z.enum(prospectPriorities).default("medium"),
     next_follow_up_at: optionalDate,
     note: optionalText,
@@ -230,8 +232,20 @@ export type SetProspectStatusInput = z.input<typeof setProspectStatusSchema>;
 
 export const assignProspectSchema = z.object({
   id: z.string().uuid(),
-  assignee: z.string().uuid(),
+  /** null = "Không gán": prospect về trạng thái chưa gán, sales tự nhận sau */
+  assignee: z.string().uuid().nullable(),
 });
+
+export const MAX_BULK_UNASSIGN = 500;
+export const unassignProspectsSchema = z.object({
+  ids: z
+    .array(z.string().uuid())
+    .min(1, "Chưa chọn khách tiềm năng nào")
+    .max(MAX_BULK_UNASSIGN, `Mỗi lần bỏ gán tối đa ${MAX_BULK_UNASSIGN} dòng`),
+});
+
+/** Giá trị đặc biệt của bộ lọc "Sales phụ trách" */
+export const UNASSIGNED_FILTER = "unassigned" as const;
 
 export const prospectIdSchema = z.object({ id: z.string().uuid() });
 
@@ -255,7 +269,9 @@ export const prospectFiltersSchema = z.object({
   status: z.enum(prospectStatuses).optional().or(z.literal("")),
   kind: z.enum(prospectKinds).optional().or(z.literal("")),
   province: z.string().trim().max(100).optional(),
-  assigned_to: z.string().uuid().optional().or(z.literal("")),
+  assigned_to: z
+    .union([z.string().uuid(), z.literal(UNASSIGNED_FILTER), z.literal("")])
+    .optional(),
   overdue_only: z.boolean().optional(),
   dup_pending: z.boolean().optional(),
 });
@@ -286,6 +302,8 @@ export const previewImportSchema = z.object({
 });
 
 export const commitImportSchema = z.object({
+  /** true = mọi dòng ghi ra đều chưa gán (sales tự nhận sau). Chỉ quản lý/owner. */
+  leave_unassigned: z.boolean().default(false),
   rows: z
     .array(
       z.object({

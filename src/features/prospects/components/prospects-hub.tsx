@@ -16,6 +16,15 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -30,6 +39,7 @@ import {
   convertProspectAction,
   getProspectsOverviewAction,
   listProspectsAction,
+  unassignProspectsAction,
 } from "../actions";
 import {
   prospectKindLabels,
@@ -37,6 +47,7 @@ import {
   prospectPriorityLabels,
   prospectStatusLabels,
   prospectStatuses,
+  UNASSIGNED_FILTER,
 } from "../schemas";
 import type {
   Prospect,
@@ -96,6 +107,11 @@ export function ProspectsHub({
   const [convertingId, setConvertingId] = useState<string | null>(null);
   const [claimingId, setClaimingId] = useState<string | null>(null);
 
+  // Chọn nhiều dòng để bỏ gán hàng loạt (chỉ quản lý/owner)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [unassignOpen, setUnassignOpen] = useState(false);
+  const [unassigning, setUnassigning] = useState(false);
+
   const filters = useMemo<ProspectFilters>(
     () => ({
       search,
@@ -135,9 +151,44 @@ export function ProspectsHub({
     return () => clearTimeout(t);
   }, [filters, reload]);
 
+  // Sau khi lọc / tải lại, bỏ khỏi vùng chọn những dòng không còn hiển thị
+  useEffect(() => {
+    const visible = new Set(prospects.map((p) => p.id));
+    setSelectedIds((prev) => {
+      const next = new Set([...prev].filter((id) => visible.has(id)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [prospects]);
+
   function openDetail(id: string) {
     setDetailId(id);
     setDetailOpen(true);
+  }
+
+  async function confirmBulkUnassign() {
+    const ids = Array.from(selectedIds);
+    setUnassigning(true);
+    try {
+      const res = await unassignProspectsAction({ ids });
+      if (!res.ok) {
+        toast.error(res.error.message);
+        return;
+      }
+      const { unassigned, skipped } = res.data;
+      if (unassigned > 0) {
+        toast.success(`Đã bỏ gán ${unassigned} khách tiềm năng`);
+      }
+      if (skipped.length > 0) {
+        toast.info(
+          `${skipped.length} dòng được bỏ qua (đã chưa gán hoặc đã chuyển đổi)`,
+        );
+      }
+      setUnassignOpen(false);
+      setSelectedIds(new Set());
+      await reload();
+    } finally {
+      setUnassigning(false);
+    }
   }
 
   async function claim(p: Prospect) {
@@ -184,6 +235,17 @@ export function ProspectsHub({
   }
 
   const byStatus = overview.by_status;
+  // Chỉ chọn được dòng đang có người phụ trách (dòng chưa gán không cần bỏ gán)
+  const selectableIds = useMemo(
+    () =>
+      prospects
+        .filter((p) => p.assigned_to && p.status !== "converted")
+        .map((p) => p.id),
+    [prospects],
+  );
+  const allSelected =
+    selectableIds.length > 0 &&
+    selectableIds.every((id) => selectedIds.has(id));
   const siblings = useMemo(
     () => prospects.map((p) => ({ id: p.id, company_name: p.company_name })),
     [prospects],
@@ -366,6 +428,7 @@ export function ProspectsHub({
           onChange={(e) => setAssignedTo(e.target.value)}
         >
           <option value="">Mọi sales phụ trách</option>
+          <option value={UNASSIGNED_FILTER}>Chưa gán</option>
           {overview.assignees.map((a) => (
             <option key={a.id} value={a.id}>
               {a.name}
@@ -401,11 +464,41 @@ export function ProspectsHub({
         </div>
       </div>
 
+      {canAssign && selectedIds.size > 0 && (
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
+          <span>
+            Đã chọn <strong>{selectedIds.size}</strong> dòng
+          </span>
+          <Button size="sm" onClick={() => setUnassignOpen(true)}>
+            Bỏ gán các dòng đã chọn
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setSelectedIds(new Set())}
+          >
+            Bỏ chọn
+          </Button>
+        </div>
+      )}
+
       {/* Danh sách */}
       <div className="rounded-xl border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
+              {canAssign && (
+                <TableHead className="w-10">
+                  <Checkbox
+                    aria-label="Chọn tất cả dòng đang có người phụ trách"
+                    checked={allSelected}
+                    disabled={selectableIds.length === 0}
+                    onCheckedChange={(c) =>
+                      setSelectedIds(c ? new Set(selectableIds) : new Set())
+                    }
+                  />
+                </TableHead>
+              )}
               <TableHead>Công ty</TableHead>
               <TableHead>Liên hệ</TableHead>
               <TableHead>Trạng thái</TableHead>
@@ -420,7 +513,7 @@ export function ProspectsHub({
             {prospects.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={canAssign ? 9 : 8}
                   className="text-center py-10 text-sm text-muted-foreground"
                 >
                   Không có khách tiềm năng phù hợp.
@@ -433,6 +526,23 @@ export function ProspectsHub({
                   className="cursor-pointer"
                   onClick={() => openDetail(p.id)}
                 >
+                  {canAssign && (
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        aria-label={`Chọn ${p.company_name}`}
+                        checked={selectedIds.has(p.id)}
+                        disabled={!selectableIds.includes(p.id)}
+                        onCheckedChange={(c) =>
+                          setSelectedIds((prev) => {
+                            const next = new Set(prev);
+                            if (c) next.add(p.id);
+                            else next.delete(p.id);
+                            return next;
+                          })
+                        }
+                      />
+                    </TableCell>
+                  )}
                   <TableCell>
                     <div className="font-medium text-sm">{p.company_name}</div>
                     <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
@@ -461,9 +571,7 @@ export function ProspectsHub({
                   </TableCell>
                   <TableCell className="text-xs">
                     {p.assigned_to_name ?? (
-                      <span className="text-amber-600">
-                        Chưa có người phụ trách
-                      </span>
+                      <span className="text-amber-600">Chưa gán</span>
                     )}
                   </TableCell>
                   <TableCell className="text-xs">
@@ -536,6 +644,39 @@ export function ProspectsHub({
         </Table>
       </div>
 
+      <Dialog open={unassignOpen} onOpenChange={setUnassignOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              Bỏ gán {selectedIds.size} khách tiềm năng?
+            </DialogTitle>
+            <DialogDescription>
+              Các dòng đã chọn sẽ về trạng thái chưa gán (giữ nguyên trạng thái
+              chăm sóc). Sales có quyền có thể tự bấm "Nhận chăm sóc". Mỗi dòng
+              được ghi vào dòng thời gian và nhật ký thao tác.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setUnassignOpen(false)}
+              disabled={unassigning}
+            >
+              Hủy
+            </Button>
+            <Button
+              onClick={() => void confirmBulkUnassign()}
+              disabled={unassigning}
+            >
+              {unassigning && (
+                <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+              )}
+              Bỏ gán {selectedIds.size} dòng
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <ProspectDialog
         open={formOpen}
         onOpenChange={setFormOpen}
@@ -570,6 +711,7 @@ export function ProspectsHub({
           open={importOpen}
           onOpenChange={setImportOpen}
           onImported={() => void reload()}
+          canAssign={canAssign}
         />
       )}
     </div>

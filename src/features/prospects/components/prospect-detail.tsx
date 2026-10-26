@@ -67,6 +67,9 @@ interface ProspectDetailProps {
   onChanged: () => void;
 }
 
+/** Giá trị ô chọn "Người phụ trách mới" cho lựa chọn Không gán */
+const UNASSIGN_OPTION = "__none__";
+
 function Field({
   label,
   children,
@@ -174,14 +177,22 @@ export function ProspectDetailDialog({
 
   async function submitAssign() {
     if (!p || !assignee) return;
+    const unassign = assignee === UNASSIGN_OPTION;
     setBusy(true);
     try {
-      const res = await assignProspectAction({ id: p.id, assignee });
+      const res = await assignProspectAction({
+        id: p.id,
+        assignee: unassign ? null : assignee,
+      });
       if (!res.ok) {
         toast.error(res.error.message);
         return;
       }
-      toast.success("Đã chuyển người phụ trách");
+      toast.success(
+        unassign
+          ? "Đã bỏ gán, sales có thể tự nhận chăm sóc"
+          : "Đã chuyển người phụ trách",
+      );
       setPanel("none");
       await afterChange();
     } finally {
@@ -312,7 +323,7 @@ export function ProspectDetailDialog({
                 <span className="font-semibold">
                   {p.assigned_to_name
                     ? `Đang do ${p.assigned_to_name} chăm sóc`
-                    : "Chưa có người phụ trách"}
+                    : "Chưa gán"}
                 </span>
                 {p.can_claim && (
                   <Button
@@ -572,12 +583,24 @@ export function ProspectDetailDialog({
                   onChange={(e) => setAssignee(e.target.value)}
                 >
                   <option value="">Chọn nhân viên...</option>
+                  {p.assigned_to && (
+                    <option value={UNASSIGN_OPTION}>
+                      Không gán — để sales tự nhận sau
+                    </option>
+                  )}
                   {assignees.map((a) => (
                     <option key={a.id} value={a.id}>
                       {a.name}
                     </option>
                   ))}
                 </select>
+                {assignee === UNASSIGN_OPTION && (
+                  <p className="text-xs text-amber-700">
+                    Prospect sẽ về trạng thái chưa gán (giữ nguyên trạng thái
+                    chăm sóc hiện tại). Bất kỳ sales nào có quyền cũng có thể
+                    bấm "Nhận chăm sóc".
+                  </p>
+                )}
                 <div className="flex gap-2">
                   <Button
                     size="sm"

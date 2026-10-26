@@ -76,6 +76,9 @@ type FormState = {
   note: string;
 };
 
+/** Giá trị ô chọn "Sales phụ trách" cho lựa chọn cố ý không gán (chỉ khi tạo mới) */
+const UNASSIGNED_OPTION = "__none__";
+
 function initialState(p?: Prospect | null): FormState {
   return {
     company_name: p?.company_name ?? "",
@@ -179,7 +182,13 @@ function ProspectDialogInner({
     const raw = {
       id: prospect?.id ?? null,
       ...form,
-      assigned_to: canAssign ? form.assigned_to || null : null,
+      // undefined = mặc định (người tạo); null = cố ý không gán; uuid = gán người đó.
+      // Sales không có quyền chọn nên không bao giờ gửi giá trị này.
+      assigned_to: !canAssign
+        ? undefined
+        : form.assigned_to === UNASSIGNED_OPTION
+          ? null
+          : form.assigned_to || undefined,
     };
     const parsed = saveProspectSchema.safeParse(raw);
     if (!parsed.success) {
@@ -573,7 +582,14 @@ function ProspectDialogInner({
                     value={form.assigned_to}
                     onChange={(e) => set("assigned_to", e.target.value)}
                   >
-                    <option value="">Mặc định: chính tôi</option>
+                    <option value="">
+                      {isEditing ? "Giữ nguyên" : "Mặc định: chính tôi"}
+                    </option>
+                    {!isEditing && (
+                      <option value={UNASSIGNED_OPTION}>
+                        Không gán — để sales tự nhận sau
+                      </option>
+                    )}
                     {assignees.map((a) => (
                       <option key={a.id} value={a.id}>
                         {a.name}
