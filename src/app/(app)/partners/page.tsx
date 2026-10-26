@@ -26,6 +26,10 @@ export default async function PartnersPage() {
 
   const isChainAdmin =
     session.can("report.view_chain") || session.can("partner.manage");
+  // Sales có partner.manage nhưng chỉ được sửa đoàn của chính mình;
+  // quản lý/chủ chuỗi (có quyền xem báo cáo) mới được sửa mọi đoàn.
+  const canEditAnyGroup =
+    session.can("report.view_chain") || session.can("report.view_branch");
   const branchId = isChainAdmin
     ? null
     : session.currentBranchId || session.branchIds[0];
@@ -48,6 +52,7 @@ export default async function PartnersPage() {
         currentUserId={session.userId}
         currentBranchId={session.currentBranchId}
         isChainAdmin={isChainAdmin}
+        canEditAnyGroup={canEditAnyGroup}
       />
     </div>
   );

@@ -7,7 +7,8 @@ import {
   Loader2,
   Tag,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -62,15 +63,21 @@ export function RedeemVoucherDialog({
   const [billAmount, setBillAmount] = useState<number | string>(0);
   const [note, setNote] = useState("");
 
+  // Chỉ reset khi dialog vừa mở: nếu phụ thuộc `guests`, router.refresh() sau khi
+  // đổi mã sẽ tạo mảng mới và xóa mất màn hình kết quả thành công.
+  const wasOpen = useRef(false);
   useEffect(() => {
-    if (open) {
+    if (open && !wasOpen.current) {
       setCode(defaultCode ? defaultCode.trim().toUpperCase() : "");
       if (defaultBranchId) setBranchId(defaultBranchId);
-      setGuestId((prev) => defaultGuestId || prev || guests[0]?.id || "");
+      setGuestId(defaultGuestId || guests[0]?.id || "");
       setGuestSearch("");
+      setBillAmount(0);
+      setNote("");
       setErrorMsg(null);
       setResult(null);
     }
+    wasOpen.current = open;
   }, [open, defaultCode, defaultBranchId, defaultGuestId, guests]);
 
   const filteredGuests = guests.filter((g) => {
@@ -114,6 +121,7 @@ export function RedeemVoucherDialog({
       }
 
       setResult(res.data);
+      toast.success(`Đã áp dụng voucher ${res.data.voucher_code}`);
       onSuccess?.();
     } catch (err: any) {
       setErrorMsg(err.message || "Lỗi khi đổi mã voucher");

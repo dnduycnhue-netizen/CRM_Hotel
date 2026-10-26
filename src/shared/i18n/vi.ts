@@ -16,6 +16,17 @@ export const messages = {
     RATE_LIMITED: "Thao tác quá nhanh, thử lại sau ít giây",
     UNKNOWN: "Đã có lỗi xảy ra, vui lòng thử lại sau",
   },
+  auth: {
+    INVALID_CREDENTIALS:
+      "Email hoặc mật khẩu không chính xác, vui lòng kiểm tra lại.",
+    RATE_LIMITED:
+      "Hệ thống đang nhận quá nhiều lượt đăng nhập. Vui lòng đợi vài phút rồi thử lại.",
+    USER_BANNED: "Tài khoản đang bị khóa. Vui lòng liên hệ quản trị viên.",
+    EMAIL_NOT_CONFIRMED:
+      "Tài khoản chưa được xác nhận email. Vui lòng liên hệ quản trị viên.",
+    SERVICE_UNAVAILABLE:
+      "Không kết nối được dịch vụ đăng nhập. Vui lòng thử lại sau ít phút.",
+  },
   common: {
     save: "Lưu",
     cancel: "Hủy",

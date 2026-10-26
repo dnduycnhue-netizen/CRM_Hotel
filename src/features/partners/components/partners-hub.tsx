@@ -55,6 +55,7 @@ interface PartnersHubProps {
   currentUserId?: string;
   currentBranchId?: string | null;
   isChainAdmin?: boolean;
+  canEditAnyGroup?: boolean;
 }
 
 export function PartnersHub({
@@ -68,6 +69,7 @@ export function PartnersHub({
   currentUserId,
   currentBranchId,
   isChainAdmin = false,
+  canEditAnyGroup = false,
 }: PartnersHubProps) {
   const [activeTab, setActiveTab] = useState("partners");
 
@@ -684,7 +686,7 @@ export function PartnersHub({
                             g.branch_id === currentBranchId;
                           const canEdit =
                             canManageGroup &&
-                            (isChainAdmin ||
+                            (canEditAnyGroup ||
                               (isOwnBranch &&
                                 (!g.created_by ||
                                   g.created_by === currentUserId)));
@@ -764,7 +766,7 @@ export function PartnersHub({
             selectedGroup
               ? !(
                   canManageGroup &&
-                  (isChainAdmin ||
+                  (canEditAnyGroup ||
                     !selectedGroup.created_by ||
                     selectedGroup.created_by === currentUserId)
                 )

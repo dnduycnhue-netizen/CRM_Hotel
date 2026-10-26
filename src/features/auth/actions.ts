@@ -4,12 +4,13 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { type ActionResult, fail } from "@/shared/errors";
+import { messages } from "@/shared/i18n/vi";
 import { changePasswordSchema } from "./schemas";
 
 export async function loginAction(
   formData: FormData,
 ): Promise<ActionResult<{ success: boolean }>> {
-  const email = formData.get("email") as string;
+  const email = ((formData.get("email") as string) || "").trim().toLowerCase();
   const password = formData.get("password") as string;
 
   if (!email || !password) {
@@ -23,12 +24,26 @@ export async function loginAction(
   });
 
   if (error) {
+    // Chỉ log mã lỗi + status (không log email/mật khẩu) để phân biệt được
+    // sai mật khẩu với rate limit / tài khoản bị khóa / lỗi hệ thống.
+    console.error("[login] signInWithPassword failed", {
+      code: error.code,
+      status: error.status,
+    });
+    const reason = error.code ?? "";
+    let message: string = messages.auth.INVALID_CREDENTIALS;
+    if (error.status === 429 || reason.includes("rate_limit")) {
+      message = messages.auth.RATE_LIMITED;
+    } else if (reason === "user_banned") {
+      message = messages.auth.USER_BANNED;
+    } else if (reason === "email_not_confirmed") {
+      message = messages.auth.EMAIL_NOT_CONFIRMED;
+    } else if (!error.status || error.status >= 500) {
+      message = messages.auth.SERVICE_UNAVAILABLE;
+    }
     return {
       ok: false,
-      error: {
-        code: "UNAUTHENTICATED",
-        message: "Email hoặc mật khẩu không chính xác, vui lòng kiểm tra lại.",
-      },
+      error: { code: "UNAUTHENTICATED", message },
     };
   }
 

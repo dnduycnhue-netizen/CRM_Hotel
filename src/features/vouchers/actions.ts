@@ -116,23 +116,17 @@ export async function redeemVoucherAction(
   );
 
   if (error) {
-    let customMsg = error.message;
-    if (error.message?.includes("không hợp lệ hoặc không tồn tại")) {
-      customMsg = "Mã voucher không tồn tại hoặc đã bị vô hiệu hóa.";
-    } else if (error.message?.includes("chưa đến ngày có hiệu lực")) {
-      customMsg = "Voucher chưa đến ngày bắt đầu có hiệu lực.";
-    } else if (error.message?.includes("đã hết hạn")) {
-      customMsg = "Voucher đã hết hạn sử dụng.";
-    } else if (error.message?.includes("đã hết lượt sử dụng")) {
-      customMsg = "Voucher đã hết lượt sử dụng tối đa cho phép.";
-    } else if (error.message?.includes("chỉ dành riêng cho khách hàng")) {
-      customMsg = "Voucher này được phát hành riêng cho khách hàng VIP khác.";
-    } else if (error.message?.includes("không áp dụng tại cơ sở này")) {
-      customMsg = "Voucher không áp dụng tại cơ sở hiện tại.";
-    } else if (error.message?.includes("Hóa đơn tối thiểu")) {
-      customMsg = error.message;
-    }
-    return fail(error.code || "VOUCHER_REDEEM_FAILED", undefined, customMsg);
+    // RPC raise exception với ERRCODE P04xx kèm thông báo tiếng Việt cụ thể
+    // (mã không tồn tại / hết hạn / hết lượt / sai cơ sở / voucher riêng...),
+    // nên trả nguyên văn thay vì gộp thành "Dữ liệu không hợp lệ".
+    const isBusinessError = /^P04\d\d$/.test(error.code ?? "");
+    return fail(
+      error.code || "UNKNOWN",
+      undefined,
+      isBusinessError
+        ? error.message
+        : "Không thể áp dụng voucher, vui lòng thử lại.",
+    );
   }
 
   revalidatePath("/rewards");
