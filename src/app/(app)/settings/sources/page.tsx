@@ -28,10 +28,10 @@ export default async function SourcesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
           Nguồn khách & Kênh đối tác
         </h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Cấu hình danh mục nguồn khách, kênh OTA và danh sách đối tác lữ hành /
           doanh nghiệp
         </p>

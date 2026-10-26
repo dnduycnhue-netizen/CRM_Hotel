@@ -91,7 +91,9 @@ export function SearchView({ canViewChain = true }: SearchViewProps) {
         </form>
 
         <div className="flex items-center gap-2 flex-wrap text-xs">
-          <span className="text-muted-foreground font-medium mr-1">Chế độ tìm:</span>
+          <span className="text-muted-foreground font-medium mr-1">
+            Chế độ tìm:
+          </span>
           {(
             [
               { id: "auto", label: "Tự động nhận diện" },
@@ -125,7 +127,7 @@ export function SearchView({ canViewChain = true }: SearchViewProps) {
           </div>
 
           {results.length === 0 ? (
-            <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400">
+            <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-muted-foreground">
               Không tìm thấy khách hàng nào khớp với từ khóa &quot;{query}&quot;
             </div>
           ) : (
@@ -148,7 +150,7 @@ export function SearchView({ canViewChain = true }: SearchViewProps) {
                           {guest.full_name}
                         </Link>
                         {guest.birth_year && (
-                          <span className="text-xs text-slate-400">
+                          <span className="text-xs text-muted-foreground">
                             ({guest.birth_year})
                           </span>
                         )}
@@ -169,12 +171,12 @@ export function SearchView({ canViewChain = true }: SearchViewProps) {
                       <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 flex-wrap">
                         {guest.phone && (
                           <span className="flex items-center gap-1 font-mono">
-                            <Phone className="w-3.5 h-3.5 text-slate-400" />
+                            <Phone className="w-3.5 h-3.5 text-muted-foreground" />
                             <span>{guest.phone}</span>
                             {guest.phone.includes("****") ? (
                               <span
                                 title="Số điện thoại đã che bảo mật"
-                                className="inline-flex text-slate-400 cursor-help"
+                                className="inline-flex text-muted-foreground cursor-help"
                               >
                                 <Lock className="w-3 h-3 ml-0.5" />
                               </span>
@@ -191,7 +193,7 @@ export function SearchView({ canViewChain = true }: SearchViewProps) {
                         )}
                         {guest.last_branch_name && (
                           <span className="flex items-center gap-1">
-                            <Building2 className="w-3.5 h-3.5 text-slate-400" />
+                            <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
                             Gần nhất: {guest.last_branch_name}
                           </span>
                         )}
@@ -204,7 +206,7 @@ export function SearchView({ canViewChain = true }: SearchViewProps) {
                       <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
                         {guest.total_stays} lượt ở
                       </div>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-muted-foreground">
                         {guest.total_nights} đêm lưu trú
                       </div>
                     </div>
@@ -245,7 +247,9 @@ export function SearchView({ canViewChain = true }: SearchViewProps) {
                 </h4>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Hỗ trợ nhận diện tự động đầu số chuẩn Việt Nam (09x, 08x, 07x, 03x, 05x) và quốc tế (+84). Tìm kiếm tức thì trong chưa đầy 0.1 giây.
+                Hỗ trợ nhận diện tự động đầu số chuẩn Việt Nam (09x, 08x, 07x,
+                03x, 05x) và quốc tế (+84). Tìm kiếm tức thì trong chưa đầy 0.1
+                giây.
               </p>
             </div>
 
@@ -259,7 +263,8 @@ export function SearchView({ canViewChain = true }: SearchViewProps) {
                 </h4>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Tự động nhận dạng dãy 12 số CCCD hoặc mã Passport quốc tế. Tìm chính xác hồ sơ đã lưu và đối chiếu ngay tại quầy lễ tân.
+                Tự động nhận dạng dãy 12 số CCCD hoặc mã Passport quốc tế. Tìm
+                chính xác hồ sơ đã lưu và đối chiếu ngay tại quầy lễ tân.
               </p>
             </div>
 
@@ -273,7 +278,9 @@ export function SearchView({ canViewChain = true }: SearchViewProps) {
                 </h4>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Đồng bộ hồ sơ khách từ Boutique, Grand, Xavia, Eco, Ngô Mây, Aloha, Sun, Bãi Xếp. Nhận diện khách VIP ngay khi họ đặt chân đến cơ sở mới.
+                Đồng bộ hồ sơ khách từ Boutique, Grand, Xavia, Eco, Ngô Mây,
+                Aloha, Sun, Bãi Xếp. Nhận diện khách VIP ngay khi họ đặt chân
+                đến cơ sở mới.
               </p>
             </div>
 
@@ -287,7 +294,8 @@ export function SearchView({ canViewChain = true }: SearchViewProps) {
                 </h4>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Dữ liệu cá nhân nhạy cảm được che mờ (masking) tự động. Mọi truy vấn và giải mã đều được ghi vết an toàn (audit log).
+                Dữ liệu cá nhân nhạy cảm được che mờ (masking) tự động. Mọi truy
+                vấn và giải mã đều được ghi vết an toàn (audit log).
               </p>
             </div>
           </div>

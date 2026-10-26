@@ -48,14 +48,14 @@ export function BranchSelector({
     const singleBranch = branches[0];
     return (
       <div
-        className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/40 rounded-lg border border-border/70 text-xs font-semibold text-foreground select-none shadow-2xs"
+        className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/40 rounded-lg border border-border/70 text-xs font-semibold text-foreground select-none shadow-2xs whitespace-nowrap shrink-0"
         title="Cơ sở trực thuộc cố định của tài khoản (không thể chuyển đổi)"
       >
         <MapPin className="h-3.5 w-3.5 text-amber-500 shrink-0" />
         <span className="flex h-5 w-5 items-center justify-center rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold text-[10px] shrink-0">
           {singleBranch.code?.slice(0, 2) || "KS"}
         </span>
-        <span className="truncate max-w-[150px]">{singleBranch.name}</span>
+        <span className="truncate max-w-[180px]">{singleBranch.name}</span>
         <span className="text-[10px] font-normal text-muted-foreground ml-0.5">
           (Cố định)
         </span>

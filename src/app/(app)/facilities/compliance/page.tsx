@@ -47,6 +47,15 @@ export default async function CompliancePage() {
 
   return (
     <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          Hồ sơ pháp lý & Kiểm định
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Giấy phép, PCCC, bảo hiểm cháy nổ… theo cơ sở; cảnh báo trước hạn 30 /
+          60 / 90 ngày.
+        </p>
+      </div>
       <ComplianceManager
         matrix={matrix}
         docs={docs}

@@ -70,6 +70,9 @@ interface ProspectsHubProps {
   canImport: boolean;
 }
 
+/** Số dòng mỗi trang (danh sách có thể lên tới hàng trăm công ty) */
+const PAGE_SIZE = 50;
+
 const FUNNEL: ProspectStatus[] = [
   "new",
   "contacted",
@@ -111,6 +114,7 @@ export function ProspectsHub({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [unassignOpen, setUnassignOpen] = useState(false);
   const [unassigning, setUnassigning] = useState(false);
+  const [page, setPage] = useState(1);
 
   const filters = useMemo<ProspectFilters>(
     () => ({
@@ -147,6 +151,7 @@ export function ProspectsHub({
       firstRun.current = false;
       return;
     }
+    setPage(1);
     const t = setTimeout(() => void reload(), 350);
     return () => clearTimeout(t);
   }, [filters, reload]);
@@ -243,9 +248,18 @@ export function ProspectsHub({
         .map((p) => p.id),
     [prospects],
   );
-  const allSelected =
-    selectableIds.length > 0 &&
-    selectableIds.every((id) => selectedIds.has(id));
+  const pageCount = Math.max(1, Math.ceil(prospects.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const pageRows = prospects.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+  const pageSelectableIds = pageRows
+    .filter((p) => selectableIds.includes(p.id))
+    .map((p) => p.id);
+  const allPageSelected =
+    pageSelectableIds.length > 0 &&
+    pageSelectableIds.every((id) => selectedIds.has(id));
   const siblings = useMemo(
     () => prospects.map((p) => ({ id: p.id, company_name: p.company_name })),
     [prospects],
@@ -472,6 +486,15 @@ export function ProspectsHub({
           <Button size="sm" onClick={() => setUnassignOpen(true)}>
             Bỏ gán các dòng đã chọn
           </Button>
+          {selectedIds.size < selectableIds.length && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setSelectedIds(new Set(selectableIds))}
+            >
+              Chọn tất cả {selectableIds.length} dòng đang lọc
+            </Button>
+          )}
           <Button
             size="sm"
             variant="ghost"
@@ -482,19 +505,26 @@ export function ProspectsHub({
         </div>
       )}
 
-      {/* Danh sách */}
-      <div className="rounded-xl border overflow-x-auto">
+      {/* Danh sách: gom cột để vừa màn hình, không cần cuộn ngang mới thấy nút thao tác */}
+      <div className="rounded-xl border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
               {canAssign && (
                 <TableHead className="w-10">
                   <Checkbox
-                    aria-label="Chọn tất cả dòng đang có người phụ trách"
-                    checked={allSelected}
-                    disabled={selectableIds.length === 0}
+                    aria-label="Chọn các dòng đang có người phụ trách trong trang này"
+                    checked={allPageSelected}
+                    disabled={pageSelectableIds.length === 0}
                     onCheckedChange={(c) =>
-                      setSelectedIds(c ? new Set(selectableIds) : new Set())
+                      setSelectedIds((prev) => {
+                        const next = new Set(prev);
+                        for (const id of pageSelectableIds) {
+                          if (c) next.add(id);
+                          else next.delete(id);
+                        }
+                        return next;
+                      })
                     }
                   />
                 </TableHead>
@@ -503,24 +533,22 @@ export function ProspectsHub({
               <TableHead>Liên hệ</TableHead>
               <TableHead>Trạng thái</TableHead>
               <TableHead>Phụ trách</TableHead>
-              <TableHead>Liên hệ cuối</TableHead>
-              <TableHead>Hẹn tiếp</TableHead>
-              <TableHead>Ưu tiên</TableHead>
+              <TableHead>Chăm sóc</TableHead>
               <TableHead className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {prospects.length === 0 ? (
+            {pageRows.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={canAssign ? 9 : 8}
+                  colSpan={canAssign ? 7 : 6}
                   className="text-center py-10 text-sm text-muted-foreground"
                 >
                   Không có khách tiềm năng phù hợp.
                 </TableCell>
               </TableRow>
             ) : (
-              prospects.map((p) => (
+              pageRows.map((p) => (
                 <TableRow
                   key={p.id}
                   className="cursor-pointer"
@@ -543,13 +571,23 @@ export function ProspectsHub({
                       />
                     </TableCell>
                   )}
-                  <TableCell>
-                    <div className="font-medium text-sm">{p.company_name}</div>
+                  <TableCell className="max-w-72 whitespace-normal">
+                    <div className="font-medium text-sm leading-snug">
+                      {p.company_name}
+                    </div>
                     <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                       <span className="text-xs text-muted-foreground">
                         {prospectKindLabels[p.kind]}
                         {p.province ? ` · ${p.province}` : ""}
                       </span>
+                      {p.priority === "high" && (
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] border-rose-400 text-rose-700"
+                        >
+                          Ưu tiên cao
+                        </Badge>
+                      )}
                       {!p.dup_reviewed && (
                         <Badge
                           variant="outline"
@@ -561,33 +599,42 @@ export function ProspectsHub({
                     </div>
                   </TableCell>
                   <TableCell className="text-xs">
-                    <div>{p.contact_name || "—"}</div>
-                    <div className="font-mono text-muted-foreground">
+                    <div className="max-w-40 truncate">
+                      {p.contact_name || "—"}
+                    </div>
+                    <div className="font-mono text-muted-foreground whitespace-nowrap">
                       {p.phone_display || p.contact_phone_display || "—"}
                     </div>
                   </TableCell>
                   <TableCell>
                     <ProspectStatusBadge status={p.status} />
                   </TableCell>
-                  <TableCell className="text-xs">
-                    {p.assigned_to_name ?? (
-                      <span className="text-amber-600">Chưa gán</span>
+                  <TableCell className="text-xs max-w-40 whitespace-normal">
+                    {p.assigned_to_name ? (
+                      <span className="block line-clamp-2 break-words">
+                        {p.assigned_to_name}
+                      </span>
+                    ) : (
+                      <span className="font-medium text-amber-700">
+                        Chưa gán
+                      </span>
                     )}
                   </TableCell>
-                  <TableCell className="text-xs">
-                    {fmtDate(p.last_contacted_at)}
-                  </TableCell>
-                  <TableCell
-                    className={`text-xs ${p.is_overdue ? "text-rose-600 font-semibold" : ""}`}
-                  >
-                    {fmtDate(p.next_follow_up_at)}
-                    {p.is_overdue ? " (quá hạn)" : ""}
-                  </TableCell>
-                  <TableCell className="text-xs">
-                    {prospectPriorityLabels[p.priority]}
+                  <TableCell className="text-xs whitespace-nowrap">
+                    <div className="text-muted-foreground">
+                      Cuối: {fmtDate(p.last_contacted_at)}
+                    </div>
+                    <div
+                      className={
+                        p.is_overdue ? "text-rose-700 font-semibold" : ""
+                      }
+                    >
+                      Hẹn: {fmtDate(p.next_follow_up_at)}
+                      {p.is_overdue ? " (quá hạn)" : ""}
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-1.5">
+                    <div className="flex justify-end gap-1.5 flex-wrap">
                       <Button
                         size="sm"
                         variant="outline"
@@ -642,6 +689,37 @@ export function ProspectsHub({
             )}
           </TableBody>
         </Table>
+
+        {prospects.length > PAGE_SIZE && (
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t px-4 py-2.5 text-xs text-muted-foreground">
+            <span>
+              Hiển thị {(currentPage - 1) * PAGE_SIZE + 1}–
+              {Math.min(currentPage * PAGE_SIZE, prospects.length)} /{" "}
+              {prospects.length} khách tiềm năng
+            </span>
+            <div className="flex items-center gap-1.5">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={currentPage <= 1}
+                onClick={() => setPage(currentPage - 1)}
+              >
+                Trước
+              </Button>
+              <span className="px-2">
+                Trang {currentPage}/{pageCount}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={currentPage >= pageCount}
+                onClick={() => setPage(currentPage + 1)}
+              >
+                Sau
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       <Dialog open={unassignOpen} onOpenChange={setUnassignOpen}>

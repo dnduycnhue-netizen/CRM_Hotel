@@ -151,17 +151,17 @@ export function RecordGreetingDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[540px] bg-slate-900 border-slate-800 text-slate-100">
+      <DialogContent className="sm:max-w-[540px] bg-card border-border text-foreground">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-lg bg-pink-500/10 text-pink-400">
+            <span className="p-2 rounded-lg bg-pink-500/10 text-pink-700 dark:text-pink-400">
               <Cake className="w-5 h-5" />
             </span>
             <div>
-              <DialogTitle className="text-lg font-semibold text-slate-100">
+              <DialogTitle className="text-lg font-semibold text-foreground">
                 Chăm sóc sinh nhật khách hàng
               </DialogTitle>
-              <DialogDescription className="text-xs text-slate-400">
+              <DialogDescription className="text-xs text-muted-foreground">
                 Ghi nhận lời chúc, quà tặng và tự động phát hành voucher ưu đãi
               </DialogDescription>
             </div>
@@ -169,31 +169,32 @@ export function RecordGreetingDialog({
         </DialogHeader>
 
         {/* Thông tin khách hàng */}
-        <div className="p-3 rounded-lg bg-slate-800/60 border border-slate-700/60 space-y-1 text-sm">
+        <div className="p-3 rounded-lg bg-muted/60 border border-border/60 space-y-1 text-sm">
           <div className="flex items-center justify-between">
-            <span className="font-semibold text-slate-200">
+            <span className="font-semibold text-foreground">
               {guest.full_name}
             </span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-medium">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-medium">
               {guest.tier_name || "Thành viên"}
             </span>
           </div>
-          <div className="text-xs text-slate-400 flex flex-wrap gap-x-4 gap-y-1">
+          <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
             <span>
               Ngày sinh:{" "}
-              <strong className="text-slate-300">
+              <strong className="text-foreground/80">
                 {formatDateVN(guest.dob)}
               </strong>{" "}
               (Tuổi mới: {guest.age})
             </span>
             {guest.phone && (
               <span>
-                SĐT: <strong className="text-slate-300">{guest.phone}</strong>
+                SĐT:{" "}
+                <strong className="text-foreground/80">{guest.phone}</strong>
               </span>
             )}
             <span>
               Lượt ở:{" "}
-              <strong className="text-slate-300">
+              <strong className="text-foreground/80">
                 {guest.total_stays} lần
               </strong>
             </span>
@@ -202,8 +203,8 @@ export function RecordGreetingDialog({
 
         {/* Cảnh báo tuân thủ Nghị định 13/2023 */}
         {!guest.marketing_consent && (
-          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-start gap-2 text-xs text-amber-300">
-            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-amber-400" />
+          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-start gap-2 text-xs text-amber-700 dark:text-amber-300">
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-amber-700 dark:text-amber-400" />
             <div>
               <strong>Lưu ý quyền riêng tư dữ liệu (Nghị định 13/2023):</strong>{" "}
               Khách chưa cấp quyền nhận tin tiếp thị thương mại. Khuyến nghị gửi
@@ -214,22 +215,22 @@ export function RecordGreetingDialog({
         )}
 
         {errorMsg && (
-          <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+          <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-700 dark:text-rose-400" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300 flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+          <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-700 dark:text-emerald-400" />
             <span>{successMsg}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-300">
+            <Label className="text-xs text-foreground/80">
               Cơ sở thực hiện chăm sóc
             </Label>
             <Select
@@ -237,10 +238,10 @@ export function RecordGreetingDialog({
               items={branches.map((b) => ({ value: b.id, label: b.name }))}
               onValueChange={(val) => val && setBranchId(val)}
             >
-              <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs">
+              <SelectTrigger className="bg-muted border-border text-foreground h-9 text-xs">
                 <SelectValue placeholder="Chọn cơ sở" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700 text-slate-200 text-xs">
+              <SelectContent className="bg-muted border-border text-foreground text-xs">
                 {branches.map((b) => (
                   <SelectItem key={b.id} value={b.id}>
                     {b.name}
@@ -251,7 +252,7 @@ export function RecordGreetingDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-300">
+            <Label className="text-xs text-foreground/80">
               Hình thức / Kênh gửi lời chúc
             </Label>
             <Select
@@ -261,10 +262,10 @@ export function RecordGreetingDialog({
                 setChannel(val as (typeof greetingChannels)[number])
               }
             >
-              <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs">
+              <SelectTrigger className="bg-muted border-border text-foreground h-9 text-xs">
                 <SelectValue placeholder="Chọn kênh gửi" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700 text-slate-200 text-xs">
+              <SelectContent className="bg-muted border-border text-foreground text-xs">
                 {greetingChannels.map((c) => {
                   const isAutomated =
                     c === "sms" || c === "zalo" || c === "email";
@@ -281,26 +282,26 @@ export function RecordGreetingDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-300">
+            <Label className="text-xs text-foreground/80">
               Quà tặng đính kèm (nếu có)
             </Label>
             <Input
               value={giftDescription}
               onChange={(e) => setGiftDescription(e.target.value)}
               placeholder="Ví dụ: Bánh kem sinh nhật, Set rượu vang, Giỏ hoa tươi..."
-              className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs"
+              className="bg-muted border-border text-foreground h-9 text-xs"
             />
           </div>
 
           {/* Tùy chọn tự phát hành voucher mừng sinh nhật */}
-          <div className="p-3 rounded-lg bg-slate-800/40 border border-slate-700/80 space-y-3">
+          <div className="p-3 rounded-lg bg-muted/40 border border-border/80 space-y-3">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <div className="text-xs font-medium text-slate-200 flex items-center gap-1.5">
-                  <Gift className="w-3.5 h-3.5 text-pink-400" />
+                <div className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                  <Gift className="w-3.5 h-3.5 text-pink-700 dark:text-pink-400" />
                   <span>Phát hành mã Voucher sinh nhật độc quyền</span>
                 </div>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-muted-foreground">
                   Hệ thống tự tạo mã riêng cho khách này (hiệu lực 60 ngày)
                 </p>
               </div>
@@ -312,7 +313,7 @@ export function RecordGreetingDialog({
 
             {autoIssueVoucher && (
               <div className="flex items-center gap-3 pt-1">
-                <Label className="text-[11px] text-slate-400 shrink-0">
+                <Label className="text-[11px] text-muted-foreground shrink-0">
                   Mức chiết khấu:
                 </Label>
                 <div className="flex items-center gap-1.5 w-32">
@@ -324,9 +325,9 @@ export function RecordGreetingDialog({
                     onChange={(e) =>
                       setVoucherDiscountPct(Number(e.target.value))
                     }
-                    className="bg-slate-900 border-slate-700 text-slate-200 h-8 text-xs"
+                    className="bg-card border-border text-foreground h-8 text-xs"
                   />
-                  <span className="text-xs text-slate-400 font-semibold">
+                  <span className="text-xs text-muted-foreground font-semibold">
                     %
                   </span>
                 </div>
@@ -335,12 +336,14 @@ export function RecordGreetingDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-300">Ghi chú chăm sóc</Label>
+            <Label className="text-xs text-foreground/80">
+              Ghi chú chăm sóc
+            </Label>
             <Input
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Ghi nhận phản hồi của khách hàng..."
-              className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs"
+              className="bg-muted border-border text-foreground h-9 text-xs"
             />
           </div>
 
@@ -350,7 +353,7 @@ export function RecordGreetingDialog({
               variant="outline"
               size="sm"
               onClick={() => onOpenChange(false)}
-              className="border-slate-700 text-slate-300 hover:bg-slate-800"
+              className="border-border text-foreground/80 hover:bg-muted"
             >
               Hủy
             </Button>

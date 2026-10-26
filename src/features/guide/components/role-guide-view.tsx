@@ -77,7 +77,7 @@ export function RoleGuideView() {
                   <Icon className="h-4 w-4" />
                 </div>
                 {isSelected && (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-amber-400" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400" />
                 )}
               </div>
               <div>
@@ -122,7 +122,7 @@ export function RoleGuideView() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <CalendarCheck2 className="h-4 w-4 text-emerald-400" />
+                  <CalendarCheck2 className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
                   Lịch trình tác nghiệp trong ngày (Checklist)
                 </h4>
                 <span className="text-[10px] text-muted-foreground">
@@ -140,7 +140,7 @@ export function RoleGuideView() {
                       onClick={() => toggleTask(task)}
                       className={`w-full text-left p-3 rounded-xl border text-xs transition-all cursor-pointer flex items-start gap-3 select-none ${
                         isDone
-                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-200"
+                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-200"
                           : "bg-muted/20 border-border/40 text-muted-foreground hover:bg-muted/30"
                       }`}
                     >
@@ -171,7 +171,7 @@ export function RoleGuideView() {
             {/* Key Responsibilities */}
             <div className="space-y-3">
               <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <Shield className="h-4 w-4 text-amber-400" />
+                <Shield className="h-4 w-4 text-amber-700 dark:text-amber-400" />
                 Nhiệm vụ & Trách nhiệm chủ chốt
               </h4>
 
@@ -215,7 +215,7 @@ export function RoleGuideView() {
                       {route.desc}
                     </p>
                   </div>
-                  <div className="mt-2 text-[10px] font-mono text-amber-400/80">
+                  <div className="mt-2 text-[10px] font-mono text-amber-700 dark:text-amber-400/80">
                     {route.path}
                   </div>
                 </Link>
@@ -226,11 +226,11 @@ export function RoleGuideView() {
           {/* Prohibited Actions & Security Warning */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-4 border-t border-border/50">
             <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 space-y-2">
-              <div className="flex items-center gap-2 text-rose-300 font-bold text-xs">
+              <div className="flex items-center gap-2 text-rose-700 dark:text-rose-300 font-bold text-xs">
                 <AlertOctagon className="h-4 w-4" />
                 Hành vi bị nghiêm cấm đối với vai trò này:
               </div>
-              <ul className="space-y-1.5 text-xs text-rose-200/90 pl-5 list-disc leading-relaxed">
+              <ul className="space-y-1.5 text-xs text-rose-700 dark:text-rose-200/90 pl-5 list-disc leading-relaxed">
                 {activeRole.prohibitedActions.map((act) => (
                   <li key={act}>{act}</li>
                 ))}
@@ -238,11 +238,11 @@ export function RoleGuideView() {
             </div>
 
             <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-2">
-              <div className="flex items-center gap-2 text-amber-300 font-bold text-xs">
+              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300 font-bold text-xs">
                 <ShieldAlert className="h-4 w-4" />
                 Nguyên tắc bảo vệ dữ liệu & Tuân thủ:
               </div>
-              <p className="text-xs text-amber-200/90 leading-relaxed">
+              <p className="text-xs text-amber-700 dark:text-amber-200/90 leading-relaxed">
                 {activeRole.securityNote}
               </p>
             </div>

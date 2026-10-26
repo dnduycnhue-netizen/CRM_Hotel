@@ -72,12 +72,12 @@ export function ActiveFlagsTable({ flags }: Props) {
 
   if (flags.length === 0) {
     return (
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-10 text-center text-slate-400">
+      <div className="bg-card border border-border rounded-xl p-10 text-center text-muted-foreground">
         <ShieldCheck className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
-        <p className="text-base font-medium text-slate-300">
+        <p className="text-base font-medium text-foreground/80">
           Không có cờ Blacklist nào đang hiệu lực
         </p>
-        <p className="text-xs text-slate-500 mt-1">
+        <p className="text-xs text-muted-foreground mt-1">
           Danh sách khách bị hạn chế hoặc cấm lưu trú sẽ hiển thị tại đây.
         </p>
       </div>
@@ -86,11 +86,11 @@ export function ActiveFlagsTable({ flags }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-950/50 text-xs uppercase text-slate-400">
+              <tr className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                 <th className="py-3 px-4">Khách hàng</th>
                 <th className="py-3 px-4">Loại cờ</th>
                 <th className="py-3 px-4">Cơ sở áp dụng</th>
@@ -99,23 +99,23 @@ export function ActiveFlagsTable({ flags }: Props) {
                 <th className="py-3 px-4 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-border/60">
               {flags.map((flag) => {
                 const isBlacklist = flag.flag_type === "blacklist";
                 return (
                   <tr
                     key={flag.id}
-                    className="hover:bg-slate-800/30 transition-colors"
+                    className="hover:bg-muted/50 transition-colors"
                   >
                     {/* Guest info */}
                     <td className="py-3 px-4">
                       <Link
                         href={`/guests/${flag.guest_id}`}
-                        className="font-medium text-slate-200 hover:text-indigo-400 transition-colors"
+                        className="font-medium text-foreground hover:text-indigo-800 transition-colors"
                       >
                         {flag.guest_name}
                       </Link>
-                      <div className="text-xs text-slate-400 mt-0.5 space-x-2">
+                      <div className="text-xs text-muted-foreground mt-0.5 space-x-2">
                         {flag.guest_phone && <span>{flag.guest_phone}</span>}
                         {flag.guest_doc_masked && (
                           <span>• CCCD: {flag.guest_doc_masked}</span>
@@ -126,12 +126,12 @@ export function ActiveFlagsTable({ flags }: Props) {
                     {/* Flag Type */}
                     <td className="py-3 px-4">
                       {isBlacklist ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-400 border border-rose-500/25">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-700 dark:text-rose-400 border border-rose-500/25">
                           <ShieldAlert className="w-3.5 h-3.5" />
                           Blacklist Toàn Chuỗi
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/25">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/25">
                           <AlertTriangle className="w-3.5 h-3.5" />
                           Chú ý cơ sở
                         </span>
@@ -140,21 +140,21 @@ export function ActiveFlagsTable({ flags }: Props) {
 
                     {/* Branch */}
                     <td className="py-3 px-4">
-                      <div className="flex items-center gap-1.5 text-slate-300">
-                        <Building2 className="w-3.5 h-3.5 text-slate-500" />
+                      <div className="flex items-center gap-1.5 text-foreground/80">
+                        <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
                         <span>{flag.branch_name || "Toàn chuỗi"}</span>
                       </div>
                     </td>
 
                     {/* Reason */}
                     <td className="py-3 px-4 max-w-xs">
-                      <p className="text-xs text-slate-300 line-clamp-2">
+                      <p className="text-xs text-foreground/80 line-clamp-2">
                         {flag.reason}
                       </p>
                     </td>
 
                     {/* Time */}
-                    <td className="py-3 px-4 text-xs text-slate-400">
+                    <td className="py-3 px-4 text-xs text-muted-foreground">
                       {new Date(flag.proposed_at).toLocaleDateString("vi-VN")}
                     </td>
 
@@ -164,7 +164,7 @@ export function ActiveFlagsTable({ flags }: Props) {
                         size="sm"
                         variant="outline"
                         onClick={() => handleOpenRemove(flag)}
-                        className="h-8 text-xs text-rose-400 border-rose-500/30 hover:bg-rose-500/10 hover:border-rose-500/50 gap-1.5"
+                        className="h-8 text-xs text-rose-700 dark:text-rose-400 border-rose-500/30 hover:bg-rose-500/10 hover:border-rose-500/50 gap-1.5"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                         <span>Gỡ cờ</span>
@@ -185,7 +185,7 @@ export function ActiveFlagsTable({ flags }: Props) {
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-rose-400">
+            <DialogTitle className="flex items-center gap-2 text-rose-700 dark:text-rose-400">
               <UserX className="h-5 w-5" />
               <span>Gỡ cờ cảnh báo / Blacklist</span>
             </DialogTitle>

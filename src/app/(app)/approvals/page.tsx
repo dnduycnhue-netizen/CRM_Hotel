@@ -34,10 +34,10 @@ export default async function ApprovalsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
           Trung tâm Phê duyệt & Hợp nhất
         </h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Kiểm duyệt các đề xuất hợp nhất hồ sơ khách trùng lặp và phê duyệt
           danh sách đen (Blacklist) toàn chuỗi.
         </p>

@@ -99,7 +99,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       >
         {/* Header / Input bar */}
         <div className="relative flex items-center px-4 border-b border-slate-200 dark:border-slate-800">
-          <Search className="w-5 h-5 text-slate-400 mr-3 shrink-0" />
+          <Search className="w-5 h-5 text-muted-foreground mr-3 shrink-0" />
           <input
             ref={inputRef}
             type="text"
@@ -115,7 +115,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="p-1 rounded-lg text-muted-foreground hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -130,7 +130,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
           )}
 
           {query.trim().length < 2 && (
-            <div className="py-8 text-center text-slate-400 text-xs">
+            <div className="py-8 text-center text-muted-foreground text-xs">
               Nhập từ khóa tìm kiếm (SĐT 4 số cuối, CCCD, Họ tên không dấu hoặc
               có dấu...)
             </div>
@@ -160,7 +160,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                         {guest.full_name}
                       </span>
                       {guest.birth_year && (
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-muted-foreground">
                           ({guest.birth_year})
                         </span>
                       )}
@@ -186,7 +186,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                     <div className="flex items-center gap-4 mt-1 text-xs text-slate-500 flex-wrap">
                       {guest.phone && (
                         <span className="flex items-center gap-1">
-                          <Phone className="w-3 h-3 text-slate-400" />
+                          <Phone className="w-3 h-3 text-muted-foreground" />
                           {guest.phone}
                         </span>
                       )}
@@ -200,7 +200,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                       )}
                       {guest.last_branch_name && (
                         <span className="flex items-center gap-1">
-                          <Building2 className="w-3 h-3 text-slate-400" />
+                          <Building2 className="w-3 h-3 text-muted-foreground" />
                           Gần nhất: {guest.last_branch_name}
                         </span>
                       )}
@@ -214,7 +214,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                   </div>
                   {guest.last_stay_at &&
                     !isNaN(new Date(guest.last_stay_at).getTime()) && (
-                      <div className="text-[11px] text-slate-400 flex items-center justify-end gap-1 mt-0.5">
+                      <div className="text-[11px] text-muted-foreground flex items-center justify-end gap-1 mt-0.5">
                         <Calendar className="w-3 h-3" />
                         {new Date(guest.last_stay_at).toLocaleDateString(
                           "vi-VN",
@@ -228,7 +228,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         </div>
 
         {/* Footer shortcuts */}
-        <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+        <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 text-[11px] text-muted-foreground flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span>
               <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-700 font-mono">
@@ -249,7 +249,9 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
               để đóng
             </span>
           </div>
-          <span className="text-slate-400">Tìm kiếm toàn chuỗi 8 cơ sở</span>
+          <span className="text-muted-foreground">
+            Tìm kiếm toàn chuỗi 8 cơ sở
+          </span>
         </div>
       </div>
     </div>

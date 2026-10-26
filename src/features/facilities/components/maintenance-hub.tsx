@@ -263,7 +263,7 @@ export function MaintenanceHub({
   const getDueBadge = (dueDateStr: string, isActive: boolean) => {
     if (!isActive) {
       return (
-        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-800 text-slate-400 border border-slate-700">
+        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-muted text-muted-foreground border border-border">
           Đang tạm dừng
         </span>
       );
@@ -280,7 +280,7 @@ export function MaintenanceHub({
 
     if (diffDays < 0) {
       return (
-        <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30 flex items-center gap-1">
+        <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/30 flex items-center gap-1">
           <AlertCircle className="w-3 h-3" />
           <span>Quá hạn {Math.abs(diffDays)} ngày</span>
         </span>
@@ -288,7 +288,7 @@ export function MaintenanceHub({
     }
     if (diffDays <= 7) {
       return (
-        <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+        <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
           <Clock className="w-3 h-3" />
           <span>
             Đến hạn {diffDays === 0 ? "hôm nay" : `trong ${diffDays} ngày`}
@@ -297,7 +297,7 @@ export function MaintenanceHub({
       );
     }
     return (
-      <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+      <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
         Còn {diffDays} ngày
       </span>
     );
@@ -319,67 +319,67 @@ export function MaintenanceHub({
     <div className="space-y-6">
       {/* Top summary stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+        <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-400">
+            <p className="text-xs font-medium text-muted-foreground">
               Kế hoạch bảo trì định kỳ
             </p>
-            <p className="text-2xl font-bold text-indigo-400 mt-1">
+            <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-400 mt-1">
               {plans.length}
             </p>
           </div>
-          <span className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400">
+          <span className="p-3 rounded-xl bg-indigo-500/10 text-indigo-700 dark:text-indigo-400">
             <Wrench className="w-5 h-5" />
           </span>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+        <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-400">
+            <p className="text-xs font-medium text-muted-foreground">
               Lượt kiểm tra đã thực hiện
             </p>
-            <p className="text-2xl font-bold text-emerald-400 mt-1">
+            <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400 mt-1">
               {inspections.length}
             </p>
           </div>
-          <span className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400">
+          <span className="p-3 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
             <ClipboardCheck className="w-5 h-5" />
           </span>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+        <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-400">
+            <p className="text-xs font-medium text-muted-foreground">
               Mẫu kiểm tra chuẩn (Checklist)
             </p>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-2xl font-bold text-sky-400">
+              <span className="text-2xl font-bold text-sky-700 dark:text-sky-400">
                 {templates.filter((t) => t.is_active).length}
               </span>
               <Link
                 href="/settings/checklists"
-                className="text-[11px] text-indigo-400 hover:text-indigo-300 underline font-medium"
+                className="text-[11px] text-indigo-700 dark:text-indigo-400 hover:text-indigo-800 underline font-medium"
               >
                 Cài đặt mẫu
               </Link>
             </div>
           </div>
-          <span className="p-3 rounded-xl bg-sky-500/10 text-sky-400">
+          <span className="p-3 rounded-xl bg-sky-500/10 text-sky-700 dark:text-sky-400">
             <ClipboardList className="w-5 h-5" />
           </span>
         </div>
       </div>
 
       {/* Filter and Tab switch */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-3">
         <div className="flex space-x-6">
           <button
             type="button"
             onClick={() => setActiveTab("plans")}
             className={`pb-2 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
               activeTab === "plans"
-                ? "border-indigo-500 text-indigo-400"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                ? "border-indigo-500 text-indigo-700 dark:text-indigo-400"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <Wrench className="w-4 h-4" />
@@ -391,8 +391,8 @@ export function MaintenanceHub({
             onClick={() => setActiveTab("inspections")}
             className={`pb-2 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
               activeTab === "inspections"
-                ? "border-emerald-500 text-emerald-400"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                ? "border-emerald-500 text-emerald-700 dark:text-emerald-400"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <ClipboardCheck className="w-4 h-4" />
@@ -425,8 +425,8 @@ export function MaintenanceHub({
           )}
 
           {branches.length === 1 ? (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-xs font-medium text-slate-200">
-              <Building2 className="w-3.5 h-3.5 text-indigo-400" />
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/80 border border-border/60 text-xs font-medium text-foreground">
+              <Building2 className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" />
               <span>{branches[0]?.name}</span>
             </div>
           ) : (
@@ -434,7 +434,7 @@ export function MaintenanceHub({
               <select
                 value={selectedBranch}
                 onChange={(e) => setSelectedBranch(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full bg-muted/40 border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground outline-none focus:ring-1 focus:ring-indigo-500"
               >
                 {branches.length > 1 && (
                   <option value="all">Tất cả {branches.length} cơ sở</option>
@@ -454,8 +454,8 @@ export function MaintenanceHub({
       {activeTab === "plans" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredPlans.length === 0 ? (
-            <div className="col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-8 text-center text-slate-400">
-              <Wrench className="w-10 h-10 text-slate-600 mx-auto mb-2" />
+            <div className="col-span-2 bg-card border border-border rounded-xl p-8 text-center text-muted-foreground">
+              <Wrench className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
               <p className="text-sm">Chưa có kế hoạch bảo trì định kỳ nào</p>
               {canManagePm && (
                 <Button
@@ -471,21 +471,21 @@ export function MaintenanceHub({
             filteredPlans.map((plan) => (
               <div
                 key={plan.id}
-                className={`bg-slate-900 border rounded-xl p-4 space-y-3 shadow-sm hover:border-slate-700 transition-colors flex flex-col justify-between ${
+                className={`bg-card border rounded-xl p-4 space-y-3 shadow-sm hover:border-border transition-colors flex flex-col justify-between ${
                   !plan.is_active
-                    ? "opacity-60 border-slate-800/60"
-                    : "border-slate-800"
+                    ? "opacity-60 border-border/60"
+                    : "border-border"
                 }`}
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h3 className="font-semibold text-slate-200 text-sm">
+                      <h3 className="font-semibold text-foreground text-sm">
                         {plan.name}
                       </h3>
-                      <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                         <span className="flex items-center gap-1">
-                          <Building2 className="w-3 h-3 text-slate-500" />
+                          <Building2 className="w-3 h-3 text-muted-foreground" />
                           {plan.branch_name}
                         </span>
                         {plan.asset_name && (
@@ -493,46 +493,46 @@ export function MaintenanceHub({
                         )}
                       </div>
                     </div>
-                    <span className="px-2 py-0.5 rounded text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 whitespace-nowrap">
+                    <span className="px-2 py-0.5 rounded text-xs font-semibold bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20 whitespace-nowrap">
                       Chu kỳ: {plan.interval_days} ngày
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-300 pt-1 border-t border-slate-800/80">
+                  <div className="grid grid-cols-2 gap-2 text-xs text-foreground/80 pt-1 border-t border-border/80">
                     <div>
-                      <span className="text-slate-500 block text-[11px]">
+                      <span className="text-muted-foreground block text-[11px]">
                         Hạn bảo trì:
                       </span>
                       <div className="mt-0.5 flex items-center gap-1.5 flex-wrap">
-                        <strong className="text-slate-200">
+                        <strong className="text-foreground">
                           {plan.next_due_date}
                         </strong>
                         {getDueBadge(plan.next_due_date, plan.is_active)}
                       </div>
                     </div>
                     <div>
-                      <span className="text-slate-500 block text-[11px]">
+                      <span className="text-muted-foreground block text-[11px]">
                         Đơn vị xử lý:
                       </span>
-                      <span className="text-slate-300 mt-0.5 block truncate">
+                      <span className="text-foreground/80 mt-0.5 block truncate">
                         {plan.vendor_name || plan.assignee_name || "Nội bộ KS"}
                       </span>
                     </div>
                   </div>
 
                   {plan.checklist && plan.checklist.length > 0 && (
-                    <div className="p-2.5 rounded bg-slate-950/60 border border-slate-800/60 text-xs text-slate-300 space-y-1">
-                      <p className="font-medium text-slate-400 text-[11px] uppercase tracking-wider">
+                    <div className="p-2.5 rounded bg-muted/40 border border-border/60 text-xs text-foreground/80 space-y-1">
+                      <p className="font-medium text-muted-foreground text-[11px] uppercase tracking-wider">
                         Hạng mục kiểm tra ({plan.checklist.length}):
                       </p>
-                      <ul className="list-disc list-inside space-y-0.5 text-slate-300 text-[11px]">
+                      <ul className="list-disc list-inside space-y-0.5 text-foreground/80 text-[11px]">
                         {plan.checklist.slice(0, 3).map((item, idx) => (
                           <li key={idx} className="truncate">
                             {item}
                           </li>
                         ))}
                         {plan.checklist.length > 3 && (
-                          <li className="text-slate-500">
+                          <li className="text-muted-foreground">
                             +{plan.checklist.length - 3} hạng mục khác...
                           </li>
                         )}
@@ -543,13 +543,13 @@ export function MaintenanceHub({
 
                 {/* Plan card footer actions */}
                 {canManagePm && (
-                  <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-slate-800/80 text-xs">
+                  <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-border/80 text-xs">
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => handleTriggerNow(plan)}
                       disabled={isPending || triggeringPlanId === plan.id}
-                      className="h-7 text-[11px] font-semibold gap-1 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
+                      className="h-7 text-[11px] font-semibold gap-1 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
                     >
                       {triggeringPlanId === plan.id ? (
                         <Loader2 className="w-3 h-3 animate-spin" />
@@ -564,13 +564,13 @@ export function MaintenanceHub({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleToggleActive(plan)}
-                        className="h-7 px-2 text-[11px] text-slate-400 hover:text-slate-200"
+                        className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground"
                         title={plan.is_active ? "Tạm dừng" : "Kích hoạt lại"}
                       >
                         {plan.is_active ? (
                           <Pause className="w-3.5 h-3.5" />
                         ) : (
-                          <Play className="w-3.5 h-3.5 text-emerald-400" />
+                          <Play className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                         )}
                       </Button>
 
@@ -578,7 +578,7 @@ export function MaintenanceHub({
                         variant="ghost"
                         size="sm"
                         onClick={() => openEditModal(plan)}
-                        className="h-7 px-2 text-[11px] text-indigo-400 hover:text-indigo-300"
+                        className="h-7 px-2 text-[11px] text-indigo-700 dark:text-indigo-400 hover:text-indigo-800"
                         title="Chỉnh sửa kế hoạch"
                       >
                         <Edit className="w-3.5 h-3.5" />
@@ -588,7 +588,7 @@ export function MaintenanceHub({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDeletePlan(plan)}
-                        className="h-7 px-2 text-[11px] text-rose-400 hover:text-rose-300"
+                        className="h-7 px-2 text-[11px] text-rose-700 dark:text-rose-400 hover:text-rose-800"
                         title="Xóa kế hoạch"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -602,11 +602,11 @@ export function MaintenanceHub({
         </div>
       ) : (
         /* Tab 2: Inspections Table */
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+        <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-950/60 text-xs uppercase text-slate-400">
+                <tr className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                   <th className="py-3 px-4">Thời gian</th>
                   <th className="py-3 px-4">Cơ sở & Vị trí</th>
                   <th className="py-3 px-4">Mẫu kiểm tra</th>
@@ -617,12 +617,12 @@ export function MaintenanceHub({
                   <th className="py-3 px-4 text-right">Chi tiết</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-border/60">
                 {filteredInspections.length === 0 ? (
                   <tr>
                     <td
                       colSpan={8}
-                      className="py-10 text-center text-slate-500 text-xs"
+                      className="py-10 text-center text-muted-foreground text-xs"
                     >
                       Chưa có biên bản kiểm tra nào được ghi nhận
                     </td>
@@ -631,36 +631,36 @@ export function MaintenanceHub({
                   filteredInspections.map((ins) => (
                     <tr
                       key={ins.id}
-                      className="hover:bg-slate-800/30 transition-colors"
+                      className="hover:bg-muted/50 transition-colors"
                     >
-                      <td className="py-3 px-4 text-xs text-slate-300 whitespace-nowrap">
+                      <td className="py-3 px-4 text-xs text-foreground/80 whitespace-nowrap">
                         {new Date(ins.performed_at).toLocaleString("vi-VN")}
                       </td>
-                      <td className="py-3 px-4 text-xs text-slate-200">
+                      <td className="py-3 px-4 text-xs text-foreground">
                         <div className="font-medium">{ins.branch_name}</div>
                         {ins.room_number ? (
-                          <span className="text-slate-400">
+                          <span className="text-muted-foreground">
                             Phòng {ins.room_number}
                           </span>
                         ) : ins.location_name ? (
-                          <span className="text-slate-400">
+                          <span className="text-muted-foreground">
                             {ins.location_name}
                           </span>
                         ) : null}
                       </td>
-                      <td className="py-3 px-4 text-xs font-medium text-slate-200">
+                      <td className="py-3 px-4 text-xs font-medium text-foreground">
                         {ins.template_name}
                       </td>
-                      <td className="py-3 px-4 text-xs text-slate-300">
+                      <td className="py-3 px-4 text-xs text-foreground/80">
                         {ins.inspector_name}
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-1.5 text-xs">
-                          <span className="text-emerald-400 font-semibold">
+                          <span className="text-emerald-700 dark:text-emerald-400 font-semibold">
                             {ins.passed} Đạt
                           </span>
                           {ins.failed > 0 && (
-                            <span className="text-rose-400 font-semibold">
+                            <span className="text-rose-700 dark:text-rose-400 font-semibold">
                               / {ins.failed} Lỗi
                             </span>
                           )}
@@ -671,29 +671,31 @@ export function MaintenanceHub({
                           <span
                             className={`px-2 py-0.5 rounded text-xs font-bold ${
                               ins.score >= 90
-                                ? "bg-emerald-500/10 text-emerald-400"
+                                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
                                 : ins.score >= 75
-                                  ? "bg-amber-500/10 text-amber-400"
-                                  : "bg-rose-500/10 text-rose-400"
+                                  ? "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                                  : "bg-rose-500/10 text-rose-700 dark:text-rose-400"
                             }`}
                           >
                             {ins.score}%
                           </span>
                         ) : (
-                          <span className="text-slate-500 text-xs">-</span>
+                          <span className="text-muted-foreground text-xs">
+                            -
+                          </span>
                         )}
                       </td>
                       <td className="py-3 px-4">
                         {ins.work_order_count && ins.work_order_count > 0 ? (
                           <Link
                             href="/facilities/work-orders"
-                            className="inline-flex items-center gap-1 text-xs font-bold text-rose-400 hover:text-rose-300 hover:underline"
+                            className="inline-flex items-center gap-1 text-xs font-bold text-rose-700 dark:text-rose-400 hover:text-rose-800 hover:underline"
                           >
                             <Wrench className="w-3 h-3" />
                             <span>{ins.work_order_count} sự cố</span>
                           </Link>
                         ) : (
-                          <span className="text-slate-500 text-xs">
+                          <span className="text-muted-foreground text-xs">
                             0 sự cố
                           </span>
                         )}
@@ -703,7 +705,7 @@ export function MaintenanceHub({
                           variant="ghost"
                           size="sm"
                           onClick={() => setViewingInspection(ins)}
-                          className="h-7 text-xs text-slate-400 hover:text-slate-200 gap-1 px-2"
+                          className="h-7 text-xs text-muted-foreground hover:text-foreground gap-1 px-2"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           <span>Xem</span>
@@ -728,7 +730,7 @@ export function MaintenanceHub({
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
-                  <ClipboardCheck className="w-5 h-5 text-emerald-400" />
+                  <ClipboardCheck className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
                   <span>
                     Biên bản kiểm tra #{viewingInspection.id.slice(0, 8)}
                   </span>
@@ -747,28 +749,28 @@ export function MaintenanceHub({
 
               <div className="space-y-4 py-2 max-h-[60vh] overflow-y-auto pr-1">
                 {/* Summary Score Bar */}
-                <div className="grid grid-cols-3 gap-2 text-center p-3 rounded-xl bg-slate-950 border border-slate-800">
+                <div className="grid grid-cols-3 gap-2 text-center p-3 rounded-xl bg-muted/40 border border-border">
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">
                       Đạt
                     </span>
-                    <span className="text-lg font-bold text-emerald-400">
+                    <span className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
                       {viewingInspection.passed}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">
                       Lỗi
                     </span>
-                    <span className="text-lg font-bold text-rose-400">
+                    <span className="text-lg font-bold text-rose-700 dark:text-rose-400">
                       {viewingInspection.failed}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">
                       Điểm
                     </span>
-                    <span className="text-lg font-bold text-indigo-400">
+                    <span className="text-lg font-bold text-indigo-700 dark:text-indigo-400">
                       {viewingInspection.score !== null
                         ? `${viewingInspection.score}%`
                         : "-"}
@@ -780,7 +782,7 @@ export function MaintenanceHub({
                 {viewingInspection.results &&
                 viewingInspection.results.length > 0 ? (
                   <div className="space-y-2">
-                    <p className="text-xs font-semibold text-slate-300">
+                    <p className="text-xs font-semibold text-foreground/80">
                       Chi tiết từng tiêu chí:
                     </p>
                     {viewingInspection.results.map((r, idx) => (
@@ -788,23 +790,23 @@ export function MaintenanceHub({
                         key={idx}
                         className={`p-2.5 rounded-lg border text-xs space-y-1 ${
                           r.status === "pass"
-                            ? "bg-emerald-950/20 border-emerald-500/20 text-emerald-300"
+                            ? "bg-emerald-950/20 border-emerald-500/20 text-emerald-700 dark:text-emerald-300"
                             : r.status === "fail"
-                              ? "bg-rose-950/30 border-rose-500/30 text-rose-300"
-                              : "bg-slate-950 border-slate-800 text-slate-400"
+                              ? "bg-rose-950/30 border-rose-500/30 text-rose-700 dark:text-rose-300"
+                              : "bg-muted/40 border-border text-muted-foreground"
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-slate-200">
+                          <span className="font-semibold text-foreground">
                             {r.key}
                           </span>
                           <span
                             className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                               r.status === "pass"
-                                ? "bg-emerald-500/10 text-emerald-400"
+                                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
                                 : r.status === "fail"
-                                  ? "bg-rose-500/10 text-rose-400"
-                                  : "bg-slate-800 text-slate-400"
+                                  ? "bg-rose-500/10 text-rose-700 dark:text-rose-400"
+                                  : "bg-muted text-muted-foreground"
                             }`}
                           >
                             {r.status === "pass"
@@ -815,12 +817,12 @@ export function MaintenanceHub({
                           </span>
                         </div>
                         {r.note && (
-                          <p className="text-[11px] text-rose-300 font-medium">
+                          <p className="text-[11px] text-rose-700 dark:text-rose-300 font-medium">
                             Ghi chú: {r.note}
                           </p>
                         )}
                         {r.photo_path && (
-                          <p className="text-[10px] text-slate-400 truncate">
+                          <p className="text-[10px] text-muted-foreground truncate">
                             Ảnh: {r.photo_path}
                           </p>
                         )}
@@ -828,17 +830,17 @@ export function MaintenanceHub({
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-500 text-center py-2">
+                  <p className="text-xs text-muted-foreground text-center py-2">
                     Biên bản không lưu chi tiết từng mục
                   </p>
                 )}
 
                 {viewingInspection.note && (
-                  <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 text-xs">
-                    <span className="font-semibold text-slate-400 block mb-1">
+                  <div className="p-3 rounded-lg bg-muted/40 border border-border text-xs">
+                    <span className="font-semibold text-muted-foreground block mb-1">
                       Ghi chú tổng kết:
                     </span>
-                    <p className="text-slate-200">{viewingInspection.note}</p>
+                    <p className="text-foreground">{viewingInspection.note}</p>
                   </div>
                 )}
               </div>
@@ -1077,14 +1079,14 @@ export function MaintenanceHub({
                 </div>
 
                 <div className="pt-1">
-                  <label className="flex items-center gap-2 p-2 rounded-xl border border-slate-800 bg-slate-950/60 cursor-pointer">
+                  <label className="flex items-center gap-2 p-2 rounded-xl border border-border bg-muted/40 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={editPlanIsActive}
                       onChange={(e) => setEditPlanIsActive(e.target.checked)}
-                      className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 bg-slate-900 border-slate-700"
+                      className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 bg-card border-border"
                     />
-                    <span className="text-xs font-medium text-slate-200">
+                    <span className="text-xs font-medium text-foreground">
                       Kế hoạch đang kích hoạt (Tự động sinh phiếu khi đến hạn)
                     </span>
                   </label>

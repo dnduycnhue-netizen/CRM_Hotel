@@ -171,7 +171,7 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
 
         {/* Section 1: Thông tin cơ bản */}
         <div className="space-y-4">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             1. Thông tin cá nhân
           </h2>
 
@@ -247,7 +247,7 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
 
         {/* Section 2: Liên hệ */}
         <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             2. Thông tin liên hệ
           </h2>
 
@@ -349,7 +349,7 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
 
         {/* Section 3: Giấy tờ tuỳ thân */}
         <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             3. Giấy tờ tuỳ thân (Tùy chọn)
           </h2>
 
@@ -403,7 +403,7 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
 
         {/* Section 4: Nhãn thẻ (Tags) */}
         <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             4. Nhãn phân loại khách hàng
           </h2>
 

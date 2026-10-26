@@ -139,7 +139,9 @@ export function RoomBlocksTable({
       {/* Filter toolbar */}
       <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs">
-          <span className="text-slate-400 font-medium">Lọc theo cơ sở:</span>
+          <span className="text-muted-foreground font-medium">
+            Lọc theo cơ sở:
+          </span>
           {!isChain ? (
             <div
               className="flex items-center gap-1.5 py-1 px-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 font-semibold text-slate-800 dark:text-slate-200"
@@ -169,7 +171,7 @@ export function RoomBlocksTable({
           )}
         </div>
 
-        <div className="text-xs text-slate-400">
+        <div className="text-xs text-muted-foreground">
           Tổng số:{" "}
           <strong className="text-amber-600">{filteredBlocks.length}</strong>{" "}
           phòng
@@ -195,7 +197,7 @@ export function RoomBlocksTable({
                 <tr>
                   <td
                     colSpan={6}
-                    className="py-12 text-center text-slate-400 text-xs"
+                    className="py-12 text-center text-muted-foreground text-xs"
                   >
                     Hiện không có phòng nào bị khóa ngừng bán.
                   </td>
@@ -215,7 +217,7 @@ export function RoomBlocksTable({
                           <div className="font-bold text-slate-900 dark:text-slate-100">
                             Phòng {block.room_number}
                           </div>
-                          <div className="text-xs text-slate-400">
+                          <div className="text-xs text-muted-foreground">
                             {block.branch_name}
                           </div>
                         </div>
@@ -229,7 +231,7 @@ export function RoomBlocksTable({
                     <td className="py-3.5 px-4 text-xs text-slate-500">
                       <div>Từ: {formatDateVN(block.starts_at)}</div>
                       {block.ends_at && (
-                        <div className="text-[11px] text-slate-400 mt-0.5">
+                        <div className="text-[11px] text-muted-foreground mt-0.5">
                           Đến: {formatDateVN(block.ends_at)}
                         </div>
                       )}
@@ -249,7 +251,7 @@ export function RoomBlocksTable({
 
                     <td className="py-3.5 px-4 text-xs">
                       <span className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-400">
-                        <User className="w-3 h-3 text-slate-400" />
+                        <User className="w-3 h-3 text-muted-foreground" />
                         {block.created_by_name || "Hệ thống"}
                       </span>
                     </td>
@@ -286,7 +288,7 @@ export function RoomBlocksTable({
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-muted-foreground hover:text-slate-600"
               >
                 ✕
               </button>

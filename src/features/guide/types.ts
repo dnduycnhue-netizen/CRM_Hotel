@@ -54,3 +54,16 @@ export interface ModuleGuide {
   }[];
   faq: { q: string; a: string }[];
 }
+
+/** Quy tắc nghiệp vụ cần ghi nhớ (tra cứu nhanh, gom theo chủ đề) */
+export interface RuleGroup {
+  id: string;
+  title: string;
+  iconName: string;
+  rules: {
+    rule: string;
+    detail: string;
+    /** Màn hình / nơi áp dụng (đường dẫn hoặc tên phân hệ) */
+    where?: string;
+  }[];
+}

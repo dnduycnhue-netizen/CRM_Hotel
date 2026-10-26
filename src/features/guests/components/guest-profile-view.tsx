@@ -488,12 +488,12 @@ export function GuestProfileView({
               <div className="flex items-center gap-4 text-xs text-slate-500 flex-wrap pt-1">
                 {guest.phone && (
                   <span className="flex items-center gap-1 font-medium text-slate-700 dark:text-slate-300 font-mono">
-                    <Phone className="w-3.5 h-3.5 text-slate-400" />
+                    <Phone className="w-3.5 h-3.5 text-muted-foreground" />
                     <span>{guest.phone}</span>
                     {guest.phone.includes("****") ? (
                       <span
                         title="Số điện thoại được che bảo mật"
-                        className="inline-flex text-slate-400 cursor-help"
+                        className="inline-flex text-muted-foreground cursor-help"
                       >
                         <Lock className="w-3 h-3 ml-0.5" />
                       </span>
@@ -518,7 +518,7 @@ export function GuestProfileView({
 
                 {profile.documents.length > 0 && (
                   <span className="flex items-center gap-1.5">
-                    <span className="uppercase text-slate-400 font-semibold">
+                    <span className="uppercase text-muted-foreground font-semibold">
                       {profile.documents[0].type}:
                     </span>
                     <code className="font-mono text-slate-700 dark:text-slate-300">
@@ -557,7 +557,7 @@ export function GuestProfileView({
                     ) : (
                       <span
                         title="Dữ liệu được che bảo mật theo Nghị định 13/2023"
-                        className="inline-flex text-slate-400"
+                        className="inline-flex text-muted-foreground"
                       >
                         <Lock className="w-3 h-3 ml-0.5" />
                       </span>
@@ -567,13 +567,13 @@ export function GuestProfileView({
 
                 {guest.email && (
                   <span className="flex items-center gap-1">
-                    <Mail className="w-3.5 h-3.5 text-slate-400" />
+                    <Mail className="w-3.5 h-3.5 text-muted-foreground" />
                     {guest.email}
                   </span>
                 )}
 
                 {guest.nationality && (
-                  <span className="text-slate-400">
+                  <span className="text-muted-foreground">
                     Quốc tịch:{" "}
                     <strong className="text-slate-700 dark:text-slate-300 uppercase">
                       {guest.nationality}
@@ -594,7 +594,7 @@ export function GuestProfileView({
 
               {/* Tags */}
               <div className="flex items-center gap-1.5 flex-wrap pt-2">
-                <Tag className="w-3.5 h-3.5 text-slate-400 mr-1" />
+                <Tag className="w-3.5 h-3.5 text-muted-foreground mr-1" />
                 {(guest.tags || []).map((t) => (
                   <span
                     key={t}
@@ -605,7 +605,7 @@ export function GuestProfileView({
                       <button
                         type="button"
                         onClick={() => handleRemoveTag(t)}
-                        className="text-slate-400 hover:text-rose-500 ml-0.5"
+                        className="text-muted-foreground hover:text-rose-500 ml-0.5"
                       >
                         ×
                       </button>
@@ -650,7 +650,7 @@ export function GuestProfileView({
 
           {/* Sales Owner Box */}
           <div className="p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 shrink-0 min-w-[220px]">
-            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+            <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               Sales phụ trách
             </div>
             {can.assign_owner ? (
@@ -680,7 +680,7 @@ export function GuestProfileView({
                 )}
               </div>
             )}
-            <div className="text-[11px] text-slate-400 mt-2">
+            <div className="text-[11px] text-muted-foreground mt-2">
               Chăm sóc độc quyền khách hàng & theo dõi ưu đãi chuỗi.
             </div>
           </div>
@@ -689,7 +689,7 @@ export function GuestProfileView({
         {/* 4 Stat KPIs */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
           <div className="space-y-0.5">
-            <span className="text-[11px] font-medium text-slate-400">
+            <span className="text-[11px] font-medium text-muted-foreground">
               Tổng lượt ở
             </span>
             <div className="text-xl font-bold text-slate-900 dark:text-slate-100">
@@ -697,7 +697,7 @@ export function GuestProfileView({
             </div>
           </div>
           <div className="space-y-0.5">
-            <span className="text-[11px] font-medium text-slate-400">
+            <span className="text-[11px] font-medium text-muted-foreground">
               Tổng số đêm
             </span>
             <div className="text-xl font-bold text-slate-900 dark:text-slate-100">
@@ -705,7 +705,7 @@ export function GuestProfileView({
             </div>
           </div>
           <div className="space-y-0.5">
-            <span className="text-[11px] font-medium text-slate-400">
+            <span className="text-[11px] font-medium text-muted-foreground">
               Lượt ở gần nhất
             </span>
             <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 pt-1">
@@ -715,7 +715,7 @@ export function GuestProfileView({
             </div>
           </div>
           <div className="space-y-0.5">
-            <span className="text-[11px] font-medium text-slate-400">
+            <span className="text-[11px] font-medium text-muted-foreground">
               Tình trạng hồ sơ
             </span>
             <div className="text-xs font-semibold text-emerald-600 flex items-center gap-1 pt-1">
@@ -910,7 +910,7 @@ export function GuestProfileView({
       {activeTab === "stays" && (
         <div className="space-y-4">
           {stays.length === 0 ? (
-            <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400">
+            <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-muted-foreground">
               Khách hàng chưa có lượt lưu trú nào trong hệ thống (Hồ sơ tiềm
               năng)
             </div>
@@ -930,7 +930,7 @@ export function GuestProfileView({
                         <span className="font-bold text-slate-900 dark:text-slate-100">
                           {stay.branch}
                         </span>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-muted-foreground">
                           · Phòng {stay.room}
                         </span>
                         <span
@@ -961,11 +961,11 @@ export function GuestProfileView({
                     </div>
                   </div>
 
-                  <div className="text-right text-xs text-slate-400">
+                  <div className="text-right text-xs text-muted-foreground">
                     <div>
                       {stay.is_primary ? "Khách đại diện" : "Khách đi cùng"}
                     </div>
-                    <div className="text-[11px] text-slate-400 mt-0.5">
+                    <div className="text-[11px] text-muted-foreground mt-0.5">
                       Phương thức: {stay.entry_mode}
                     </div>
                   </div>
@@ -1066,7 +1066,7 @@ export function GuestProfileView({
           {/* Notes list */}
           <div className="space-y-3">
             {notes.length === 0 ? (
-              <div className="p-8 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400">
+              <div className="p-8 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-muted-foreground">
                 Chưa có ghi chú nào cho khách hàng này.
               </div>
             ) : (
@@ -1097,7 +1097,7 @@ export function GuestProfileView({
                               : "Ghi chú"}
                       </span>
                       {n.branch ? (
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-muted-foreground">
                           tại {n.branch}
                         </span>
                       ) : (
@@ -1105,10 +1105,10 @@ export function GuestProfileView({
                           Toàn chuỗi
                         </span>
                       )}
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-muted-foreground">
                         · {n.author}
                       </span>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-muted-foreground">
                         · {formatDateVN(n.at)}
                       </span>
                     </div>
@@ -1121,7 +1121,7 @@ export function GuestProfileView({
                   <button
                     type="button"
                     onClick={() => handleDeleteNote(n.id)}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition shrink-0"
+                    className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition shrink-0"
                     title="Xóa ghi chú"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -1141,7 +1141,7 @@ export function GuestProfileView({
               <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 Người đi cùng ({companions.length})
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted-foreground">
                 Danh sách người thân, bạn bè từng lưu trú chung phòng qua các
                 lượt ở
               </p>
@@ -1160,7 +1160,7 @@ export function GuestProfileView({
           </div>
 
           {companions.length === 0 ? (
-            <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400">
+            <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-muted-foreground">
               Khách chưa có người đi cùng nào được ghi nhận qua các lượt lưu
               trú.
               {targetStayForCompanion && (
@@ -1192,17 +1192,17 @@ export function GuestProfileView({
                       <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">
                         {c.full_name}
                       </div>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-muted-foreground">
                         Ở cùng {c.times} lần
                       </div>
                       {c.last_stay_at && (
-                        <div className="text-[11px] text-slate-400 mt-0.5">
+                        <div className="text-[11px] text-muted-foreground mt-0.5">
                           Gần nhất: {formatDateVN(c.last_stay_at)}
                         </div>
                       )}
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </Link>
               ))}
             </div>
@@ -1241,7 +1241,7 @@ export function GuestProfileView({
               <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 Danh sách cờ cảnh báo & Blacklist
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted-foreground">
                 Cờ đã duyệt sẽ cảnh báo đỏ tại quầy lễ tân toàn chuỗi khi
                 check-in
               </p>
@@ -1281,7 +1281,7 @@ export function GuestProfileView({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-medium text-slate-400 block mb-1">
+                  <label className="text-xs font-medium text-muted-foreground block mb-1">
                     Loại cờ:
                   </label>
                   <select
@@ -1299,7 +1299,7 @@ export function GuestProfileView({
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-slate-400 block mb-1">
+                  <label className="text-xs font-medium text-muted-foreground block mb-1">
                     Cơ sở ghi nhận:
                   </label>
                   <select
@@ -1317,7 +1317,7 @@ export function GuestProfileView({
               </div>
 
               <div>
-                <label className="text-xs font-medium text-slate-400 block mb-1">
+                <label className="text-xs font-medium text-muted-foreground block mb-1">
                   Lý do đề xuất (tối thiểu 10 ký tự):
                 </label>
                 <textarea
@@ -1377,7 +1377,7 @@ export function GuestProfileView({
           )}
 
           {flags.length === 0 ? (
-            <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400">
+            <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-muted-foreground">
               Hồ sơ sạch, không có cờ cảnh báo hay blacklist nào.
             </div>
           ) : (
@@ -1395,10 +1395,10 @@ export function GuestProfileView({
                           ? "Cờ Blacklist toàn chuỗi"
                           : "Cần lưu ý đặc biệt"}
                       </span>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-muted-foreground">
                         · Đề xuất tại {f.branch}
                       </span>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-muted-foreground">
                         · {formatDateVN(f.proposed_at)}
                       </span>
                       <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-rose-100 text-rose-800">
@@ -1443,7 +1443,7 @@ export function GuestProfileView({
               <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
                 Trạng thái đồng thuận tiếp thị & Chăm sóc khách hàng
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Nhân viên chỉ được gửi tin nhắn hoặc gọi điện qua các kênh khách
                 đã cấp đồng ý rõ ràng.
               </p>
@@ -1502,7 +1502,7 @@ export function GuestProfileView({
                           <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">
                             {channel.label}
                           </div>
-                          <div className="text-xs text-slate-400 mt-0.5 leading-relaxed">
+                          <div className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                             {channel.desc}
                           </div>
                         </div>
@@ -1550,7 +1550,7 @@ export function GuestProfileView({
                           {isGranted ? "Rút đồng ý" : "Cấp đồng ý"}
                         </button>
                       ) : (
-                        <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
                           <Lock className="w-3 h-3" /> Cần quyền consent.manage
                         </span>
                       )}
@@ -1569,7 +1569,7 @@ export function GuestProfileView({
                   <History className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                   Sổ nhật ký kiểm toán đồng thuận (Audit Trail)
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Lưu trữ bất biến mọi sự kiện cấp/rút quyền gửi tin kèm căn cứ
                   và người thực hiện.
                 </p>
@@ -1580,7 +1580,7 @@ export function GuestProfileView({
             </div>
 
             {localConsentHistory.length === 0 ? (
-              <div className="p-8 text-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400 text-xs">
+              <div className="p-8 text-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-muted-foreground text-xs">
                 Chưa có sự kiện thay đổi đồng thuận nào được ghi nhận cho khách
                 hàng này.
               </div>
@@ -1588,7 +1588,7 @@ export function GuestProfileView({
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-semibold">
+                    <tr className="border-b border-slate-200 dark:border-slate-800 text-muted-foreground font-semibold">
                       <th className="py-2.5 px-3">Thời gian</th>
                       <th className="py-2.5 px-3">Kênh liên lạc</th>
                       <th className="py-2.5 px-3">Hành động</th>
@@ -1659,7 +1659,7 @@ export function GuestProfileView({
       {activeTab === "tier_history" && (
         <div className="space-y-4">
           {tier_events.length === 0 ? (
-            <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400">
+            <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-muted-foreground">
               Khách hàng chưa có sự kiện thay đổi hạng nào được ghi nhận.
             </div>
           ) : (
@@ -1713,7 +1713,7 @@ export function GuestProfileView({
                             ? `${e.from_tier} → ${e.to_tier}`
                             : `Lên hạng ${e.to_tier}`}
                         </span>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-muted-foreground">
                           · Chính sách: {e.policy_name}
                         </span>
                       </div>
@@ -1724,14 +1724,14 @@ export function GuestProfileView({
                       )}
                     </div>
 
-                    <div className="text-xs text-slate-400 sm:text-right shrink-0">
+                    <div className="text-xs text-muted-foreground sm:text-right shrink-0">
                       <div>
                         Thực hiện:{" "}
                         <strong className="text-slate-700 dark:text-slate-300">
                           {e.actor || "Hệ thống tự động"}
                         </strong>
                       </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">
+                      <div className="text-[11px] text-muted-foreground mt-0.5">
                         {formatDateVN(e.at)}
                       </div>
                     </div>
@@ -1756,7 +1756,7 @@ export function GuestProfileView({
                   <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
                     Đề xuất gộp hồ sơ trùng lặp
                   </h2>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-muted-foreground">
                     Hồ sơ giữ lại chính:{" "}
                     <strong className="text-slate-700 dark:text-slate-300">
                       {guest.full_name}
@@ -1767,7 +1767,7 @@ export function GuestProfileView({
               <button
                 type="button"
                 onClick={() => setShowMergeModal(false)}
-                className="text-slate-400 hover:text-slate-600 text-sm font-semibold"
+                className="text-muted-foreground hover:text-slate-600 text-sm font-semibold"
               >
                 ✕
               </button>
@@ -1786,7 +1786,7 @@ export function GuestProfileView({
                     placeholder="Gõ số điện thoại hoặc tên khách hàng cần gộp..."
                     className="w-full text-xs pl-8 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 outline-none"
                   />
-                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-3" />
+                  <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-2.5 top-3" />
                   {isSearchingMerge && (
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-500 absolute right-3 top-3" />
                   )}
@@ -1806,7 +1806,7 @@ export function GuestProfileView({
                           <div className="font-semibold text-slate-900 dark:text-slate-100">
                             {c.full_name}
                           </div>
-                          <div className="text-[11px] text-slate-400 mt-0.5">
+                          <div className="text-[11px] text-muted-foreground mt-0.5">
                             SĐT: {c.phone || "Chưa có"} • Email:{" "}
                             {c.email || "Chưa có"}
                           </div>
@@ -1898,7 +1898,7 @@ export function GuestProfileView({
                   <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
                     Gán hạng thành viên thủ công
                   </h2>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-muted-foreground">
                     Áp dụng cho khách:{" "}
                     <strong className="text-slate-700 dark:text-slate-300">
                       {guest.full_name}
@@ -1909,7 +1909,7 @@ export function GuestProfileView({
               <button
                 type="button"
                 onClick={() => setShowOverrideModal(false)}
-                className="text-slate-400 hover:text-slate-600 text-sm font-semibold"
+                className="text-muted-foreground hover:text-slate-600 text-sm font-semibold"
               >
                 ✕
               </button>
@@ -1934,7 +1934,7 @@ export function GuestProfileView({
                     </option>
                   ))}
                 </select>
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-[11px] text-muted-foreground mt-1">
                   Khách sẽ được hưởng mức chiết khấu của hạng này khi check-in
                   tại mọi cơ sở.
                 </p>
@@ -1964,7 +1964,7 @@ export function GuestProfileView({
                   onChange={(e) => setOverrideUntil(e.target.value)}
                   className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 outline-none"
                 />
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-[11px] text-muted-foreground mt-1">
                   Để trống nếu muốn gán vô thời hạn cho tới khi có quyết định
                   hủy.
                 </p>
@@ -2021,7 +2021,7 @@ export function GuestProfileView({
                       ? `Cấp quyền gửi tin qua ${consentModal.channelLabel}`
                       : `Rút quyền gửi tin qua ${consentModal.channelLabel}`}
                   </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     Tuân thủ Nghị định 13/2023/NĐ-CP về Bảo vệ dữ liệu cá nhân
                   </p>
                 </div>
@@ -2050,7 +2050,7 @@ export function GuestProfileView({
                   className="w-full text-xs p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 outline-none resize-none focus:ring-2 focus:ring-indigo-500"
                   required
                 />
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-[11px] text-muted-foreground mt-1">
                   Thông tin này sẽ được lưu cố định vào sổ theo dõi kiểm toán
                   (audit log) phục vụ thanh kiểm tra bảo mật dữ liệu.
                 </p>

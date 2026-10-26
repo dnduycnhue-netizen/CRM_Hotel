@@ -124,7 +124,7 @@ export function DashboardOverview({
 
   if (!data) {
     return (
-      <div className="p-12 text-center rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400">
+      <div className="p-12 text-center rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 text-muted-foreground">
         Chưa có số liệu báo cáo cho khoảng thời gian này hoặc không đủ quyền
         truy cập.
       </div>
@@ -354,7 +354,7 @@ export function DashboardOverview({
               </span>
             ) : (
               <span className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
                 {formatDateVN(range.from)} – {formatDateVN(range.to)}
               </span>
             )}
@@ -390,7 +390,7 @@ export function DashboardOverview({
                     {occDelta}%
                   </span>
                 )}
-                <span className="text-slate-400 font-normal">
+                <span className="text-muted-foreground font-normal">
                   so với cùng kỳ ({compare?.occupancy}%)
                 </span>
               </div>
@@ -424,7 +424,7 @@ export function DashboardOverview({
               Khóa OOO: <strong>{current.blocked_room_nights}</strong>
             </div>
           </div>
-          <div className="text-[11px] text-slate-400">
+          <div className="text-[11px] text-muted-foreground">
             {current.arrivals} lượt đến · {current.guests} khách lưu trú
           </div>
         </div>
@@ -455,7 +455,7 @@ export function DashboardOverview({
                     {returnDelta}%
                   </span>
                 )}
-                <span className="text-slate-400 font-normal">
+                <span className="text-muted-foreground font-normal">
                   so với kỳ trước
                 </span>
               </div>
@@ -480,7 +480,7 @@ export function DashboardOverview({
           <div>
             <div className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
               {current.alos}{" "}
-              <span className="text-base font-medium text-slate-400">
+              <span className="text-base font-medium text-muted-foreground">
                 đêm/lượt
               </span>
             </div>
@@ -510,7 +510,7 @@ export function DashboardOverview({
                 <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
                   Xu hướng công suất buồng phòng theo thời gian
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   So sánh trực quan biến động công suất (%) kỳ này vs cùng kỳ
                 </p>
               </div>
@@ -518,7 +518,7 @@ export function DashboardOverview({
                 <span className="flex items-center gap-1.5 font-semibold text-indigo-600">
                   <span className="w-3 h-3 rounded-full bg-indigo-600" /> Kỳ này
                 </span>
-                <span className="flex items-center gap-1.5 font-semibold text-slate-400">
+                <span className="flex items-center gap-1.5 font-semibold text-muted-foreground">
                   <span className="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-700" />{" "}
                   Cùng kỳ năm trước
                 </span>
@@ -526,7 +526,7 @@ export function DashboardOverview({
             </div>
 
             {/* Simple SVG / CSS Trend Bars */}
-            <div className="pt-6 h-72 flex items-end gap-1.5 overflow-x-auto pb-4">
+            <div className="pt-6 h-72 flex items-end gap-1 pb-4">
               {series.map((point, idx) => {
                 const curH = Math.min(point.cur?.occupancy || 0, 100);
                 const cmpH = Math.min(point.cmp?.occupancy || 0, 100);
@@ -534,7 +534,7 @@ export function DashboardOverview({
                 return (
                   <div
                     key={idx}
-                    className="flex-1 min-w-[22px] flex flex-col items-center gap-1.5 h-full justify-end group relative"
+                    className="flex-1 min-w-0 flex flex-col items-center gap-1.5 h-full justify-end group relative"
                   >
                     {/* Tooltip */}
                     <div className="absolute -top-12 bg-slate-900 text-white text-[10px] py-1 px-2 rounded-lg opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-20">
@@ -551,11 +551,17 @@ export function DashboardOverview({
                       )}
                       <div
                         className="w-full bg-indigo-600 rounded-t-md transition-all duration-300 group-hover:bg-indigo-500"
-                        style={{ height: `${curH}%` }}
+                        style={{
+                          height: `${curH}%`,
+                          // Cột có số liệu nhưng rất thấp vẫn phải nhìn thấy được
+                          minHeight: curH > 0 ? 3 : 0,
+                        }}
                       />
                     </div>
-                    <span className="text-[10px] font-medium text-slate-500 truncate max-w-full">
-                      {new Date(point.bucket).getDate()}
+                    <span className="text-[10px] font-medium text-muted-foreground truncate max-w-full h-3">
+                      {idx % Math.ceil(series.length / 15) === 0
+                        ? new Date(point.bucket).getDate()
+                        : ""}
                     </span>
                   </div>
                 );
@@ -605,7 +611,7 @@ export function DashboardOverview({
                           <div className="font-bold text-xs text-slate-900 dark:text-slate-100">
                             {b.branch}
                           </div>
-                          <div className="text-[10px] text-slate-400">
+                          <div className="text-[10px] text-muted-foreground">
                             {b.current.room_nights} đêm phòng đã bán
                           </div>
                         </div>
@@ -615,7 +621,7 @@ export function DashboardOverview({
                           {b.current.occupancy}%
                         </div>
                         {b.compare && (
-                          <div className="text-[10px] text-slate-400">
+                          <div className="text-[10px] text-muted-foreground">
                             Cùng kỳ: {b.compare.occupancy}%
                           </div>
                         )}
@@ -643,7 +649,7 @@ export function DashboardOverview({
 
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                      <div className="text-slate-400 text-[11px]">
+                      <div className="text-muted-foreground text-[11px]">
                         Đêm phòng bán
                       </div>
                       <div className="text-base font-bold text-slate-800 dark:text-slate-200 mt-0.5">
@@ -651,7 +657,7 @@ export function DashboardOverview({
                       </div>
                     </div>
                     <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                      <div className="text-slate-400 text-[11px]">
+                      <div className="text-muted-foreground text-[11px]">
                         Lượt khách đến
                       </div>
                       <div className="text-base font-bold text-slate-800 dark:text-slate-200 mt-0.5">
@@ -659,7 +665,7 @@ export function DashboardOverview({
                       </div>
                     </div>
                     <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                      <div className="text-slate-400 text-[11px]">
+                      <div className="text-muted-foreground text-[11px]">
                         Khách quen quay lại
                       </div>
                       <div className="text-base font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
@@ -667,7 +673,7 @@ export function DashboardOverview({
                       </div>
                     </div>
                     <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                      <div className="text-slate-400 text-[11px]">
+                      <div className="text-muted-foreground text-[11px]">
                         Lưu trú BQ (ALOS)
                       </div>
                       <div className="text-base font-bold text-slate-800 dark:text-slate-200 mt-0.5">
@@ -692,7 +698,7 @@ export function DashboardOverview({
                 ? `${branches.length} khách sạn`
                 : (branches[0]?.name ?? "khách sạn")}
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               So sánh công suất, số đêm phòng, tỷ lệ khách quen và tỷ lệ hủy
               theo từng cơ sở
             </p>
@@ -741,7 +747,7 @@ export function DashboardOverview({
                             <span className="text-rose-600">{diffOcc}%</span>
                           )
                         ) : (
-                          <span className="text-slate-400">—</span>
+                          <span className="text-muted-foreground">—</span>
                         )}
                       </td>
                       <td className="py-3.5 px-4 text-xs font-semibold">
@@ -780,7 +786,7 @@ export function DashboardOverview({
 
             <div className="space-y-3">
               {by_channel.length === 0 ? (
-                <div className="py-8 text-center text-slate-400 text-xs">
+                <div className="py-8 text-center text-muted-foreground text-xs">
                   Chưa có dữ liệu kênh bán trong khoảng thời gian này.
                 </div>
               ) : (
@@ -793,7 +799,7 @@ export function DashboardOverview({
                       <div className="font-bold text-xs text-slate-900 dark:text-slate-100">
                         {ch.channel}
                       </div>
-                      <div className="text-[10px] text-slate-400 capitalize">
+                      <div className="text-[10px] text-muted-foreground capitalize">
                         Loại kênh: {ch.kind}
                       </div>
                     </div>
@@ -802,7 +808,7 @@ export function DashboardOverview({
                         {ch.current} lượt
                       </div>
                       {ch.compare !== null && ch.compare !== undefined && (
-                        <div className="text-[10px] text-slate-400">
+                        <div className="text-[10px] text-muted-foreground">
                           Cùng kỳ: {ch.compare}
                         </div>
                       )}
@@ -822,7 +828,7 @@ export function DashboardOverview({
 
             <div className="space-y-3">
               {by_nationality.length === 0 ? (
-                <div className="py-8 text-center text-slate-400 text-xs">
+                <div className="py-8 text-center text-muted-foreground text-xs">
                   Chưa có dữ liệu quốc tịch khách.
                 </div>
               ) : (

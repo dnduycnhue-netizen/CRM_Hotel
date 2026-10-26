@@ -430,7 +430,7 @@ export function MonthlyInputDialog({
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
                   Phân hệ Nhập Doanh Thu Tháng (§14)
                 </span>
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-muted-foreground">
                   · Đối chiếu ezCloud & CRM
                 </span>
               </div>
@@ -507,12 +507,12 @@ export function MonthlyInputDialog({
         {/* Nội dung bảng nhập số liệu */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {isLoading ? (
-            <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-2">
+            <div className="py-20 flex flex-col items-center justify-center text-muted-foreground gap-2">
               <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
               <p className="text-xs">Đang tải số liệu các cơ sở...</p>
             </div>
           ) : rows.length === 0 ? (
-            <div className="py-16 text-center text-xs text-slate-400">
+            <div className="py-16 text-center text-xs text-muted-foreground">
               Bạn không có quyền nhập hoặc xem số liệu doanh thu cho cơ sở nào.
             </div>
           ) : (
@@ -610,7 +610,7 @@ export function MonthlyInputDialog({
                                 {r.branch_name}
                               </div>
                               <div className="flex items-center gap-1.5 mt-1">
-                                <span className="font-mono text-[10px] text-slate-400">
+                                <span className="font-mono text-[10px] text-muted-foreground">
                                   {r.branch_code}
                                 </span>
                                 {r.is_locked ? (
@@ -624,7 +624,7 @@ export function MonthlyInputDialog({
                                 )}
                               </div>
                               {r.entered_by_name && (
-                                <div className="text-[10px] text-slate-400 mt-0.5">
+                                <div className="text-[10px] text-muted-foreground mt-0.5">
                                   Nhập bởi: {r.entered_by_name}
                                 </div>
                               )}
@@ -692,7 +692,7 @@ export function MonthlyInputDialog({
                                       : ""
                                   }`}
                                 />
-                                <div className="text-[10px] text-slate-400 text-right">
+                                <div className="text-[10px] text-muted-foreground text-right">
                                   CRM: <strong>{crmNights}</strong>
                                 </div>
                               </div>
@@ -716,7 +716,7 @@ export function MonthlyInputDialog({
                                   }
                                   className="h-8 text-xs text-right"
                                 />
-                                <div className="text-[10px] text-slate-400 text-right">
+                                <div className="text-[10px] text-muted-foreground text-right">
                                   Gợi ý: {r.suggested_available}
                                 </div>
                               </div>
@@ -740,7 +740,7 @@ export function MonthlyInputDialog({
                                   }
                                   className="h-8 text-xs text-right"
                                 />
-                                <div className="text-[10px] text-slate-400 text-right">
+                                <div className="text-[10px] text-muted-foreground text-right">
                                   CRM: {r.crm_arrivals}
                                 </div>
                               </div>
@@ -764,7 +764,7 @@ export function MonthlyInputDialog({
                                   }
                                   className="h-8 text-xs text-right"
                                 />
-                                <div className="text-[10px] text-slate-400 text-right">
+                                <div className="text-[10px] text-muted-foreground text-right">
                                   CRM: {r.crm_guests}
                                 </div>
                               </div>
@@ -774,13 +774,17 @@ export function MonthlyInputDialog({
                             <td className="py-3 px-3">
                               <div className="space-y-0.5 text-[11px]">
                                 <div className="flex justify-between">
-                                  <span className="text-slate-400">OCC:</span>
+                                  <span className="text-muted-foreground">
+                                    OCC:
+                                  </span>
                                   <strong className="text-indigo-600 dark:text-indigo-400">
                                     {occPct}%
                                   </strong>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-slate-400">ADR:</span>
+                                  <span className="text-muted-foreground">
+                                    ADR:
+                                  </span>
                                   <span>
                                     {adr > 0
                                       ? adr.toLocaleString("vi-VN")
@@ -788,7 +792,7 @@ export function MonthlyInputDialog({
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-slate-400">
+                                  <span className="text-muted-foreground">
                                     RevPAR:
                                   </span>
                                   <span className="text-emerald-600 font-medium">
@@ -837,7 +841,7 @@ export function MonthlyInputDialog({
                                     <Unlock className="w-3 h-3" /> Mở khóa
                                   </Button>
                                 ) : (
-                                  <span className="text-[10px] text-slate-400 italic">
+                                  <span className="text-[10px] text-muted-foreground italic">
                                     Đã khóa
                                   </span>
                                 )
@@ -855,7 +859,7 @@ export function MonthlyInputDialog({
                                   <Lock className="w-3 h-3" /> Khóa sổ
                                 </Button>
                               ) : (
-                                <span className="text-[10px] text-slate-400">
+                                <span className="text-[10px] text-muted-foreground">
                                   —
                                 </span>
                               )}
@@ -944,7 +948,7 @@ export function MonthlyInputDialog({
               placeholder="VD: Điều chỉnh doanh thu phòng theo biên bản kiểm toán quý..."
               className="text-xs"
             />
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-muted-foreground">
               Sau khi mở khóa, người dùng có quyền `revenue.input` có thể chỉnh
               sửa lại số liệu tháng này.
             </p>

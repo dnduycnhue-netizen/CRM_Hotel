@@ -1336,7 +1336,7 @@ export function CheckInForm({
                               <Icon className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
                               <span>{ch.label}</span>
                             </div>
-                            <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                            <p className="text-[10px] text-muted-foreground truncate mt-0.5">
                               {ch.desc}
                             </p>
                           </div>

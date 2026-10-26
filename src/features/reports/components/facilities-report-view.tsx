@@ -221,7 +221,7 @@ export function FacilitiesReportView({
       </div>
 
       {!curr ? (
-        <div className="p-12 text-center rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400">
+        <div className="p-12 text-center rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 text-muted-foreground">
           Chưa có dữ liệu cơ sở vật chất cho khoảng thời gian đã chọn.
         </div>
       ) : (
@@ -242,7 +242,7 @@ export function FacilitiesReportView({
                 <span className="text-3xl font-extrabold text-slate-900 dark:text-slate-100">
                   {curr.created}
                 </span>
-                <span className="text-xs text-slate-400">phiếu</span>
+                <span className="text-xs text-muted-foreground">phiếu</span>
               </div>
               <div className="mt-3 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-2.5">
                 <span title="Bao gồm các phiếu sự cố có trạng thái Hoàn thành hoặc Đã đóng">
@@ -297,8 +297,10 @@ export function FacilitiesReportView({
                     ? `${curr.avg_resolve_hours}`
                     : "—"}
                 </span>
-                <span className="text-xs text-slate-400">
-                  {curr.avg_resolve_hours != null ? "giờ / sự cố" : "chưa có phát sinh"}
+                <span className="text-xs text-muted-foreground">
+                  {curr.avg_resolve_hours != null
+                    ? "giờ / sự cố"
+                    : "chưa có phát sinh"}
                 </span>
               </div>
               <div className="mt-3 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-2.5">
@@ -342,14 +344,16 @@ export function FacilitiesReportView({
                     ? `${curr.pm_on_time_rate}%`
                     : "—"}
                 </span>
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-muted-foreground">
                   {curr.pm_due > 0 ? "đúng hạn" : "không có kỳ hạn"}
                 </span>
               </div>
               <div className="mt-3 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-2.5">
                 <span>Kế hoạch tới hạn kỳ này:</span>
                 <span className="font-bold text-slate-700 dark:text-slate-300">
-                  {curr.pm_due > 0 ? `${curr.pm_due} lượt` : "Không có kế hoạch tới hạn"}
+                  {curr.pm_due > 0
+                    ? `${curr.pm_due} lượt`
+                    : "Không có kế hoạch tới hạn"}
                 </span>
               </div>
             </div>
@@ -368,7 +372,7 @@ export function FacilitiesReportView({
                 <span className="text-3xl font-extrabold text-rose-600 dark:text-rose-400">
                   {curr.blocked_room_nights}
                 </span>
-                <span className="text-xs text-slate-400">đêm phòng</span>
+                <span className="text-xs text-muted-foreground">đêm phòng</span>
               </div>
               <div className="mt-3 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-2.5">
                 <span>Tác động tới doanh thu tiềm năng</span>
@@ -384,7 +388,7 @@ export function FacilitiesReportView({
                   <Layers className="w-5 h-5 text-indigo-600" />
                   Cơ cấu sự cố & Chi phí bảo trì theo Phân loại thiết bị
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Chi tiết tỷ trọng số lượng hư hỏng và chi phí phát sinh thực
                   tế
                 </p>
@@ -406,7 +410,7 @@ export function FacilitiesReportView({
                     <tr>
                       <td
                         colSpan={4}
-                        className="py-8 text-center text-slate-400 text-xs"
+                        className="py-8 text-center text-muted-foreground text-xs"
                       >
                         Chưa có sự cố nào phát sinh theo danh mục trong kỳ này.
                       </td>

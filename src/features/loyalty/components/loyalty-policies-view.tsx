@@ -479,7 +479,7 @@ export function LoyaltyPoliciesView({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Policies Timeline / Cards */}
         <div className="lg:col-span-4 space-y-3">
-          <div className="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">
+          <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
             Danh sách chính sách ({filteredPolicies.length})
           </div>
 
@@ -531,7 +531,7 @@ export function LoyaltyPoliciesView({
 
                   <div className="mt-2.5 space-y-1 text-xs text-slate-500 dark:text-slate-400">
                     <div className="flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <Calendar className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                       <span>
                         Từ {p.validFrom}
                         {p.validTo ? ` đến ${p.validTo}` : " (không thời hạn)"}
@@ -539,7 +539,7 @@ export function LoyaltyPoliciesView({
                     </div>
 
                     <div className="flex items-center gap-1.5">
-                      <Layers className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <Layers className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                       <span>
                         Tính theo{" "}
                         <strong className="text-slate-700 dark:text-slate-300">
@@ -646,7 +646,9 @@ export function LoyaltyPoliciesView({
               {/* Policy Rules Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 text-xs">
                 <div>
-                  <div className="text-slate-400 font-medium">Cơ sở tính</div>
+                  <div className="text-muted-foreground font-medium">
+                    Cơ sở tính
+                  </div>
                   <div className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">
                     {selectedPolicy.basis === "stays"
                       ? "Số lượt ở"
@@ -655,7 +657,7 @@ export function LoyaltyPoliciesView({
                 </div>
 
                 <div>
-                  <div className="text-slate-400 font-medium">
+                  <div className="text-muted-foreground font-medium">
                     Cửa sổ tích lũy
                   </div>
                   <div className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">
@@ -666,7 +668,7 @@ export function LoyaltyPoliciesView({
                 </div>
 
                 <div>
-                  <div className="text-slate-400 font-medium">
+                  <div className="text-muted-foreground font-medium">
                     Tính lượt đang ở
                   </div>
                   <div className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">
@@ -677,7 +679,7 @@ export function LoyaltyPoliciesView({
                 </div>
 
                 <div>
-                  <div className="text-slate-400 font-medium">
+                  <div className="text-muted-foreground font-medium">
                     Mặc định người đi cùng
                   </div>
                   <div className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">
@@ -755,7 +757,7 @@ export function LoyaltyPoliciesView({
                             <span className="font-semibold text-slate-800 dark:text-slate-200">
                               ≥ {t.minValue}
                             </span>{" "}
-                            <span className="text-slate-400">
+                            <span className="text-muted-foreground">
                               {selectedPolicy.basis === "stays"
                                 ? "lượt"
                                 : "đêm"}
@@ -776,7 +778,7 @@ export function LoyaltyPoliciesView({
                                   <button
                                     type="button"
                                     onClick={() => handleOpenEditTier(t)}
-                                    className="p-1 rounded-md text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                                    className="p-1 rounded-md text-muted-foreground hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                                     title="Chỉnh sửa hạng"
                                   >
                                     <Edit2 className="w-3.5 h-3.5" />
@@ -786,7 +788,7 @@ export function LoyaltyPoliciesView({
                                     onClick={() =>
                                       t.id && handleDeleteTier(t.id)
                                     }
-                                    className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                                    className="p-1 rounded-md text-muted-foreground hover:text-rose-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                                     title="Xóa hạng"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
@@ -802,7 +804,7 @@ export function LoyaltyPoliciesView({
               </div>
             </div>
           ) : (
-            <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400">
+            <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-muted-foreground">
               Chưa có chính sách nào được chọn.
             </div>
           )}
@@ -820,7 +822,7 @@ export function LoyaltyPoliciesView({
               <button
                 type="button"
                 onClick={() => setShowPolicyFormModal(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-muted-foreground hover:text-slate-600"
               >
                 ✕
               </button>
@@ -922,7 +924,7 @@ export function LoyaltyPoliciesView({
                     }
                     className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 disabled:opacity-50"
                   />
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[10px] text-muted-foreground">
                     0 = tích lũy trọn đời
                   </span>
                 </div>
@@ -1017,7 +1019,7 @@ export function LoyaltyPoliciesView({
               <button
                 type="button"
                 onClick={() => setShowTierModal(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-muted-foreground hover:text-slate-600"
               >
                 ✕
               </button>
@@ -1203,7 +1205,7 @@ export function LoyaltyPoliciesView({
               <button
                 type="button"
                 onClick={() => setShowCloneModal(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-muted-foreground hover:text-slate-600"
               >
                 ✕
               </button>
@@ -1275,14 +1277,14 @@ export function LoyaltyPoliciesView({
               <button
                 type="button"
                 onClick={() => setShowPreviewModal(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-muted-foreground hover:text-slate-600"
               >
                 ✕
               </button>
             </div>
 
             {isPreviewLoading ? (
-              <div className="py-12 flex flex-col items-center justify-center gap-2 text-slate-400">
+              <div className="py-12 flex flex-col items-center justify-center gap-2 text-muted-foreground">
                 <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
                 <span className="text-xs">
                   Đang đánh giá toàn bộ tập khách hàng...
@@ -1322,7 +1324,7 @@ export function LoyaltyPoliciesView({
                 </div>
 
                 <div className="space-y-2">
-                  <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     Phân bố khách hàng theo hạng mới
                   </div>
                   <div className="space-y-1.5 text-xs">
@@ -1341,7 +1343,7 @@ export function LoyaltyPoliciesView({
                             <span className="font-semibold text-slate-800 dark:text-slate-200">
                               {t.name}
                             </span>
-                            <span className="text-[10px] text-slate-400 font-mono">
+                            <span className="text-[10px] text-muted-foreground font-mono">
                               ({t.code})
                             </span>
                           </div>
@@ -1354,7 +1356,7 @@ export function LoyaltyPoliciesView({
                   </div>
                 </div>
 
-                <div className="text-[11px] text-slate-400 text-center pt-2">
+                <div className="text-[11px] text-muted-foreground text-center pt-2">
                   Tổng số hồ sơ khách được quét: {previewResult.totalGuests}
                 </div>
               </div>

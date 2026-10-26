@@ -238,9 +238,20 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
+// Mục menu đang mở = mục có đường dẫn KHỚP DÀI NHẤT với URL hiện tại. Nếu chỉ dùng
+// startsWith thì /reports/monthly làm sáng cả "Công suất & Khách" lẫn "Doanh thu".
+const ALL_NAV_HREFS = NAV_GROUPS.flatMap((g) => g.items.map((i) => i.href));
+
+function findActiveHref(pathname: string): string | undefined {
+  return ALL_NAV_HREFS.filter(
+    (href) => pathname === href || pathname.startsWith(`${href}/`),
+  ).sort((a, b) => b.length - a.length)[0];
+}
+
 export function AppSidebar() {
   const pathname = usePathname();
   const can = useCan();
+  const activeHref = findActiveHref(pathname);
 
   return (
     <aside className="w-64 shrink-0 border-r border-border/60 bg-card/90 backdrop-blur-xl flex flex-col h-screen sticky top-0 z-20 shadow-sm transition-all select-none">
@@ -283,9 +294,7 @@ export function AppSidebar() {
               </p>
               <div className="space-y-0.5 pt-1">
                 {visibleItems.map((item) => {
-                  const isActive =
-                    pathname === item.href ||
-                    (item.href !== "/" && pathname.startsWith(`${item.href}/`));
+                  const isActive = item.href === activeHref;
                   const Icon = item.icon;
                   return (
                     <Link

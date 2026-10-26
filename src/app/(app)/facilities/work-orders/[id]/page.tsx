@@ -59,7 +59,7 @@ export default async function WorkOrderDetailPage({ params }: PageProps) {
             </Button>
           </Link>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-sm font-bold text-slate-400">
+            <span className="font-mono text-sm font-bold text-muted-foreground">
               #{wo.number}
             </span>
             <h1 className="text-xl font-bold tracking-tight text-foreground truncate">

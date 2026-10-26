@@ -45,14 +45,16 @@ export function WorkflowVisualizer() {
                 }}
                 className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 border ${
                   isActive
-                    ? "bg-amber-500/15 text-amber-300 border-amber-500/40 shadow-sm shadow-amber-500/10"
+                    ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40 shadow-sm shadow-amber-500/10"
                     : "bg-card/60 text-muted-foreground border-border/50 hover:bg-muted/40 hover:text-foreground"
                 }`}
               >
                 <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground">
                   {wf.code}
                 </span>
-                <span>{wf.title.split(":")[1] || wf.title}</span>
+                <span className="text-left leading-snug max-w-[260px]">
+                  {wf.title}
+                </span>
               </button>
             );
           })}
@@ -77,7 +79,7 @@ export function WorkflowVisualizer() {
             <div className="flex items-center gap-2 mb-1">
               <Badge
                 variant="outline"
-                className="bg-amber-500/20 text-amber-300 border-amber-500/30 text-xs font-mono"
+                className="bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30 text-xs font-mono"
               >
                 {activeWf.code}
               </Badge>
@@ -107,7 +109,7 @@ export function WorkflowVisualizer() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+            <Sparkles className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400" />
             Sơ đồ luồng xử lý từng bước (Click vào bước để xem hướng dẫn chi
             tiết)
           </h3>
@@ -157,7 +159,7 @@ export function WorkflowVisualizer() {
 
                     <Link
                       href={node.screen.split(" ")[0]}
-                      className="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-0.5 hover:underline"
+                      className="text-[10px] text-amber-700 dark:text-amber-400 hover:text-amber-800 flex items-center gap-0.5 hover:underline"
                     >
                       <span>Màn hình</span>
                       <ExternalLink className="h-2.5 w-2.5" />
@@ -189,7 +191,7 @@ export function WorkflowVisualizer() {
                     className="cursor-pointer"
                   >
                     {isSelected ? (
-                      <span className="text-amber-400 font-semibold flex items-center gap-1">
+                      <span className="text-amber-700 dark:text-amber-400 font-semibold flex items-center gap-1">
                         <CheckCircle2 className="h-3 w-3" />
                         Đang xem
                       </span>
@@ -228,14 +230,14 @@ export function WorkflowVisualizer() {
                           </h3>
                           <Badge
                             variant="outline"
-                            className="bg-amber-500/10 text-amber-300 border-amber-500/30 text-xs"
+                            className="bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 text-xs"
                           >
                             Thực hiện: {node.role}
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5">
                           Màn hình thao tác:{" "}
-                          <span className="font-mono text-amber-300/90 font-medium">
+                          <span className="font-mono text-amber-700 dark:text-amber-300/90 font-medium">
                             {node.screen}
                           </span>
                         </p>
@@ -282,12 +284,12 @@ export function WorkflowVisualizer() {
                   {/* Caution Alert if any */}
                   {node.caution && (
                     <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 flex items-start gap-3">
-                      <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0 mt-0.5" />
+                      <AlertTriangle className="h-4 w-4 text-rose-700 dark:text-rose-400 shrink-0 mt-0.5" />
                       <div>
-                        <div className="text-xs font-bold text-rose-300">
+                        <div className="text-xs font-bold text-rose-700 dark:text-rose-300">
                           Lưu ý kiểm soát rủi ro & bảo mật:
                         </div>
-                        <p className="text-xs text-rose-200/90 mt-0.5 leading-relaxed">
+                        <p className="text-xs text-rose-700 dark:text-rose-200/90 mt-0.5 leading-relaxed">
                           {node.caution}
                         </p>
                       </div>

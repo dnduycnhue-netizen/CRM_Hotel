@@ -219,7 +219,9 @@ export function InHouseTable({
               {inHouseCount}
             </span>
             <span className="text-xs text-muted-foreground font-medium">
-              phòng đang ở {activeStayList.length > inHouseCount && `(tổng ${activeStayList.length} lượt)`}
+              phòng đang ở{" "}
+              {activeStayList.length > inHouseCount &&
+                `(tổng ${activeStayList.length} lượt)`}
             </span>
           </div>
           <div className="mt-2 h-1 w-full bg-blue-500/20 rounded-full overflow-hidden">
@@ -333,15 +335,24 @@ export function InHouseTable({
                 value={statusFilter}
                 onChange={(e) =>
                   setStatusFilter(
-                    e.target.value as "all" | "in_house" | "overdue" | "checked_out" | "cancelled",
+                    e.target.value as
+                      | "all"
+                      | "in_house"
+                      | "overdue"
+                      | "checked_out"
+                      | "cancelled",
                   )
                 }
                 className="h-8.5 text-xs rounded-lg border border-input bg-background px-2.5 shadow-xs focus:outline-none focus:ring-1 focus:ring-ring text-muted-foreground font-medium"
               >
-                <option value="all">Tất cả trạng thái ({activeStayList.length})</option>
+                <option value="all">
+                  Tất cả trạng thái ({activeStayList.length})
+                </option>
                 <option value="in_house">Đang ở ({inHouseCount})</option>
                 <option value="overdue">Quá hạn trả ({overdueCount})</option>
-                <option value="checked_out">Đã trả phòng ({checkedOutCount})</option>
+                <option value="checked_out">
+                  Đã trả phòng ({checkedOutCount})
+                </option>
                 <option value="cancelled">Đã hủy ({cancelledCount})</option>
               </select>
 
@@ -535,7 +546,7 @@ export function InHouseTable({
                       ) : s.isOverdue ? (
                         <Badge
                           variant="destructive"
-                          className="text-[10px] animate-pulse"
+                          className="text-[10px] font-semibold border border-destructive/30"
                         >
                           Quá hạn trả
                         </Badge>
@@ -552,7 +563,9 @@ export function InHouseTable({
                     <TableCell className="text-right">
                       {s.status === "checked_out" ? (
                         <span className="text-[11px] text-muted-foreground italic font-mono">
-                          {s.checkedOutAt ? `Trả: ${formatDateTimeVN(s.checkedOutAt)}` : "Đã thanh toán"}
+                          {s.checkedOutAt
+                            ? `Trả: ${formatDateTimeVN(s.checkedOutAt)}`
+                            : "Đã thanh toán"}
                         </span>
                       ) : s.status === "cancelled" ? (
                         <span className="text-[11px] text-rose-500/80 italic font-mono">

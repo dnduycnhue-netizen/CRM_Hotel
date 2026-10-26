@@ -128,10 +128,12 @@ export function ComplianceManager({
 
   const displayBranches = useMemo(() => {
     const branchMap = new Map<string, { id: string; name: string }>();
-    branches.forEach((b) => branchMap.set(b.id, { id: b.id, name: b.name }));
-    matrix.branches.forEach((b) =>
-      branchMap.set(b.id, { id: b.id, name: b.name }),
-    );
+    for (const b of branches) {
+      branchMap.set(b.id, { id: b.id, name: b.name });
+    }
+    for (const b of matrix.branches) {
+      branchMap.set(b.id, { id: b.id, name: b.name });
+    }
     return Array.from(branchMap.values()).filter(
       (b) => selectedBranch === "all" || b.id === selectedBranch,
     );
@@ -371,65 +373,65 @@ export function ComplianceManager({
     <div className="space-y-6">
       {/* Top Statistical Counters */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between shadow-sm">
+        <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between shadow-sm">
           <div>
-            <p className="text-xs font-medium text-slate-400">
+            <p className="text-xs font-medium text-muted-foreground">
               Tổng số hồ sơ hiện có
             </p>
-            <p className="text-2xl font-bold text-slate-100 mt-1">
+            <p className="text-2xl font-bold text-foreground mt-1">
               {scopedCells.length}
             </p>
           </div>
-          <span className="p-3 rounded-xl bg-slate-800 text-slate-300">
+          <span className="p-3 rounded-xl bg-muted text-foreground/80">
             <FileText className="w-5 h-5" />
           </span>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between shadow-sm">
+        <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between shadow-sm">
           <div>
-            <p className="text-xs font-medium text-rose-400">
+            <p className="text-xs font-medium text-rose-700 dark:text-rose-400">
               Đã hết hạn định kỳ
             </p>
-            <p className="text-2xl font-bold text-rose-400 mt-1">
+            <p className="text-2xl font-bold text-rose-700 dark:text-rose-400 mt-1">
               {expiredCount}
             </p>
           </div>
-          <span className="p-3 rounded-xl bg-rose-500/10 text-rose-400">
+          <span className="p-3 rounded-xl bg-rose-500/10 text-rose-700 dark:text-rose-400">
             <AlertCircle className="w-5 h-5" />
           </span>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between shadow-sm">
+        <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between shadow-sm">
           <div>
-            <p className="text-xs font-medium text-amber-400">
+            <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
               Sắp hết hạn (≤ 30-60 ngày)
             </p>
-            <p className="text-2xl font-bold text-amber-400 mt-1">
+            <p className="text-2xl font-bold text-amber-700 dark:text-amber-400 mt-1">
               {expiringCount}
             </p>
           </div>
-          <span className="p-3 rounded-xl bg-amber-500/10 text-amber-400">
+          <span className="p-3 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400">
             <Clock className="w-5 h-5" />
           </span>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between shadow-sm">
+        <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between shadow-sm">
           <div>
-            <p className="text-xs font-medium text-emerald-400">
+            <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
               Hợp lệ & Còn hạn tốt
             </p>
-            <p className="text-2xl font-bold text-emerald-400 mt-1">
+            <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400 mt-1">
               {goodCount}
             </p>
           </div>
-          <span className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400">
+          <span className="p-3 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
             <CheckCircle2 className="w-5 h-5" />
           </span>
         </div>
       </div>
 
       {/* View Switcher & Action Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-b border-slate-800 pb-3">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-b border-border pb-3">
         {/* View Tabs */}
         <div className="flex space-x-6">
           <button
@@ -437,8 +439,8 @@ export function ComplianceManager({
             onClick={() => setActiveView("matrix")}
             className={`pb-2 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
               activeView === "matrix"
-                ? "border-indigo-500 text-indigo-400"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                ? "border-indigo-500 text-indigo-700 dark:text-indigo-400"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <LayoutGrid className="w-4 h-4" />
@@ -450,8 +452,8 @@ export function ComplianceManager({
             onClick={() => setActiveView("list")}
             className={`pb-2 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
               activeView === "list"
-                ? "border-indigo-500 text-indigo-400"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                ? "border-indigo-500 text-indigo-700 dark:text-indigo-400"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <ListFilter className="w-4 h-4" />
@@ -473,8 +475,8 @@ export function ComplianceManager({
           )}
 
           {branches.length === 1 ? (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-xs font-medium text-slate-200">
-              <Building2 className="w-3.5 h-3.5 text-indigo-400" />
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/80 border border-border/60 text-xs font-medium text-foreground">
+              <Building2 className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" />
               <span>{branches[0]?.name}</span>
             </div>
           ) : (
@@ -482,7 +484,7 @@ export function ComplianceManager({
               <select
                 value={selectedBranch}
                 onChange={(e) => setSelectedBranch(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full bg-muted/40 border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground outline-none focus:ring-1 focus:ring-indigo-500"
               >
                 <option value="all">Tất cả {branches.length} cơ sở</option>
                 {branches.map((b) => (
@@ -498,137 +500,136 @@ export function ComplianceManager({
 
       {/* VIEW 1: MATRIX VIEW (CƠ SỞ x LOẠI HỒ SƠ) */}
       {activeView === "matrix" ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-950/80 text-slate-400">
-                  <th className="py-3 px-4 font-bold uppercase tracking-wider sticky left-0 bg-slate-950 z-10 w-48 border-r border-slate-800">
+                <tr className="border-b border-border bg-muted/40 text-muted-foreground">
+                  <th className="py-3 px-4 font-bold uppercase tracking-wider sticky left-0 bg-muted/40 z-10 w-48 border-r border-border">
                     Cơ sở / Loại hồ sơ
                   </th>
                   {matrix.doc_types.map((dt) => (
                     <th
                       key={dt.id}
-                      className="py-3 px-3 font-semibold text-center min-w-[140px] max-w-[170px] border-r border-slate-800/60"
+                      className="py-3 px-3 font-semibold text-center min-w-[140px] max-w-[170px] border-r border-border/60"
                       title={dt.name}
                     >
-                      <span className="block truncate text-slate-200">
+                      <span className="block truncate text-foreground">
                         {dt.name}
                       </span>
-                      <span className="text-[10px] text-slate-500 font-normal">
+                      <span className="text-[10px] text-muted-foreground font-normal">
                         Báo trước {dt.remind_days} ngày
                       </span>
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/80">
+              <tbody className="divide-y divide-border/80">
                 {displayBranches.map((b) => (
                   <tr
                     key={b.id}
-                    className="hover:bg-slate-800/30 transition-colors"
+                    className="hover:bg-muted/50 transition-colors"
                   >
-                      {/* Branch Name sticky column */}
-                      <td className="py-3 px-4 font-semibold text-slate-100 sticky left-0 bg-slate-900 z-10 border-r border-slate-800 whitespace-nowrap">
-                        <div className="flex items-center gap-1.5">
-                          <Building2 className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                          <span>{b.name}</span>
-                        </div>
-                      </td>
+                    {/* Branch Name sticky column */}
+                    <td className="py-3 px-4 font-semibold text-foreground sticky left-0 bg-card z-10 border-r border-border whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        <Building2 className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400 shrink-0" />
+                        <span>{b.name}</span>
+                      </div>
+                    </td>
 
-                      {/* Matrix cells for each doc type */}
-                      {matrix.doc_types.map((dt) => {
-                        const cell = matrix.cells.find(
-                          (c) =>
-                            c.branch_id === b.id && c.doc_type_id === dt.id,
-                        );
+                    {/* Matrix cells for each doc type */}
+                    {matrix.doc_types.map((dt) => {
+                      const cell = matrix.cells.find(
+                        (c) => c.branch_id === b.id && c.doc_type_id === dt.id,
+                      );
 
-                        if (!cell || !cell.doc_id) {
-                          // Missing document
-                          return (
-                            <td
-                              key={dt.id}
-                              className="py-2.5 px-2 text-center border-r border-slate-800/60"
-                            >
-                              {canManage ? (
-                                <button
-                                  type="button"
-                                  onClick={() => openCreateModal(b.id, dt.id)}
-                                  className="w-full py-2 px-1 rounded-lg border border-dashed border-slate-800 hover:border-indigo-500/50 hover:bg-indigo-500/5 text-slate-600 hover:text-indigo-400 transition-all text-[11px] flex flex-col items-center justify-center gap-0.5"
-                                  title="Chưa có hồ sơ. Bấm để thêm mới"
-                                >
-                                  <Plus className="w-3 h-3" />
-                                  <span>Bổ sung</span>
-                                </button>
-                              ) : (
-                                <span className="text-slate-600 text-xs">
-                                  -
-                                </span>
-                              )}
-                            </td>
-                          );
-                        }
-
-                        // Status styling
-                        const isExpired = cell.status === "expired";
-                        const isExpiring = cell.status === "expiring";
-
+                      if (!cell || !cell.doc_id) {
+                        // Missing document
                         return (
                           <td
                             key={dt.id}
-                            className="py-2.5 px-2 text-center border-r border-slate-800/60"
+                            className="py-2.5 px-2 text-center border-r border-border/60"
                           >
-                            <button
-                              type="button"
-                              onClick={() => setQuickViewCell(cell)}
-                              className={`w-full p-2 rounded-xl border text-left transition-all shadow-xs hover:scale-[1.02] flex flex-col justify-between min-h-[64px] ${
-                                isExpired
-                                  ? "bg-rose-950/25 border-rose-500/40 text-rose-300 hover:border-rose-400"
-                                  : isExpiring
-                                    ? "bg-amber-950/25 border-amber-500/40 text-amber-300 hover:border-amber-400"
-                                    : "bg-emerald-950/20 border-emerald-500/30 text-emerald-300 hover:border-emerald-400"
-                              }`}
-                            >
-                              <div className="flex items-center justify-between gap-1 w-full">
-                                <span className="font-bold text-[11px] truncate block text-slate-200">
-                                  {cell.number || "Đã cấp phép"}
-                                </span>
-                                {isExpired ? (
-                                  <AlertCircle className="w-3 h-3 text-rose-400 shrink-0" />
-                                ) : isExpiring ? (
-                                  <Clock className="w-3 h-3 text-amber-400 shrink-0" />
-                                ) : (
-                                  <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                                )}
-                              </div>
-
-                              <div className="text-[10px] mt-1 space-y-0.5">
-                                {cell.expires_on ? (
-                                  <div
-                                    className={`font-semibold ${
-                                      isExpired
-                                        ? "text-rose-400"
-                                        : isExpiring
-                                          ? "text-amber-400"
-                                          : "text-emerald-400"
-                                    }`}
-                                  >
-                                    {isExpired
-                                      ? `Quá hạn ${Math.abs(cell.days_remaining || 0)} ngày`
-                                      : `Còn ${cell.days_remaining} ngày`}
-                                  </div>
-                                ) : (
-                                  <span className="text-slate-400">
-                                    Vô thời hạn
-                                  </span>
-                                )}
-                              </div>
-                            </button>
+                            {canManage ? (
+                              <button
+                                type="button"
+                                onClick={() => openCreateModal(b.id, dt.id)}
+                                className="w-full py-2 px-1 rounded-lg border border-dashed border-border hover:border-indigo-500/50 hover:bg-indigo-500/5 text-muted-foreground hover:text-indigo-800 transition-all text-[11px] flex flex-col items-center justify-center gap-0.5"
+                                title="Chưa có hồ sơ. Bấm để thêm mới"
+                              >
+                                <Plus className="w-3 h-3" />
+                                <span>Bổ sung</span>
+                              </button>
+                            ) : (
+                              <span className="text-muted-foreground text-xs">
+                                -
+                              </span>
+                            )}
                           </td>
                         );
-                      })}
-                    </tr>
-                  ))}
+                      }
+
+                      // Status styling
+                      const isExpired = cell.status === "expired";
+                      const isExpiring = cell.status === "expiring";
+
+                      return (
+                        <td
+                          key={dt.id}
+                          className="py-2.5 px-2 text-center border-r border-border/60"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => setQuickViewCell(cell)}
+                            className={`w-full p-2 rounded-xl border text-left transition-all shadow-xs hover:scale-[1.02] flex flex-col justify-between min-h-[64px] ${
+                              isExpired
+                                ? "bg-rose-950/25 border-rose-500/40 text-rose-700 dark:text-rose-300 hover:border-rose-400"
+                                : isExpiring
+                                  ? "bg-amber-950/25 border-amber-500/40 text-amber-700 dark:text-amber-300 hover:border-amber-400"
+                                  : "bg-emerald-950/20 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:border-emerald-400"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-1 w-full">
+                              <span className="font-bold text-[11px] truncate block text-foreground">
+                                {cell.number || "Đã cấp phép"}
+                              </span>
+                              {isExpired ? (
+                                <AlertCircle className="w-3 h-3 text-rose-700 dark:text-rose-400 shrink-0" />
+                              ) : isExpiring ? (
+                                <Clock className="w-3 h-3 text-amber-700 dark:text-amber-400 shrink-0" />
+                              ) : (
+                                <CheckCircle2 className="w-3 h-3 text-emerald-700 dark:text-emerald-400 shrink-0" />
+                              )}
+                            </div>
+
+                            <div className="text-[10px] mt-1 space-y-0.5">
+                              {cell.expires_on ? (
+                                <div
+                                  className={`font-semibold ${
+                                    isExpired
+                                      ? "text-rose-700 dark:text-rose-400"
+                                      : isExpiring
+                                        ? "text-amber-700 dark:text-amber-400"
+                                        : "text-emerald-700 dark:text-emerald-400"
+                                  }`}
+                                >
+                                  {isExpired
+                                    ? `Quá hạn ${Math.abs(cell.days_remaining || 0)} ngày`
+                                    : `Còn ${cell.days_remaining} ngày`}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">
+                                  Vô thời hạn
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -637,15 +638,15 @@ export function ComplianceManager({
         /* VIEW 2: LIST VIEW (BẢNG TÌM KIẾM CHI TIẾT) */
         <div className="space-y-4">
           {/* Filters Bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-slate-900 border border-slate-800 rounded-xl p-3">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-card border border-border rounded-xl p-3">
             <div className="relative sm:col-span-2">
-              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Tìm theo số hiệu, cơ quan cấp, loại hồ sơ..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-indigo-500"
+                className="w-full bg-muted/40 border border-border rounded-lg pl-9 pr-3 py-1.5 text-xs text-foreground placeholder-muted-foreground outline-none focus:border-indigo-500"
               />
             </div>
 
@@ -653,7 +654,7 @@ export function ComplianceManager({
               <select
                 value={selectedDocType}
                 onChange={(e) => setSelectedDocType(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none"
+                className="w-full bg-muted/40 border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground outline-none"
               >
                 <option value="all">Tất cả loại hồ sơ</option>
                 {docTypes.map((dt) => (
@@ -668,7 +669,7 @@ export function ComplianceManager({
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none"
+                className="w-full bg-muted/40 border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground outline-none"
               >
                 <option value="all">Tất cả trạng thái</option>
                 <option value="expired">Đã hết hạn</option>
@@ -679,11 +680,11 @@ export function ComplianceManager({
           </div>
 
           {/* List Table */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+          <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-800 bg-slate-950/60 text-xs uppercase text-slate-400">
+                  <tr className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                     <th className="py-3 px-4">Cơ sở</th>
                     <th className="py-3 px-4">Loại hồ sơ</th>
                     <th className="py-3 px-4">Số văn bản & Cơ quan cấp</th>
@@ -694,12 +695,12 @@ export function ComplianceManager({
                     <th className="py-3 px-4 text-right">Thao tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60">
+                <tbody className="divide-y divide-border/60">
                   {filteredDocs.length === 0 ? (
                     <tr>
                       <td
                         colSpan={8}
-                        className="py-12 text-center text-slate-500 text-xs"
+                        className="py-12 text-center text-muted-foreground text-xs"
                       >
                         Không tìm thấy hồ sơ pháp lý nào phù hợp
                       </td>
@@ -712,47 +713,47 @@ export function ComplianceManager({
                       return (
                         <tr
                           key={doc.id}
-                          className="hover:bg-slate-800/30 transition-colors"
+                          className="hover:bg-muted/50 transition-colors"
                         >
-                          <td className="py-3 px-4 text-xs font-semibold text-slate-200">
+                          <td className="py-3 px-4 text-xs font-semibold text-foreground">
                             {doc.branch_name}
                           </td>
-                          <td className="py-3 px-4 text-xs text-slate-300">
-                            <span className="font-medium text-slate-100">
+                          <td className="py-3 px-4 text-xs text-foreground/80">
+                            <span className="font-medium text-foreground">
                               {doc.doc_type_name}
                             </span>
                             {doc.asset_name && (
-                              <span className="block text-[11px] text-slate-400 mt-0.5">
+                              <span className="block text-[11px] text-muted-foreground mt-0.5">
                                 Thiết bị: {doc.asset_name}
                               </span>
                             )}
                           </td>
-                          <td className="py-3 px-4 text-xs text-slate-200">
-                            <div className="font-semibold text-indigo-300">
+                          <td className="py-3 px-4 text-xs text-foreground">
+                            <div className="font-semibold text-indigo-700 dark:text-indigo-300">
                               {doc.number || "(Chưa có số)"}
                             </div>
                             {doc.issuer && (
-                              <div className="text-[11px] text-slate-400">
+                              <div className="text-[11px] text-muted-foreground">
                                 {doc.issuer}
                               </div>
                             )}
                           </td>
-                          <td className="py-3 px-4 text-xs text-slate-400 whitespace-nowrap">
+                          <td className="py-3 px-4 text-xs text-muted-foreground whitespace-nowrap">
                             {doc.issued_on || "-"}
                           </td>
                           <td className="py-3 px-4 text-xs whitespace-nowrap">
                             {doc.expires_on ? (
                               <div>
-                                <span className="font-medium text-slate-200">
+                                <span className="font-medium text-foreground">
                                   {doc.expires_on}
                                 </span>
                                 <span
                                   className={`block text-[11px] font-semibold ${
                                     isExpired
-                                      ? "text-rose-400"
+                                      ? "text-rose-700 dark:text-rose-400"
                                       : isExpiring
-                                        ? "text-amber-400"
-                                        : "text-emerald-400"
+                                        ? "text-amber-700 dark:text-amber-400"
+                                        : "text-emerald-700 dark:text-emerald-400"
                                   }`}
                                 >
                                   {isExpired
@@ -761,7 +762,7 @@ export function ComplianceManager({
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-slate-400 text-xs">
+                              <span className="text-muted-foreground text-xs">
                                 Vô thời hạn
                               </span>
                             )}
@@ -770,10 +771,10 @@ export function ComplianceManager({
                             <span
                               className={`px-2 py-0.5 rounded text-[11px] font-bold inline-flex items-center gap-1 border ${
                                 isExpired
-                                  ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                                  ? "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20"
                                   : isExpiring
-                                    ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                                    : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                    ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
+                                    : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
                               }`}
                             >
                               {isExpired
@@ -791,18 +792,18 @@ export function ComplianceManager({
                                     key={idx}
                                     type="button"
                                     onClick={() => handleOpenSignedFile(path)}
-                                    className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-400 hover:text-indigo-300"
+                                    className="p-1 rounded bg-muted hover:bg-muted/80 text-indigo-700 dark:text-indigo-400 hover:text-indigo-800"
                                     title={`Tải / Xem file #${idx + 1}`}
                                   >
                                     <Download className="w-3.5 h-3.5" />
                                   </button>
                                 ))}
-                                <span className="text-[11px] text-slate-400">
+                                <span className="text-[11px] text-muted-foreground">
                                   ({doc.file_paths.length})
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-slate-500 text-xs">
+                              <span className="text-muted-foreground text-xs">
                                 Chưa có file
                               </span>
                             )}
@@ -814,7 +815,7 @@ export function ComplianceManager({
                                   variant="outline"
                                   size="sm"
                                   onClick={() => openRenewModal(doc)}
-                                  className="h-7 text-[11px] font-semibold gap-1 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
+                                  className="h-7 text-[11px] font-semibold gap-1 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
                                   title="Gia hạn giấy phép mới (lưu bản cũ vào lịch sử)"
                                 >
                                   <RefreshCw className="w-3 h-3" />
@@ -827,7 +828,7 @@ export function ComplianceManager({
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => openEditModal(doc)}
-                                  className="h-7 px-2 text-indigo-400 hover:text-indigo-300"
+                                  className="h-7 px-2 text-indigo-700 dark:text-indigo-400 hover:text-indigo-800"
                                   title="Sửa thông tin hồ sơ"
                                 >
                                   <Edit2 className="w-3.5 h-3.5" />
@@ -838,7 +839,7 @@ export function ComplianceManager({
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleOpenHistory(doc)}
-                                className="h-7 px-2 text-slate-400 hover:text-slate-200"
+                                className="h-7 px-2 text-muted-foreground hover:text-foreground"
                                 title="Xem lịch sử các lần cấp"
                               >
                                 <History className="w-3.5 h-3.5" />
@@ -866,7 +867,7 @@ export function ComplianceManager({
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
-                  <FileCheck2 className="w-5 h-5 text-indigo-400" />
+                  <FileCheck2 className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
                   <span>
                     {docTypes.find((t) => t.id === quickViewCell.doc_type_id)
                       ?.name || "Hồ sơ pháp lý"}
@@ -879,42 +880,42 @@ export function ComplianceManager({
               </DialogHeader>
 
               <div className="space-y-3 py-2 text-xs">
-                <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-950 border border-slate-800">
+                <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-muted/40 border border-border">
                   <div>
-                    <span className="text-slate-500 block text-[11px]">
+                    <span className="text-muted-foreground block text-[11px]">
                       Số văn bản:
                     </span>
-                    <strong className="text-slate-100 text-sm">
+                    <strong className="text-foreground text-sm">
                       {quickViewCell.number || "Chưa có số"}
                     </strong>
                   </div>
                   <div>
-                    <span className="text-slate-500 block text-[11px]">
+                    <span className="text-muted-foreground block text-[11px]">
                       Cơ quan cấp:
                     </span>
-                    <span className="text-slate-200">
+                    <span className="text-foreground">
                       {quickViewCell.issuer || "Chưa rõ"}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block text-[11px]">
+                    <span className="text-muted-foreground block text-[11px]">
                       Ngày cấp phép:
                     </span>
-                    <span className="text-slate-200">
+                    <span className="text-foreground">
                       {quickViewCell.issued_on || "-"}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block text-[11px]">
+                    <span className="text-muted-foreground block text-[11px]">
                       Ngày hết hạn:
                     </span>
                     <span
                       className={`font-semibold ${
                         quickViewCell.status === "expired"
-                          ? "text-rose-400"
+                          ? "text-rose-700 dark:text-rose-400"
                           : quickViewCell.status === "expiring"
-                            ? "text-amber-400"
-                            : "text-emerald-400"
+                            ? "text-amber-700 dark:text-amber-400"
+                            : "text-emerald-700 dark:text-emerald-400"
                       }`}
                     >
                       {quickViewCell.expires_on || "Vô thời hạn"}
@@ -923,14 +924,16 @@ export function ComplianceManager({
                 </div>
 
                 {quickViewCell.asset_name && (
-                  <p className="text-slate-300">
-                    <span className="text-slate-500">Thiết bị gắn liền:</span>{" "}
+                  <p className="text-foreground/80">
+                    <span className="text-muted-foreground">
+                      Thiết bị gắn liền:
+                    </span>{" "}
                     <strong>{quickViewCell.asset_name}</strong>
                   </p>
                 )}
 
                 {quickViewCell.note && (
-                  <p className="text-slate-400 bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                  <p className="text-muted-foreground bg-muted/40 p-2.5 rounded-lg border border-border">
                     {quickViewCell.note}
                   </p>
                 )}
@@ -939,7 +942,7 @@ export function ComplianceManager({
                 {quickViewCell.file_paths &&
                   quickViewCell.file_paths.length > 0 && (
                     <div className="space-y-1 pt-1">
-                      <span className="text-slate-400 font-semibold block text-[11px]">
+                      <span className="text-muted-foreground font-semibold block text-[11px]">
                         Tệp đính kèm ({quickViewCell.file_paths.length}):
                       </span>
                       <div className="flex flex-wrap gap-2">
@@ -948,7 +951,7 @@ export function ComplianceManager({
                             key={idx}
                             type="button"
                             onClick={() => handleOpenSignedFile(p)}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-400 hover:text-indigo-300 text-xs"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-muted hover:bg-muted/80 text-indigo-700 dark:text-indigo-400 hover:text-indigo-800 text-xs"
                           >
                             <Download className="w-3 h-3" />
                             <span>Tệp #{idx + 1}</span>
@@ -974,7 +977,7 @@ export function ComplianceManager({
                       variant="outline"
                       size="sm"
                       onClick={() => openEditModal(quickViewCell)}
-                      className="h-8 text-xs text-indigo-400 border-indigo-500/30"
+                      className="h-8 text-xs text-indigo-700 dark:text-indigo-400 border-indigo-500/30"
                     >
                       Sửa
                     </Button>
@@ -1000,9 +1003,9 @@ export function ComplianceManager({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {modalMode === "renew" ? (
-                <RefreshCw className="w-5 h-5 text-emerald-400" />
+                <RefreshCw className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
               ) : (
-                <FileCheck2 className="w-5 h-5 text-indigo-400" />
+                <FileCheck2 className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
               )}
               <span>
                 {modalMode === "renew"
@@ -1020,8 +1023,8 @@ export function ComplianceManager({
           </DialogHeader>
 
           {modalMode === "renew" && (
-            <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300 flex items-start gap-2">
-              <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+            <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-300 flex items-start gap-2">
+              <Info className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
               <span>
                 <strong>Quy trình gia hạn an toàn:</strong> Khi bạn lưu, bản ghi
                 mới sẽ có hiệu lực ngay lập tức. Lịch sử các lần cấp trước đó
@@ -1079,7 +1082,7 @@ export function ComplianceManager({
             {/* Asset selector if applies_to === 'asset' */}
             {currentSelectedDocType?.applies_to === "asset" && (
               <div className="space-y-1">
-                <Label className="text-xs font-semibold text-indigo-300">
+                <Label className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">
                   Thiết bị áp dụng kiểm định *
                 </Label>
                 <select
@@ -1139,7 +1142,7 @@ export function ComplianceManager({
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-semibold">Ngày hết hạn</Label>
-                  <label className="flex items-center gap-1.5 text-[11px] text-slate-400 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formNoExpiry}
@@ -1169,7 +1172,7 @@ export function ComplianceManager({
                 Tệp đính kèm (PDF / Ảnh chụp)
               </Label>
               <div className="flex items-center gap-2">
-                <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 text-xs font-medium text-slate-200">
+                <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-medium text-foreground">
                   {isUploading ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   ) : (
@@ -1184,7 +1187,7 @@ export function ComplianceManager({
                     disabled={isUploading}
                   />
                 </label>
-                <span className="text-[11px] text-slate-500">
+                <span className="text-[11px] text-muted-foreground">
                   Tối đa 15MB (.pdf, .png, .jpg)
                 </span>
               </div>
@@ -1194,9 +1197,9 @@ export function ComplianceManager({
                   {formFilePaths.map((path, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 text-xs"
+                      className="flex items-center justify-between p-2 rounded-lg bg-muted/40 border border-border text-xs"
                     >
-                      <span className="truncate max-w-[320px] text-slate-300">
+                      <span className="truncate max-w-[320px] text-foreground/80">
                         {path.split("/").pop()}
                       </span>
                       <button
@@ -1206,7 +1209,7 @@ export function ComplianceManager({
                             prev.filter((_, i) => i !== idx),
                           )
                         }
-                        className="p-1 text-rose-400 hover:text-rose-300"
+                        className="p-1 text-rose-700 dark:text-rose-400 hover:text-rose-800"
                         title="Xóa tệp này"
                       >
                         <X className="w-3.5 h-3.5" />
@@ -1267,7 +1270,7 @@ export function ComplianceManager({
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
-                  <History className="w-5 h-5 text-indigo-400" />
+                  <History className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
                   <span>Lịch sử các lần cấp phép & Gia hạn</span>
                 </DialogTitle>
                 <DialogDescription className="text-xs">
@@ -1280,21 +1283,21 @@ export function ComplianceManager({
                 {/* Current Active Doc */}
                 <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/30 text-xs space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-emerald-400 text-xs">
+                    <span className="font-bold text-emerald-700 dark:text-emerald-400 text-xs">
                       Bản ghi hiện hành (Đang áp dụng)
                     </span>
-                    <span className="text-[10px] text-slate-400">
+                    <span className="text-[10px] text-muted-foreground">
                       Cấp: {viewingHistoryDoc.issued_on || "-"}
                     </span>
                   </div>
-                  <p className="font-semibold text-slate-100">
+                  <p className="font-semibold text-foreground">
                     Số: {viewingHistoryDoc.number || "Chưa có số"}
                   </p>
-                  <p className="text-slate-300">
+                  <p className="text-foreground/80">
                     Hạn: {viewingHistoryDoc.expires_on || "Vô thời hạn"}
                   </p>
                   {viewingHistoryDoc.issuer && (
-                    <p className="text-slate-400">
+                    <p className="text-muted-foreground">
                       Cơ quan: {viewingHistoryDoc.issuer}
                     </p>
                   )}
@@ -1302,46 +1305,46 @@ export function ComplianceManager({
 
                 {/* History list */}
                 {loadingHistory ? (
-                  <div className="py-8 text-center text-slate-500 text-xs flex items-center justify-center gap-2">
+                  <div className="py-8 text-center text-muted-foreground text-xs flex items-center justify-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span>Đang tải lịch sử...</span>
                   </div>
                 ) : historyItems.length === 0 ? (
-                  <p className="text-xs text-slate-500 text-center py-6">
+                  <p className="text-xs text-muted-foreground text-center py-6">
                     Chưa có lịch sử các lần cấp phép trước đó
                   </p>
                 ) : (
                   <div className="space-y-2 pt-1">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
                       Các lần cấp phép trước ({historyItems.length}):
                     </span>
                     {historyItems.map((old, idx) => (
                       <div
                         key={old.id || idx}
-                        className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-1 text-slate-300"
+                        className="p-3 rounded-xl bg-muted/40 border border-border text-xs space-y-1 text-foreground/80"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-slate-200">
+                          <span className="font-semibold text-foreground">
                             Số: {old.number || "Không có số"}
                           </span>
-                          <span className="text-[10px] text-slate-500">
+                          <span className="text-[10px] text-muted-foreground">
                             Lưu trữ:{" "}
                             {new Date(old.created_at).toLocaleDateString(
                               "vi-VN",
                             )}
                           </span>
                         </div>
-                        <div className="grid grid-cols-2 gap-1 text-[11px] text-slate-400">
+                        <div className="grid grid-cols-2 gap-1 text-[11px] text-muted-foreground">
                           <span>Ngày cấp: {old.issued_on || "-"}</span>
                           <span>Hạn: {old.expires_on || "Vô thời hạn"}</span>
                         </div>
                         {old.issuer && (
-                          <p className="text-[11px] text-slate-400">
+                          <p className="text-[11px] text-muted-foreground">
                             Cơ quan cấp: {old.issuer}
                           </p>
                         )}
                         {old.note && (
-                          <p className="text-[11px] text-slate-500 italic">
+                          <p className="text-[11px] text-muted-foreground italic">
                             Ghi chú: {old.note}
                           </p>
                         )}
@@ -1352,7 +1355,7 @@ export function ComplianceManager({
                                 key={fileIdx}
                                 type="button"
                                 onClick={() => handleOpenSignedFile(p)}
-                                className="text-[11px] text-indigo-400 hover:underline flex items-center gap-1"
+                                className="text-[11px] text-indigo-700 dark:text-indigo-400 hover:underline flex items-center gap-1"
                               >
                                 <Download className="w-3 h-3" />
                                 <span>Tệp cũ #{fileIdx + 1}</span>

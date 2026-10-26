@@ -160,43 +160,43 @@ export function WorkOrdersTable({
     switch (s) {
       case "new":
         return (
-          <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+          <span className="whitespace-nowrap px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
             Mới tạo
           </span>
         );
       case "assigned":
         return (
-          <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+          <span className="whitespace-nowrap px-2 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
             Đã giao
           </span>
         );
       case "in_progress":
         return (
-          <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">
+          <span className="whitespace-nowrap px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
             Đang xử lý
           </span>
         );
       case "done":
         return (
-          <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <span className="whitespace-nowrap px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
             Chờ nghiệm thu
           </span>
         );
       case "closed":
         return (
-          <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
+          <span className="whitespace-nowrap px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
             Đã đóng
           </span>
         );
       case "cancelled":
         return (
-          <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-600">
+          <span className="whitespace-nowrap px-2 py-0.5 rounded-full text-[11px] font-medium bg-rose-50 text-rose-600">
             Đã hủy
           </span>
         );
       default:
         return (
-          <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
+          <span className="whitespace-nowrap px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
             {s}
           </span>
         );
@@ -229,7 +229,7 @@ export function WorkOrdersTable({
       {/* Filter toolbar */}
       <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2 flex-wrap text-xs">
-          <span className="text-slate-400 font-medium">Cơ sở:</span>
+          <span className="text-muted-foreground font-medium">Cơ sở:</span>
           {branches.length === 1 ? (
             <div
               className="flex items-center gap-1.5 py-1 px-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 font-semibold text-slate-800 dark:text-slate-200"
@@ -299,7 +299,7 @@ export function WorkOrdersTable({
                 <tr>
                   <td
                     colSpan={6}
-                    className="py-12 text-center text-slate-400 text-xs"
+                    className="py-12 text-center text-muted-foreground text-xs"
                   >
                     Không có phiếu sự cố nào phù hợp bộ lọc.
                   </td>
@@ -321,14 +321,14 @@ export function WorkOrdersTable({
                           href={`/facilities/work-orders/${wo.number}`}
                           className="flex items-start gap-2.5 group-hover:text-primary transition-colors"
                         >
-                          <span className="font-mono text-xs font-bold text-slate-400 group-hover:text-primary mt-0.5">
+                          <span className="font-mono text-xs font-bold text-muted-foreground group-hover:text-primary mt-0.5">
                             #{wo.number}
                           </span>
                           <div>
                             <div className="font-semibold text-slate-900 dark:text-slate-100 group-hover:underline">
                               {wo.title}
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                               <span>
                                 Báo lúc:{" "}
                                 {new Date(wo.reported_at).toLocaleString(
@@ -349,7 +349,7 @@ export function WorkOrdersTable({
                         </div>
                         {wo.room_number ? (
                           <div className="flex items-center gap-1 text-slate-500 mt-0.5">
-                            <DoorOpen className="w-3.5 h-3.5 text-slate-400" />
+                            <DoorOpen className="w-3.5 h-3.5 text-muted-foreground" />
                             <span>Phòng {wo.room_number}</span>
                             {wo.blocks_room && (
                               <span className="ml-1 px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-bold text-[10px] flex items-center gap-0.5">
@@ -359,7 +359,7 @@ export function WorkOrdersTable({
                           </div>
                         ) : wo.location_name ? (
                           <div className="flex items-center gap-1 text-slate-500 mt-0.5">
-                            <Building2 className="w-3.5 h-3.5 text-slate-400" />
+                            <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
                             <span>{wo.location_name}</span>
                           </div>
                         ) : null}
@@ -372,7 +372,7 @@ export function WorkOrdersTable({
                             className={`text-[11px] flex items-center gap-1 mt-1 font-medium ${
                               isOverdue
                                 ? "text-rose-600 font-bold"
-                                : "text-slate-400"
+                                : "text-muted-foreground"
                             }`}
                           >
                             <Clock className="w-3 h-3" />
@@ -393,7 +393,7 @@ export function WorkOrdersTable({
                             {wo.assignee_name}
                           </span>
                         ) : (
-                          <span className="text-slate-400 italic">
+                          <span className="text-muted-foreground italic">
                             Chưa phân công
                           </span>
                         )}
@@ -450,7 +450,7 @@ export function WorkOrdersTable({
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="h-8 w-8 p-0 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+                              className="h-8 w-8 p-0 text-muted-foreground hover:text-indigo-600 dark:hover:text-indigo-400"
                               title="Xem chi tiết phiếu sự cố"
                             >
                               <Eye className="w-3.5 h-3.5" />
@@ -481,7 +481,7 @@ export function WorkOrdersTable({
                   setActiveOrder(null);
                   setActionType(null);
                 }}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-muted-foreground hover:text-slate-600"
               >
                 ✕
               </button>

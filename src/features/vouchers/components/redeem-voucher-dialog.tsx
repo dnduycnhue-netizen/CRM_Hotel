@@ -141,17 +141,17 @@ export function RedeemVoucherDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] bg-slate-900 border-slate-800 text-slate-100">
+      <DialogContent className="sm:max-w-[500px] bg-card border-border text-foreground">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+            <span className="p-2 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
               <Tag className="w-5 h-5" />
             </span>
             <div>
-              <DialogTitle className="text-lg font-semibold text-slate-100">
+              <DialogTitle className="text-lg font-semibold text-foreground">
                 Áp dụng / Đổi mã Voucher
               </DialogTitle>
-              <DialogDescription className="text-xs text-slate-400">
+              <DialogDescription className="text-xs text-muted-foreground">
                 Tra cứu điều kiện và ghi nhận giảm trừ hóa đơn cho khách
               </DialogDescription>
             </div>
@@ -159,8 +159,8 @@ export function RedeemVoucherDialog({
         </DialogHeader>
 
         {errorMsg && (
-          <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+          <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-700 dark:text-rose-400" />
             <span>{errorMsg}</span>
           </div>
         )}
@@ -168,22 +168,22 @@ export function RedeemVoucherDialog({
         {result ? (
           <div className="space-y-4 py-2">
             <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center space-y-2">
-              <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto" />
-              <h4 className="font-semibold text-emerald-300 text-base">
+              <CheckCircle2 className="w-10 h-10 text-emerald-700 dark:text-emerald-400 mx-auto" />
+              <h4 className="font-semibold text-emerald-700 dark:text-emerald-300 text-base">
                 Áp dụng voucher thành công!
               </h4>
-              <p className="text-xs text-slate-300">
+              <p className="text-xs text-foreground/80">
                 Mã voucher:{" "}
-                <strong className="font-mono text-emerald-400">
+                <strong className="font-mono text-emerald-700 dark:text-emerald-400">
                   {result.voucher_code}
                 </strong>
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 p-3 bg-slate-800/60 rounded-lg text-xs">
+            <div className="grid grid-cols-2 gap-3 p-3 bg-muted/60 rounded-lg text-xs">
               <div>
-                <span className="text-slate-400">Số tiền giảm trừ:</span>
-                <p className="text-base font-bold text-emerald-400 mt-0.5">
+                <span className="text-muted-foreground">Số tiền giảm trừ:</span>
+                <p className="text-base font-bold text-emerald-700 dark:text-emerald-400 mt-0.5">
                   -
                   {new Intl.NumberFormat("vi-VN", {
                     style: "currency",
@@ -192,8 +192,10 @@ export function RedeemVoucherDialog({
                 </p>
               </div>
               <div>
-                <span className="text-slate-400">Số tiền cần thanh toán:</span>
-                <p className="text-base font-bold text-slate-100 mt-0.5">
+                <span className="text-muted-foreground">
+                  Số tiền cần thanh toán:
+                </span>
+                <p className="text-base font-bold text-foreground mt-0.5">
                   {new Intl.NumberFormat("vi-VN", {
                     style: "currency",
                     currency: "VND",
@@ -216,25 +218,27 @@ export function RedeemVoucherDialog({
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300">
-                Mã Voucher giảm giá <span className="text-rose-400">*</span>
+              <Label className="text-xs text-foreground/80">
+                Mã Voucher giảm giá{" "}
+                <span className="text-rose-700 dark:text-rose-400">*</span>
               </Label>
               <Input
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 placeholder="Nhập mã voucher (VD: BDAY2026-..., SUMMER20)"
                 required
-                className="bg-slate-800 border-slate-700 text-slate-200 uppercase font-mono tracking-wider h-9 text-xs"
+                className="bg-muted border-border text-foreground uppercase font-mono tracking-wider h-9 text-xs"
               />
             </div>
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label className="text-xs text-slate-300">
-                  Khách hàng sử dụng <span className="text-rose-400">*</span>
+                <Label className="text-xs text-foreground/80">
+                  Khách hàng sử dụng{" "}
+                  <span className="text-rose-700 dark:text-rose-400">*</span>
                 </Label>
                 {guests.length > 5 && (
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[11px] text-muted-foreground">
                     {filteredGuests.length}/{guests.length} khách
                   </span>
                 )}
@@ -245,7 +249,7 @@ export function RedeemVoucherDialog({
                   value={guestSearch}
                   onChange={(e) => setGuestSearch(e.target.value)}
                   placeholder="Lọc nhanh tên hoặc SĐT khách..."
-                  className="bg-slate-800/80 border-slate-700 text-slate-200 h-8 text-[11px] mb-1.5"
+                  className="bg-muted/80 border-border text-foreground h-8 text-[11px] mb-1.5"
                 />
               )}
 
@@ -257,7 +261,7 @@ export function RedeemVoucherDialog({
                 }))}
                 onValueChange={(val) => val && setGuestId(val)}
               >
-                <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs">
+                <SelectTrigger className="bg-muted border-border text-foreground h-9 text-xs">
                   <SelectValue placeholder="Chọn khách hàng">
                     {guests.find((g) => g.id === guestId)?.full_name ||
                       (guests.length === 0
@@ -265,14 +269,14 @@ export function RedeemVoucherDialog({
                         : "Chọn khách hàng")}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700 text-slate-200 text-xs max-h-56">
+                <SelectContent className="bg-muted border-border text-foreground text-xs max-h-56">
                   {filteredGuests.map((g) => (
                     <SelectItem key={g.id} value={g.id}>
                       {g.full_name} {g.phone ? `(${g.phone})` : ""}
                     </SelectItem>
                   ))}
                   {filteredGuests.length === 0 && (
-                    <div className="p-2 text-center text-slate-400 text-xs">
+                    <div className="p-2 text-center text-muted-foreground text-xs">
                       Không tìm thấy khách hàng phù hợp
                     </div>
                   )}
@@ -282,21 +286,22 @@ export function RedeemVoucherDialog({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-300">
-                  Cơ sở thực hiện <span className="text-rose-400">*</span>
+                <Label className="text-xs text-foreground/80">
+                  Cơ sở thực hiện{" "}
+                  <span className="text-rose-700 dark:text-rose-400">*</span>
                 </Label>
                 <Select
                   value={branchId}
                   items={branches.map((b) => ({ value: b.id, label: b.name }))}
                   onValueChange={(val) => val && setBranchId(val)}
                 >
-                  <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs">
+                  <SelectTrigger className="bg-muted border-border text-foreground h-9 text-xs">
                     <SelectValue placeholder="Chọn cơ sở">
                       {branches.find((b) => b.id === branchId)?.name ||
                         "Chọn cơ sở"}
                     </SelectValue>
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700 text-slate-200 text-xs">
+                  <SelectContent className="bg-muted border-border text-foreground text-xs">
                     {branches.map((b) => (
                       <SelectItem key={b.id} value={b.id}>
                         {b.name}
@@ -307,7 +312,7 @@ export function RedeemVoucherDialog({
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-300">
+                <Label className="text-xs text-foreground/80">
                   Giá trị hóa đơn / Tiền phòng (VNĐ)
                 </Label>
                 <Input
@@ -316,20 +321,20 @@ export function RedeemVoucherDialog({
                   value={billAmount}
                   onChange={(e) => setBillAmount(e.target.value)}
                   placeholder="0"
-                  className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs"
+                  className="bg-muted border-border text-foreground h-9 text-xs"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300">
+              <Label className="text-xs text-foreground/80">
                 Ghi chú giao dịch
               </Label>
               <Input
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="VD: Trừ tiền phòng đợt nghỉ lễ 30/4..."
-                className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs"
+                className="bg-muted border-border text-foreground h-9 text-xs"
               />
             </div>
 
@@ -339,7 +344,7 @@ export function RedeemVoucherDialog({
                 variant="outline"
                 size="sm"
                 onClick={() => onOpenChange(false)}
-                className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                className="border-border text-foreground/80 hover:bg-muted"
               >
                 Hủy
               </Button>

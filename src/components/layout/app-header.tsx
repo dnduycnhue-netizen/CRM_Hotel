@@ -116,7 +116,7 @@ export function AppHeader({
       />
       <header className="h-16 border-b border-border/50 bg-background/85 backdrop-blur-xl px-5 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-xs">
         {/* Left: Branch Selector */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           <BranchSelector
             branches={branches}
             currentBranchId={currentBranchId}
@@ -124,7 +124,7 @@ export function AppHeader({
         </div>
 
         {/* Center: Global Search Bar */}
-        <div className="flex-1 max-w-lg mx-4 hidden md:block">
+        <div className="flex-1 min-w-0 max-w-md mx-4 hidden md:block">
           <button
             type="button"
             onClick={() => setIsSearchOpen(true)}
@@ -143,12 +143,12 @@ export function AppHeader({
         </div>
 
         {/* Right: Quick Actions & User Menu */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 shrink-0">
           {/* Quick Check-in Button */}
           {canCreateStay && (
             <Link
               href="/check-in"
-              className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm shadow-emerald-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-lg whitespace-nowrap bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm shadow-emerald-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               <UserCheck className="h-3.5 w-3.5" />
               <span>Check-in</span>
@@ -159,7 +159,7 @@ export function AppHeader({
           {canReportFacility && (
             <Link
               href="/facilities/report"
-              className="hidden lg:inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border/70 bg-card hover:bg-accent text-foreground text-xs font-semibold shadow-xs transition-all hover:border-amber-500/40"
+              className="hidden lg:inline-flex items-center gap-1.5 h-9 px-3 rounded-lg whitespace-nowrap border border-border/70 bg-card hover:bg-accent text-foreground text-xs font-semibold shadow-xs transition-all hover:border-amber-500/40"
             >
               <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
               <span>Báo sự cố</span>
@@ -170,7 +170,7 @@ export function AppHeader({
           {canManageUsers && (
             <Link
               href="/settings/users"
-              className="hidden xl:inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border/70 bg-card hover:bg-accent text-foreground text-xs font-semibold shadow-xs transition-all hover:border-amber-500/40"
+              className="hidden xl:inline-flex items-center gap-1.5 h-9 px-3 rounded-lg whitespace-nowrap border border-border/70 bg-card hover:bg-accent text-foreground text-xs font-semibold shadow-xs transition-all hover:border-amber-500/40"
             >
               <User className="h-3.5 w-3.5 text-amber-500" />
               <span>Phân quyền nhân sự</span>
@@ -180,10 +180,10 @@ export function AppHeader({
           {/* Quick Guide / SOP Button */}
           <Link
             href="/guide"
-            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-semibold shadow-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg whitespace-nowrap border border-amber-500/40 bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 dark:text-amber-300 text-xs font-semibold shadow-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
             title="Xem Hướng dẫn sử dụng & Quy trình nghiệp vụ (SOP)"
           >
-            <Compass className="h-3.5 w-3.5 text-amber-400" />
+            <Compass className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
             <span className="hidden sm:inline">Quy trình (SOP)</span>
           </Link>
 
@@ -205,8 +205,8 @@ export function AppHeader({
                     {userInitials}
                   </AvatarFallback>
                 </Avatar>
-                <div className="hidden xl:flex flex-col text-left text-xs leading-tight mr-1">
-                  <span className="font-semibold text-foreground truncate max-w-[150px]">
+                <div className="hidden 2xl:flex flex-col text-left text-xs leading-tight mr-1">
+                  <span className="font-semibold text-foreground truncate max-w-[190px]">
                     {userFullName || roleName}
                   </span>
                   <span className="text-[10px] text-muted-foreground truncate">

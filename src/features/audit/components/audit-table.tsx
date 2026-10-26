@@ -62,41 +62,41 @@ export function AuditTable({ initialLogs, branches }: Props) {
     const act = action.toLowerCase();
     if (act === "insert") {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
           <Plus className="w-3 h-3" /> Thêm mới
         </span>
       );
     }
     if (act === "update") {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
           <Edit2 className="w-3 h-3" /> Chỉnh sửa
         </span>
       );
     }
     if (act === "delete") {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20">
           <Trash2 className="w-3 h-3" /> Xóa
         </span>
       );
     }
     if (act.includes("view_full")) {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20">
           <Eye className="w-3 h-3" /> Xem CCCD đầy đủ
         </span>
       );
     }
     if (act.includes("export")) {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20">
           <FileSpreadsheet className="w-3 h-3" /> Xuất Excel
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-slate-300">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-muted text-foreground/80">
         {action}
       </span>
     );
@@ -122,15 +122,15 @@ export function AuditTable({ initialLogs, branches }: Props) {
   return (
     <div className="space-y-4">
       {/* Filters bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap items-center gap-3">
+      <div className="bg-card border border-border rounded-xl p-4 flex flex-wrap items-center gap-3">
         {/* Branch Filter */}
         <div className="w-52">
-          <label className="text-xs font-medium text-slate-400 block mb-1">
+          <label className="text-xs font-medium text-muted-foreground block mb-1">
             Cơ sở:
           </label>
           {branches.length === 1 ? (
             <div
-              className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-200"
+              className="flex items-center gap-1.5 bg-muted/40 border border-border rounded-lg px-2.5 py-1.5 text-xs font-medium text-foreground"
               title="Cơ sở được phân quyền của bạn"
             >
               <Building2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
@@ -140,7 +140,7 @@ export function AuditTable({ initialLogs, branches }: Props) {
             <select
               value={selectedBranch}
               onChange={(e) => setSelectedBranch(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full bg-muted/40 border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
               {branches.length > 1 && (
                 <option value="all">Tất cả {branches.length} cơ sở</option>
@@ -156,13 +156,13 @@ export function AuditTable({ initialLogs, branches }: Props) {
 
         {/* Entity Filter */}
         <div className="w-48">
-          <label className="text-xs font-medium text-slate-400 block mb-1">
+          <label className="text-xs font-medium text-muted-foreground block mb-1">
             Đối tượng:
           </label>
           <select
             value={selectedEntity}
             onChange={(e) => setSelectedEntity(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full bg-muted/40 border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
             <option value="all">Tất cả đối tượng</option>
             <option value="guests">Khách hàng</option>
@@ -177,13 +177,13 @@ export function AuditTable({ initialLogs, branches }: Props) {
 
         {/* Action Filter */}
         <div className="w-48">
-          <label className="text-xs font-medium text-slate-400 block mb-1">
+          <label className="text-xs font-medium text-muted-foreground block mb-1">
             Loại hành động:
           </label>
           <select
             value={selectedAction}
             onChange={(e) => setSelectedAction(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full bg-muted/40 border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500"
           >
             <option value="all">Tất cả hành động</option>
             <option value="crud_insert">Thêm mới (Insert)</option>
@@ -194,28 +194,28 @@ export function AuditTable({ initialLogs, branches }: Props) {
           </select>
         </div>
 
-        <div className="ml-auto text-xs text-slate-400 pt-5">
+        <div className="ml-auto text-xs text-muted-foreground pt-5">
           Hiển thị <strong>{filteredLogs.length}</strong> nhật ký
         </div>
       </div>
 
       {/* Logs Table */}
       {filteredLogs.length === 0 ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-10 text-center text-slate-400">
-          <ClipboardList className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <p className="text-base font-medium text-slate-300">
+        <div className="bg-card border border-border rounded-xl p-10 text-center text-muted-foreground">
+          <ClipboardList className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+          <p className="text-base font-medium text-foreground/80">
             Không tìm thấy nhật ký thao tác phù hợp
           </p>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             Hãy thử thay đổi điều kiện lọc ở trên.
           </p>
         </div>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+        <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-950/60 text-xs uppercase text-slate-400">
+                <tr className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                   <th className="py-3 px-4 w-10"></th>
                   <th className="py-3 px-4">Thời gian</th>
                   <th className="py-3 px-4">Người thao tác</th>
@@ -225,7 +225,7 @@ export function AuditTable({ initialLogs, branches }: Props) {
                   <th className="py-3 px-4">ID Bản ghi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-border/60">
                 {filteredLogs.map((log) => {
                   const isExpanded = expandedRowId === log.id;
                   const hasDetails = log.before || log.after || log.meta;
@@ -235,33 +235,31 @@ export function AuditTable({ initialLogs, branches }: Props) {
                       <tr
                         onClick={() => hasDetails && toggleExpand(log.id)}
                         className={`transition-colors cursor-pointer ${
-                          isExpanded
-                            ? "bg-slate-800/60"
-                            : "hover:bg-slate-800/30"
+                          isExpanded ? "bg-muted/60" : "hover:bg-muted/50"
                         }`}
                       >
                         <td className="py-3 px-4 text-center">
                           {hasDetails ? (
                             isExpanded ? (
-                              <ChevronDown className="w-4 h-4 text-indigo-400 inline" />
+                              <ChevronDown className="w-4 h-4 text-indigo-700 dark:text-indigo-400 inline" />
                             ) : (
-                              <ChevronRight className="w-4 h-4 text-slate-500 inline" />
+                              <ChevronRight className="w-4 h-4 text-muted-foreground inline" />
                             )
                           ) : null}
                         </td>
-                        <td className="py-3 px-4 text-xs text-slate-300 whitespace-nowrap font-mono">
+                        <td className="py-3 px-4 text-xs text-foreground/80 whitespace-nowrap font-mono">
                           {formatDateTimeVN(log.occurred_at, "full")}
                         </td>
-                        <td className="py-3 px-4 text-xs font-medium text-slate-200">
+                        <td className="py-3 px-4 text-xs font-medium text-foreground">
                           {log.actor_name ||
                             (log.actor_id
                               ? `${log.actor_id.substring(0, 8)}...`
                               : "Hệ thống (Cron)")}
                         </td>
-                        <td className="py-3 px-4 text-xs text-slate-400">
+                        <td className="py-3 px-4 text-xs text-muted-foreground">
                           {log.branch_name ? (
                             <span className="flex items-center gap-1">
-                              <Building2 className="w-3 h-3 text-slate-500" />
+                              <Building2 className="w-3 h-3 text-muted-foreground" />
                               {log.branch_name}
                             </span>
                           ) : (
@@ -271,10 +269,10 @@ export function AuditTable({ initialLogs, branches }: Props) {
                         <td className="py-3 px-4">
                           {getActionBadge(log.action)}
                         </td>
-                        <td className="py-3 px-4 text-xs text-slate-300 font-medium">
+                        <td className="py-3 px-4 text-xs text-foreground/80 font-medium">
                           {getEntityLabel(log.entity)}
                         </td>
-                        <td className="py-3 px-4 text-xs text-slate-500 font-mono">
+                        <td className="py-3 px-4 text-xs text-muted-foreground font-mono">
                           {log.entity_id
                             ? `${log.entity_id.substring(0, 8)}...`
                             : "-"}
@@ -283,10 +281,10 @@ export function AuditTable({ initialLogs, branches }: Props) {
 
                       {/* Expanded Diff Viewer */}
                       {isExpanded && (
-                        <tr className="bg-slate-950/40">
+                        <tr className="bg-muted/40">
                           <td
                             colSpan={7}
-                            className="p-4 border-b border-slate-800/80"
+                            className="p-4 border-b border-border/80"
                           >
                             <AuditDiffViewer
                               action={log.action}

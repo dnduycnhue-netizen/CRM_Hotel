@@ -55,22 +55,23 @@ const SCOPE_CONFIG: Record<
   room: {
     label: "Phòng nghỉ",
     icon: Home,
-    color: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    color: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20",
   },
   area: {
     label: "Khu vực chung",
     icon: MapPin,
-    color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    color:
+      "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
   },
   fire_safety: {
     label: "PCCC & An toàn",
     icon: Flame,
-    color: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+    color: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20",
   },
   other: {
     label: "Khác",
     icon: ClipboardList,
-    color: "bg-slate-500/10 text-slate-400 border-slate-500/20",
+    color: "bg-slate-500/10 text-muted-foreground border-slate-500/20",
   },
 };
 
@@ -291,17 +292,17 @@ export function ChecklistsManager({ templates, canManage }: Props) {
   return (
     <div className="space-y-6">
       {/* Top Filter and Actions Bar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-slate-900 border border-slate-800 rounded-xl p-4">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-card border border-border rounded-xl p-4">
         <div className="flex flex-wrap items-center gap-3">
           {/* Scope filter pills */}
-          <div className="inline-flex rounded-lg bg-slate-950 p-1 border border-slate-800">
+          <div className="inline-flex rounded-lg bg-muted/40 p-1 border border-border">
             <button
               type="button"
               onClick={() => setSelectedScope("all")}
               className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                 selectedScope === "all"
                   ? "bg-indigo-600 text-white shadow-sm"
-                  : "text-slate-400 hover:text-slate-200"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Tất cả ({templates.length})
@@ -318,7 +319,7 @@ export function ChecklistsManager({ templates, canManage }: Props) {
                   className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                     selectedScope === scopeKey
                       ? "bg-indigo-600 text-white shadow-sm"
-                      : "text-slate-400 hover:text-slate-200"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {config.label} ({count})
@@ -333,7 +334,7 @@ export function ChecklistsManager({ templates, canManage }: Props) {
             onChange={(e) =>
               setStatusFilter(e.target.value as "all" | "active" | "inactive")
             }
-            className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-slate-300 outline-none"
+            className="bg-muted/40 border border-border rounded-lg px-2.5 py-1 text-xs text-foreground/80 outline-none"
           >
             <option value="all">Tất cả trạng thái</option>
             <option value="active">Đang kích hoạt</option>
@@ -344,13 +345,13 @@ export function ChecklistsManager({ templates, canManage }: Props) {
         <div className="flex items-center gap-3">
           {/* Search bar */}
           <div className="relative flex-1 md:w-64">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Tìm theo tên mẫu hoặc tiêu chí..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-indigo-500"
+              className="w-full bg-muted/40 border border-border rounded-lg pl-9 pr-3 py-1.5 text-xs text-foreground placeholder-muted-foreground outline-none focus:border-indigo-500"
             />
           </div>
 
@@ -370,8 +371,8 @@ export function ChecklistsManager({ templates, canManage }: Props) {
       {/* Templates Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.length === 0 ? (
-          <div className="col-span-full bg-slate-900 border border-slate-800 rounded-xl p-12 text-center text-slate-400 space-y-3">
-            <ClipboardList className="w-10 h-10 text-slate-600 mx-auto" />
+          <div className="col-span-full bg-card border border-border rounded-xl p-12 text-center text-muted-foreground space-y-3">
+            <ClipboardList className="w-10 h-10 text-muted-foreground mx-auto" />
             <p className="text-sm font-medium">
               Không tìm thấy mẫu kiểm tra nào phù hợp
             </p>
@@ -380,7 +381,7 @@ export function ChecklistsManager({ templates, canManage }: Props) {
                 variant="outline"
                 size="sm"
                 onClick={openCreateDialog}
-                className="text-xs text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/10"
+                className="text-xs text-indigo-700 dark:text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/10"
               >
                 Tạo mẫu kiểm tra mới
               </Button>
@@ -395,7 +396,7 @@ export function ChecklistsManager({ templates, canManage }: Props) {
             return (
               <div
                 key={tmpl.id}
-                className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition-all shadow-sm group"
+                className="bg-card border border-border rounded-xl p-4 flex flex-col justify-between hover:border-border transition-all shadow-sm group"
               >
                 <div className="space-y-3">
                   {/* Top badges */}
@@ -410,8 +411,8 @@ export function ChecklistsManager({ templates, canManage }: Props) {
                     <span
                       className={`text-[10px] font-bold px-2 py-0.5 rounded ${
                         tmpl.is_active
-                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                          : "bg-slate-800 text-slate-400 border border-slate-700"
+                          ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20"
+                          : "bg-muted text-muted-foreground border border-border"
                       }`}
                     >
                       {tmpl.is_active ? "Đang áp dụng" : "Ngưng áp dụng"}
@@ -420,13 +421,13 @@ export function ChecklistsManager({ templates, canManage }: Props) {
 
                   {/* Title & Items preview */}
                   <div>
-                    <h3 className="font-semibold text-slate-100 text-sm leading-snug">
+                    <h3 className="font-semibold text-foreground text-sm leading-snug">
                       {tmpl.name}
                     </h3>
-                    <p className="text-xs text-slate-400 mt-1 flex items-center gap-2">
+                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
                       <span>{tmpl.items?.length || 0} tiêu chí</span>
                       {criticalCount > 0 && (
-                        <span className="text-amber-400 font-medium">
+                        <span className="text-amber-700 dark:text-amber-400 font-medium">
                           • {criticalCount} mục quan trọng
                         </span>
                       )}
@@ -435,14 +436,14 @@ export function ChecklistsManager({ templates, canManage }: Props) {
                   </div>
 
                   {/* Snippet of items */}
-                  <div className="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800/80 text-[11px] text-slate-300 space-y-1">
+                  <div className="p-2.5 rounded-lg bg-muted/40 border border-border/80 text-[11px] text-foreground/80 space-y-1">
                     {tmpl.items?.slice(0, 3).map((item, idx) => (
                       <div
                         key={idx}
                         className="flex items-center gap-1.5 truncate"
                       >
                         {item.critical ? (
-                          <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />
+                          <AlertTriangle className="w-3 h-3 text-amber-700 dark:text-amber-400 shrink-0" />
                         ) : (
                           <span className="w-1.5 h-1.5 rounded-full bg-slate-500 shrink-0" />
                         )}
@@ -450,7 +451,7 @@ export function ChecklistsManager({ templates, canManage }: Props) {
                       </div>
                     ))}
                     {(tmpl.items?.length || 0) > 3 && (
-                      <p className="text-[10px] text-slate-500 pt-0.5">
+                      <p className="text-[10px] text-muted-foreground pt-0.5">
                         +{tmpl.items.length - 3} tiêu chí khác...
                       </p>
                     )}
@@ -458,11 +459,11 @@ export function ChecklistsManager({ templates, canManage }: Props) {
                 </div>
 
                 {/* Footer action buttons */}
-                <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-800/80">
+                <div className="flex items-center justify-between pt-3 mt-3 border-t border-border/80">
                   <button
                     type="button"
                     onClick={() => setPreviewTemplate(tmpl)}
-                    className="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 transition-colors"
+                    className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
                   >
                     <FileCheck2 className="w-3.5 h-3.5" />
                     <span>Xem chi tiết</span>
@@ -473,7 +474,7 @@ export function ChecklistsManager({ templates, canManage }: Props) {
                       variant="ghost"
                       size="sm"
                       onClick={() => openEditDialog(tmpl)}
-                      className="h-7 text-xs text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 px-2.5 gap-1"
+                      className="h-7 text-xs text-indigo-700 dark:text-indigo-400 hover:text-indigo-800 hover:bg-indigo-500/10 px-2.5 gap-1"
                     >
                       <Edit2 className="w-3 h-3" />
                       <span>Chỉnh sửa</span>
@@ -496,7 +497,7 @@ export function ChecklistsManager({ templates, canManage }: Props) {
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 text-base">
-                  <ClipboardList className="w-5 h-5 text-indigo-400" />
+                  <ClipboardList className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
                   <span>{previewTemplate.name}</span>
                 </DialogTitle>
                 <DialogDescription className="text-xs">
@@ -506,28 +507,28 @@ export function ChecklistsManager({ templates, canManage }: Props) {
               </DialogHeader>
 
               <div className="space-y-3 py-2 max-h-[60vh] overflow-y-auto pr-1">
-                <p className="text-xs font-semibold text-slate-300">
+                <p className="text-xs font-semibold text-foreground/80">
                   Danh sách tiêu chí kiểm tra ({previewTemplate.items.length}):
                 </p>
                 <div className="space-y-2">
                   {previewTemplate.items.map((item, idx) => (
                     <div
                       key={item.key || idx}
-                      className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1"
+                      className="p-2.5 rounded-lg bg-muted/40 border border-border space-y-1"
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <span className="text-xs font-medium text-slate-200">
+                        <span className="text-xs font-medium text-foreground">
                           {idx + 1}. {item.label}
                         </span>
                         {item.critical && (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 whitespace-nowrap">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap">
                             Quan trọng
                           </span>
                         )}
                       </div>
                       {item.hint && (
-                        <p className="text-[11px] text-slate-400 flex items-center gap-1">
-                          <Info className="w-3 h-3 text-slate-500 shrink-0" />
+                        <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                          <Info className="w-3 h-3 text-muted-foreground shrink-0" />
                           <span>{item.hint}</span>
                         </p>
                       )}
@@ -584,8 +585,8 @@ export function ChecklistsManager({ templates, canManage }: Props) {
           </DialogHeader>
 
           {editingTemplate && Number(editingTemplate.usage_count || 0) > 0 && (
-            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-start gap-2 text-xs text-amber-300">
-              <Info className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
+            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-start gap-2 text-xs text-amber-700 dark:text-amber-300">
+              <Info className="w-4 h-4 shrink-0 text-amber-700 dark:text-amber-400 mt-0.5" />
               <div>
                 <strong>Lưu ý bảo toàn dữ liệu:</strong> Mẫu này đã được sử dụng
                 trong <strong>{editingTemplate.usage_count}</strong> biên bản
@@ -640,14 +641,14 @@ export function ChecklistsManager({ templates, canManage }: Props) {
               </div>
 
               <div className="space-y-1.5 flex flex-col justify-end">
-                <label className="flex items-center gap-2 p-2 rounded-xl border border-slate-800 bg-slate-950/60 cursor-pointer hover:border-slate-700">
+                <label className="flex items-center gap-2 p-2 rounded-xl border border-border bg-muted/40 cursor-pointer hover:border-border">
                   <input
                     type="checkbox"
                     checked={formIsActive}
                     onChange={(e) => setFormIsActive(e.target.checked)}
-                    className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 bg-slate-900 border-slate-700"
+                    className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 bg-card border-border"
                   />
-                  <span className="text-xs font-medium text-slate-200">
+                  <span className="text-xs font-medium text-foreground">
                     Kích hoạt áp dụng ngay
                   </span>
                 </label>
@@ -655,9 +656,9 @@ export function ChecklistsManager({ templates, canManage }: Props) {
             </div>
 
             {/* Items Editor */}
-            <div className="flex-1 flex flex-col overflow-hidden space-y-2 border-t border-slate-800 pt-3">
+            <div className="flex-1 flex flex-col overflow-hidden space-y-2 border-t border-border pt-3">
               <div className="flex items-center justify-between">
-                <Label className="text-xs font-semibold text-slate-300">
+                <Label className="text-xs font-semibold text-foreground/80">
                   Danh sách tiêu chí kiểm tra ({formItems.length})
                 </Label>
                 <Button
@@ -665,7 +666,7 @@ export function ChecklistsManager({ templates, canManage }: Props) {
                   variant="outline"
                   size="sm"
                   onClick={handleAddItem}
-                  className="h-7 text-xs gap-1 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10"
+                  className="h-7 text-xs gap-1 border-indigo-500/30 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-500/10"
                 >
                   <Plus className="w-3 h-3" />
                   <span>Thêm tiêu chí</span>
@@ -676,10 +677,10 @@ export function ChecklistsManager({ templates, canManage }: Props) {
                 {formItems.map((item, idx) => (
                   <div
                     key={idx}
-                    className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition-colors"
+                    className="p-3 rounded-xl bg-muted/40 border border-border space-y-2 hover:border-border transition-colors"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-bold text-slate-400 w-6">
+                      <span className="text-xs font-bold text-muted-foreground w-6">
                         #{idx + 1}
                       </span>
                       <Input
@@ -696,7 +697,7 @@ export function ChecklistsManager({ templates, canManage }: Props) {
                           type="button"
                           onClick={() => handleMoveItem(idx, "up")}
                           disabled={idx === 0}
-                          className="p-1 text-slate-400 hover:text-slate-200 disabled:opacity-30"
+                          className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30"
                           title="Lên trên"
                         >
                           <ArrowUp className="w-3.5 h-3.5" />
@@ -705,7 +706,7 @@ export function ChecklistsManager({ templates, canManage }: Props) {
                           type="button"
                           onClick={() => handleMoveItem(idx, "down")}
                           disabled={idx === formItems.length - 1}
-                          className="p-1 text-slate-400 hover:text-slate-200 disabled:opacity-30"
+                          className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30"
                           title="Xuống dưới"
                         >
                           <ArrowDown className="w-3.5 h-3.5" />
@@ -713,7 +714,7 @@ export function ChecklistsManager({ templates, canManage }: Props) {
                         <button
                           type="button"
                           onClick={() => handleRemoveItem(idx)}
-                          className="p-1 text-rose-400 hover:text-rose-300"
+                          className="p-1 text-rose-700 dark:text-rose-400 hover:text-rose-800"
                           title="Xóa tiêu chí"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -728,18 +729,18 @@ export function ChecklistsManager({ templates, canManage }: Props) {
                           handleItemChange(idx, "hint", e.target.value)
                         }
                         placeholder="Ghi chú hướng dẫn (VD: Bật thử 24 độ trong 5 phút)"
-                        className="h-7 text-[11px] bg-slate-900/60"
+                        className="h-7 text-[11px] bg-card/60"
                       />
-                      <label className="flex items-center gap-1.5 text-[11px] text-slate-300 cursor-pointer">
+                      <label className="flex items-center gap-1.5 text-[11px] text-foreground/80 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={item.critical || false}
                           onChange={(e) =>
                             handleItemChange(idx, "critical", e.target.checked)
                           }
-                          className="w-3.5 h-3.5 rounded text-amber-500 focus:ring-amber-400 bg-slate-900 border-slate-700"
+                          className="w-3.5 h-3.5 rounded text-amber-500 focus:ring-amber-400 bg-card border-border"
                         />
-                        <span className="text-amber-400/90 font-medium">
+                        <span className="text-amber-700 dark:text-amber-400/90 font-medium">
                           Mục nghiêm trọng (Tự sinh sự cố High)
                         </span>
                       </label>
@@ -749,7 +750,7 @@ export function ChecklistsManager({ templates, canManage }: Props) {
               </div>
             </div>
 
-            <DialogFooter className="pt-3 border-t border-slate-800">
+            <DialogFooter className="pt-3 border-t border-border">
               <Button
                 type="button"
                 variant="outline"

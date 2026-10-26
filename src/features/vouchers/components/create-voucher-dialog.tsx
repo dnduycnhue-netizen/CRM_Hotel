@@ -126,17 +126,17 @@ export function CreateVoucherDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[620px] bg-slate-900 border-slate-800 text-slate-100 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[620px] bg-card border-border text-foreground max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+            <span className="p-2 rounded-lg bg-indigo-500/10 text-indigo-700 dark:text-indigo-400">
               <Gift className="w-5 h-5" />
             </span>
             <div>
-              <DialogTitle className="text-lg font-semibold text-slate-100">
+              <DialogTitle className="text-lg font-semibold text-foreground">
                 Phát hành Voucher ưu đãi mới
               </DialogTitle>
-              <DialogDescription className="text-xs text-slate-400">
+              <DialogDescription className="text-xs text-muted-foreground">
                 Thiết lập mã giảm giá theo %, số tiền cố định, thời hạn và đối
                 tượng
               </DialogDescription>
@@ -145,15 +145,15 @@ export function CreateVoucherDialog({
         </DialogHeader>
 
         {errorMsg && (
-          <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+          <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-700 dark:text-rose-400" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300 flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+          <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-700 dark:text-emerald-400" />
             <span>{successMsg}</span>
           </div>
         )}
@@ -162,13 +162,14 @@ export function CreateVoucherDialog({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label className="text-xs text-slate-300">
-                  Mã Voucher <span className="text-rose-400">*</span>
+                <Label className="text-xs text-foreground/80">
+                  Mã Voucher{" "}
+                  <span className="text-rose-700 dark:text-rose-400">*</span>
                 </Label>
                 <button
                   type="button"
                   onClick={generateRandomCode}
-                  className="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                  className="text-[11px] text-indigo-700 dark:text-indigo-400 hover:text-indigo-800 flex items-center gap-1"
                 >
                   <Sparkles className="w-3 h-3" /> Tạo mã ngẫu nhiên
                 </button>
@@ -178,28 +179,30 @@ export function CreateVoucherDialog({
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 placeholder="VD: VIP10, HE2026, TRIANKH"
                 required
-                className="bg-slate-800 border-slate-700 text-slate-200 uppercase font-mono tracking-wider h-9 text-xs"
+                className="bg-muted border-border text-foreground uppercase font-mono tracking-wider h-9 text-xs"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300">
+              <Label className="text-xs text-foreground/80">
                 Tên chương trình / Tiêu đề{" "}
-                <span className="text-rose-400">*</span>
+                <span className="text-rose-700 dark:text-rose-400">*</span>
               </Label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="VD: Giảm 20% đặt phòng mùa hè"
                 required
-                className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs"
+                className="bg-muted border-border text-foreground h-9 text-xs"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300">Loại chiết khấu</Label>
+              <Label className="text-xs text-foreground/80">
+                Loại chiết khấu
+              </Label>
               <Select
                 value={discountType}
                 items={discountTypeLabels}
@@ -207,10 +210,10 @@ export function CreateVoucherDialog({
                   setDiscountType(val as (typeof discountTypes)[number])
                 }
               >
-                <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs">
+                <SelectTrigger className="bg-muted border-border text-foreground h-9 text-xs">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700 text-slate-200 text-xs">
+                <SelectContent className="bg-muted border-border text-foreground text-xs">
                   {discountTypes.map((t) => (
                     <SelectItem key={t} value={t}>
                       {discountTypeLabels[t]}
@@ -221,9 +224,9 @@ export function CreateVoucherDialog({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300">
+              <Label className="text-xs text-foreground/80">
                 Giá trị giảm ({discountType === "percent" ? "%" : "VNĐ"}){" "}
-                <span className="text-rose-400">*</span>
+                <span className="text-rose-700 dark:text-rose-400">*</span>
               </Label>
               <Input
                 type="number"
@@ -232,13 +235,13 @@ export function CreateVoucherDialog({
                 value={discountValue}
                 onChange={(e) => setDiscountValue(e.target.value)}
                 required
-                className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs"
+                className="bg-muted border-border text-foreground h-9 text-xs"
               />
             </div>
 
             {discountType === "percent" ? (
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-300">
+                <Label className="text-xs text-foreground/80">
                   Mức giảm tối đa (VNĐ)
                 </Label>
                 <Input
@@ -247,12 +250,12 @@ export function CreateVoucherDialog({
                   value={maxDiscountAmount}
                   onChange={(e) => setMaxDiscountAmount(e.target.value)}
                   placeholder="Để trống nếu không giới hạn"
-                  className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs"
+                  className="bg-muted border-border text-foreground h-9 text-xs"
                 />
               </div>
             ) : (
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-300">
+                <Label className="text-xs text-foreground/80">
                   Số lượt dùng tối đa
                 </Label>
                 <Input
@@ -260,7 +263,7 @@ export function CreateVoucherDialog({
                   min={1}
                   value={usageLimit}
                   onChange={(e) => setUsageLimit(e.target.value)}
-                  className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs"
+                  className="bg-muted border-border text-foreground h-9 text-xs"
                 />
               </div>
             )}
@@ -268,7 +271,7 @@ export function CreateVoucherDialog({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300">
+              <Label className="text-xs text-foreground/80">
                 Hóa đơn tối thiểu (VNĐ)
               </Label>
               <Input
@@ -277,12 +280,12 @@ export function CreateVoucherDialog({
                 value={minSpendAmount}
                 onChange={(e) => setMinSpendAmount(e.target.value)}
                 placeholder="0"
-                className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs"
+                className="bg-muted border-border text-foreground h-9 text-xs"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300">
+              <Label className="text-xs text-foreground/80">
                 Có hiệu lực từ ngày
               </Label>
               <Input
@@ -290,25 +293,27 @@ export function CreateVoucherDialog({
                 value={validFrom}
                 onChange={(e) => setValidFrom(e.target.value)}
                 required
-                className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs"
+                className="bg-muted border-border text-foreground h-9 text-xs"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300">Hết hạn vào ngày</Label>
+              <Label className="text-xs text-foreground/80">
+                Hết hạn vào ngày
+              </Label>
               <Input
                 type="date"
                 value={validTo}
                 onChange={(e) => setValidTo(e.target.value)}
                 required
-                className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs"
+                className="bg-muted border-border text-foreground h-9 text-xs"
               />
             </div>
           </div>
 
           {discountType === "percent" && (
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300">
+              <Label className="text-xs text-foreground/80">
                 Số lượt dùng tối đa
               </Label>
               <Input
@@ -316,14 +321,16 @@ export function CreateVoucherDialog({
                 min={1}
                 value={usageLimit}
                 onChange={(e) => setUsageLimit(e.target.value)}
-                className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs w-full sm:w-1/3"
+                className="bg-muted border-border text-foreground h-9 text-xs w-full sm:w-1/3"
               />
             </div>
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300">Cơ sở áp dụng</Label>
+              <Label className="text-xs text-foreground/80">
+                Cơ sở áp dụng
+              </Label>
               <Select
                 value={applicableBranchId}
                 items={[
@@ -332,10 +339,10 @@ export function CreateVoucherDialog({
                 ]}
                 onValueChange={(val) => val && setApplicableBranchId(val)}
               >
-                <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs">
+                <SelectTrigger className="bg-muted border-border text-foreground h-9 text-xs">
                   <SelectValue placeholder="Tất cả cơ sở (Toàn chuỗi)" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700 text-slate-200 text-xs">
+                <SelectContent className="bg-muted border-border text-foreground text-xs">
                   <SelectItem value="all">
                     Toàn bộ chi nhánh khách sạn
                   </SelectItem>
@@ -349,7 +356,7 @@ export function CreateVoucherDialog({
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300">
+              <Label className="text-xs text-foreground/80">
                 Khách hàng mục tiêu
               </Label>
               <Select
@@ -365,10 +372,10 @@ export function CreateVoucherDialog({
                 ]}
                 onValueChange={(val) => val && setTargetGuestId(val)}
               >
-                <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs">
+                <SelectTrigger className="bg-muted border-border text-foreground h-9 text-xs">
                   <SelectValue placeholder="Áp dụng cho tất cả khách" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700 text-slate-200 text-xs">
+                <SelectContent className="bg-muted border-border text-foreground text-xs">
                   <SelectItem value="all">
                     Tất cả khách hàng (Public voucher)
                   </SelectItem>
@@ -383,14 +390,14 @@ export function CreateVoucherDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-300">
+            <Label className="text-xs text-foreground/80">
               Ghi chú điều kiện áp dụng
             </Label>
             <Input
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="VD: Không áp dụng kèm các chương trình khuyến mãi khác..."
-              className="bg-slate-800 border-slate-700 text-slate-200 h-9 text-xs"
+              className="bg-muted border-border text-foreground h-9 text-xs"
             />
           </div>
 
@@ -400,7 +407,7 @@ export function CreateVoucherDialog({
               variant="outline"
               size="sm"
               onClick={() => onOpenChange(false)}
-              className="border-slate-700 text-slate-300 hover:bg-slate-800"
+              className="border-border text-foreground/80 hover:bg-muted"
             >
               Hủy
             </Button>

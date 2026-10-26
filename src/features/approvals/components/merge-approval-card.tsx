@@ -150,36 +150,36 @@ export function MergeApprovalCard({ request }: Props) {
   ];
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+    <div className="bg-card border border-border rounded-xl p-5 shadow-sm space-y-4">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border">
         <div className="flex items-center gap-2">
-          <span className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+          <span className="p-2 rounded-lg bg-indigo-500/10 text-indigo-700 dark:text-indigo-400">
             <UserCheck className="w-5 h-5" />
           </span>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
                 {reasonLabels[request.match_reason] || request.match_reason}
               </span>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-muted-foreground">
                 Nguồn:{" "}
                 {request.source === "system"
                   ? "Hệ thống tự động phát hiện"
                   : `Người dùng ${request.proposed_by_name || ""}`}
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Tạo lúc: {formatDateTimeVN(request.created_at)}
             </p>
           </div>
         </div>
 
         <div className="text-right">
-          <span className="text-xs font-medium text-slate-400">
+          <span className="text-xs font-medium text-muted-foreground">
             Trạng thái:
           </span>{" "}
-          <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider">
+          <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
             Chờ Giám đốc duyệt
           </span>
         </div>
@@ -189,8 +189,8 @@ export function MergeApprovalCard({ request }: Props) {
         <div
           className={`p-3 rounded-lg text-sm ${
             statusMsg.type === "success"
-              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-              : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+              ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20"
+              : "bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20"
           }`}
         >
           {statusMsg.text}
@@ -201,20 +201,20 @@ export function MergeApprovalCard({ request }: Props) {
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-slate-800 text-xs uppercase text-slate-400">
+            <tr className="border-b border-border text-xs uppercase text-muted-foreground">
               <th className="py-2.5 px-3">Thuộc tính</th>
-              <th className="py-2.5 px-3 bg-emerald-950/20 text-emerald-400 rounded-t-lg">
+              <th className="py-2.5 px-3 bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 rounded-t-lg">
                 Hồ sơ Giữ lại (Chính)
               </th>
-              <th className="py-2.5 px-3 text-center text-slate-400">
+              <th className="py-2.5 px-3 text-center text-muted-foreground">
                 Chọn giá trị
               </th>
-              <th className="py-2.5 px-3 bg-rose-950/20 text-rose-400 rounded-t-lg">
+              <th className="py-2.5 px-3 bg-rose-950/20 text-rose-700 dark:text-rose-400 rounded-t-lg">
                 Hồ sơ Sáp nhập (Sẽ gộp)
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60">
+          <tbody className="divide-y divide-border/60">
             {compareFields.map((field) => {
               const isDiff =
                 field.keepVal !== field.dropVal && field.dropVal !== "Chưa có";
@@ -222,7 +222,7 @@ export function MergeApprovalCard({ request }: Props) {
 
               return (
                 <tr key={field.key} className={isDiff ? "bg-amber-500/5" : ""}>
-                  <td className="py-2.5 px-3 text-slate-300 font-medium">
+                  <td className="py-2.5 px-3 text-foreground/80 font-medium">
                     {field.label}
                     {isDiff && (
                       <span
@@ -232,20 +232,20 @@ export function MergeApprovalCard({ request }: Props) {
                     )}
                   </td>
                   <td
-                    className={`py-2.5 px-3 text-slate-200 ${choice === "keep" ? "font-semibold text-emerald-300" : "text-slate-400"}`}
+                    className={`py-2.5 px-3 text-foreground ${choice === "keep" ? "font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground"}`}
                   >
                     {field.keepVal}
                   </td>
                   <td className="py-2.5 px-3 text-center">
                     {field.key !== "doc_masked" ? (
-                      <div className="inline-flex rounded-lg bg-slate-800 p-0.5 text-xs">
+                      <div className="inline-flex rounded-lg bg-muted p-0.5 text-xs">
                         <button
                           type="button"
                           onClick={() => handleFieldChange(field.key, "keep")}
                           className={`px-2 py-1 rounded transition-colors ${
                             choice === "keep"
                               ? "bg-emerald-600 text-white font-medium"
-                              : "text-slate-400 hover:text-white"
+                              : "text-muted-foreground hover:text-white"
                           }`}
                         >
                           Giữ
@@ -256,18 +256,20 @@ export function MergeApprovalCard({ request }: Props) {
                           className={`px-2 py-1 rounded transition-colors ${
                             choice === "drop"
                               ? "bg-rose-600 text-white font-medium"
-                              : "text-slate-400 hover:text-white"
+                              : "text-muted-foreground hover:text-white"
                           }`}
                         >
                           Lấy phụ
                         </button>
                       </div>
                     ) : (
-                      <span className="text-xs text-slate-400">Hợp nhất</span>
+                      <span className="text-xs text-muted-foreground">
+                        Hợp nhất
+                      </span>
                     )}
                   </td>
                   <td
-                    className={`py-2.5 px-3 text-slate-200 ${choice === "drop" ? "font-semibold text-rose-300" : "text-slate-400"}`}
+                    className={`py-2.5 px-3 text-foreground ${choice === "drop" ? "font-semibold text-rose-700 dark:text-rose-300" : "text-muted-foreground"}`}
                   >
                     {field.dropVal}
                   </td>
@@ -276,17 +278,17 @@ export function MergeApprovalCard({ request }: Props) {
             })}
 
             {/* Total Stays & Nights Summary */}
-            <tr className="bg-slate-800/30 font-semibold">
-              <td className="py-2.5 px-3 text-slate-300">
+            <tr className="bg-muted/30 font-semibold">
+              <td className="py-2.5 px-3 text-foreground/80">
                 Lịch sử lượt ở / đêm
               </td>
-              <td className="py-2.5 px-3 text-emerald-400">
+              <td className="py-2.5 px-3 text-emerald-700 dark:text-emerald-400">
                 {keep_guest.total_stays} lượt ({keep_guest.total_nights} đêm)
               </td>
-              <td className="py-2.5 px-3 text-center text-xs text-indigo-400">
+              <td className="py-2.5 px-3 text-center text-xs text-indigo-700 dark:text-indigo-400">
                 <ArrowRight className="w-4 h-4 inline-block" /> Cộng dồn
               </td>
-              <td className="py-2.5 px-3 text-rose-400">
+              <td className="py-2.5 px-3 text-rose-700 dark:text-rose-400">
                 {drop_guest.total_stays} lượt ({drop_guest.total_nights} đêm)
               </td>
             </tr>
@@ -294,8 +296,8 @@ export function MergeApprovalCard({ request }: Props) {
         </table>
       </div>
 
-      <div className="p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-300 flex items-start gap-2">
-        <AlertTriangle className="w-4 h-4 shrink-0 text-indigo-400 mt-0.5" />
+      <div className="p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-700 dark:text-indigo-300 flex items-start gap-2">
+        <AlertTriangle className="w-4 h-4 shrink-0 text-indigo-700 dark:text-indigo-400 mt-0.5" />
         <div>
           <strong>Quy tắc hợp nhất tự động:</strong> Toàn bộ lượt ở (stays), ghi
           chú sở thích (notes), liên hệ đồng hành (companions), và lịch sử gắn
@@ -306,8 +308,8 @@ export function MergeApprovalCard({ request }: Props) {
 
       {/* Reject reason input */}
       {showRejectForm && (
-        <div className="p-3 bg-slate-950 border border-slate-800 rounded-lg space-y-2">
-          <label className="text-xs font-medium text-slate-300">
+        <div className="p-3 bg-muted/40 border border-border rounded-lg space-y-2">
+          <label className="text-xs font-medium text-foreground/80">
             Lý do từ chối gộp hồ sơ:
           </label>
           <input
@@ -315,13 +317,13 @@ export function MergeApprovalCard({ request }: Props) {
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
             placeholder="Ví dụ: Hai khách khác nhau cùng gia đình, không được gộp..."
-            className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-rose-500"
+            className="w-full bg-card border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-rose-500"
           />
           <div className="flex justify-end gap-2 pt-1">
             <button
               type="button"
               onClick={() => setShowRejectForm(false)}
-              className="px-3 py-1 text-xs text-slate-400 hover:text-white"
+              className="px-3 py-1 text-xs text-muted-foreground hover:text-white"
             >
               Hủy
             </button>
@@ -344,7 +346,7 @@ export function MergeApprovalCard({ request }: Props) {
             type="button"
             disabled={isPending}
             onClick={() => setShowRejectForm(true)}
-            className="px-4 py-2 text-xs font-semibold text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 rounded-lg transition-colors flex items-center gap-1.5 disabled:opacity-50"
+            className="px-4 py-2 text-xs font-semibold text-rose-700 dark:text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 rounded-lg transition-colors flex items-center gap-1.5 disabled:opacity-50"
           >
             <X className="w-4 h-4" /> Từ chối
           </button>

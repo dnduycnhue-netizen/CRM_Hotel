@@ -245,15 +245,15 @@ export function SourcesTable({ channels, partners }: Props) {
   return (
     <div className="space-y-6">
       {/* Tabs & Action Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border gap-4">
         <div className="flex space-x-6">
           <button
             type="button"
             onClick={() => setActiveTab("channels")}
             className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
               activeTab === "channels"
-                ? "border-indigo-500 text-indigo-400"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                ? "border-indigo-500 text-indigo-700 dark:text-indigo-400"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <Share2 className="w-4 h-4" />
@@ -265,8 +265,8 @@ export function SourcesTable({ channels, partners }: Props) {
             onClick={() => setActiveTab("partners")}
             className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors ${
               activeTab === "partners"
-                ? "border-emerald-500 text-emerald-400"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                ? "border-emerald-500 text-emerald-700 dark:text-emerald-400"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <Handshake className="w-4 h-4" />
@@ -300,11 +300,11 @@ export function SourcesTable({ channels, partners }: Props) {
       </div>
 
       {activeTab === "channels" ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+        <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-950/60 text-xs uppercase text-slate-400">
+                <tr className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                   <th className="py-3 px-4">Tên kênh</th>
                   <th className="py-3 px-4">Mã hệ thống</th>
                   <th className="py-3 px-4">Phân loại</th>
@@ -314,40 +314,42 @@ export function SourcesTable({ channels, partners }: Props) {
                   <th className="py-3 px-4 text-right">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-border/60">
                 {channelList.map((c) => (
                   <tr
                     key={c.id}
-                    className="hover:bg-slate-800/30 transition-colors"
+                    className="hover:bg-muted/50 transition-colors"
                   >
-                    <td className="py-3 px-4 font-medium text-slate-200">
+                    <td className="py-3 px-4 font-medium text-foreground">
                       {c.name}
                     </td>
-                    <td className="py-3 px-4 text-xs font-mono text-indigo-400">
+                    <td className="py-3 px-4 text-xs font-mono text-indigo-700 dark:text-indigo-400">
                       {c.code}
                     </td>
-                    <td className="py-3 px-4 text-xs text-slate-300">
+                    <td className="py-3 px-4 text-xs text-foreground/80">
                       {kindLabels[c.kind] || c.kind}
                     </td>
                     <td className="py-3 px-4">
                       {c.requires_partner ? (
-                        <span className="inline-flex items-center gap-1 text-xs text-amber-400 font-medium">
+                        <span className="inline-flex items-center gap-1 text-xs text-amber-700 dark:text-amber-400 font-medium">
                           Bắt buộc (US-22)
                         </span>
                       ) : (
-                        <span className="text-xs text-slate-500">Không</span>
+                        <span className="text-xs text-muted-foreground">
+                          Không
+                        </span>
                       )}
                     </td>
-                    <td className="py-3 px-4 text-xs text-slate-400">
+                    <td className="py-3 px-4 text-xs text-muted-foreground">
                       {c.sort}
                     </td>
                     <td className="py-3 px-4">
                       {c.is_active ? (
-                        <span className="inline-flex items-center gap-1 text-xs text-emerald-400 font-medium">
+                        <span className="inline-flex items-center gap-1 text-xs text-emerald-700 dark:text-emerald-400 font-medium">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Hoạt động
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-xs text-slate-500">
+                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                           <XCircle className="w-3.5 h-3.5" /> Ngừng dùng
                         </span>
                       )}
@@ -358,7 +360,7 @@ export function SourcesTable({ channels, partners }: Props) {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleOpenChannelEdit(c)}
-                        className="h-8 px-2 text-slate-400 hover:text-slate-100 hover:bg-slate-800"
+                        className="h-8 px-2 text-muted-foreground hover:text-foreground hover:bg-muted"
                       >
                         <Edit2 className="w-3.5 h-3.5 mr-1" />
                         Sửa
@@ -371,11 +373,11 @@ export function SourcesTable({ channels, partners }: Props) {
           </div>
         </div>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+        <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-950/60 text-xs uppercase text-slate-400">
+                <tr className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                   <th className="py-3 px-4">Tên đối tác</th>
                   <th className="py-3 px-4">Phân loại</th>
                   <th className="py-3 px-4">Người liên hệ</th>
@@ -385,12 +387,12 @@ export function SourcesTable({ channels, partners }: Props) {
                   <th className="py-3 px-4 text-right">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-border/60">
                 {partnerList.length === 0 ? (
                   <tr>
                     <td
                       colSpan={7}
-                      className="py-8 text-center text-slate-500 text-xs"
+                      className="py-8 text-center text-muted-foreground text-xs"
                     >
                       Chưa có đối tác nào được đăng ký trong hệ thống
                     </td>
@@ -399,44 +401,44 @@ export function SourcesTable({ channels, partners }: Props) {
                   partnerList.map((p) => (
                     <tr
                       key={p.id}
-                      className="hover:bg-slate-800/30 transition-colors"
+                      className="hover:bg-muted/50 transition-colors"
                     >
-                      <td className="py-3 px-4 font-medium text-slate-200">
+                      <td className="py-3 px-4 font-medium text-foreground">
                         {p.name}
                       </td>
-                      <td className="py-3 px-4 text-xs text-slate-300">
+                      <td className="py-3 px-4 text-xs text-foreground/80">
                         {partnerKindLabels[p.kind] || p.kind}
                       </td>
-                      <td className="py-3 px-4 text-xs text-slate-400">
+                      <td className="py-3 px-4 text-xs text-muted-foreground">
                         {p.contact_name || "-"}
                       </td>
-                      <td className="py-3 px-4 text-xs text-slate-300">
+                      <td className="py-3 px-4 text-xs text-foreground/80">
                         {p.phone && (
                           <div className="flex items-center gap-1">
-                            <Phone className="w-3 h-3 text-slate-500" />
+                            <Phone className="w-3 h-3 text-muted-foreground" />
                             {p.phone}
                           </div>
                         )}
                         {p.email && (
-                          <div className="flex items-center gap-1 text-slate-400 mt-0.5">
-                            <Mail className="w-3 h-3 text-slate-500" />
+                          <div className="flex items-center gap-1 text-muted-foreground mt-0.5">
+                            <Mail className="w-3 h-3 text-muted-foreground" />
                             {p.email}
                           </div>
                         )}
                         {!p.phone && !p.email && (
-                          <span className="text-slate-500">-</span>
+                          <span className="text-muted-foreground">-</span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-xs font-mono text-slate-400">
+                      <td className="py-3 px-4 text-xs font-mono text-muted-foreground">
                         {p.tax_code || "-"}
                       </td>
                       <td className="py-3 px-4">
                         {p.is_active ? (
-                          <span className="inline-flex items-center gap-1 text-xs text-emerald-400 font-medium">
+                          <span className="inline-flex items-center gap-1 text-xs text-emerald-700 dark:text-emerald-400 font-medium">
                             <CheckCircle2 className="w-3.5 h-3.5" /> Hợp tác
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-xs text-slate-500">
+                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                             <XCircle className="w-3.5 h-3.5" /> Ngừng hợp tác
                           </span>
                         )}
@@ -447,7 +449,7 @@ export function SourcesTable({ channels, partners }: Props) {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleOpenPartnerEdit(p)}
-                          className="h-8 px-2 text-slate-400 hover:text-slate-100 hover:bg-slate-800"
+                          className="h-8 px-2 text-muted-foreground hover:text-foreground hover:bg-muted"
                         >
                           <Edit2 className="w-3.5 h-3.5 mr-1" />
                           Sửa
@@ -467,22 +469,26 @@ export function SourcesTable({ channels, partners }: Props) {
         open={isChannelModalOpen}
         onOpenChange={(open) => !isPending && setIsChannelModalOpen(open)}
       >
-        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100">
+        <DialogContent className="max-w-md bg-card border-border text-foreground">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-white">
+            <DialogTitle className="text-lg font-bold text-foreground">
               {editingChannel
                 ? "Chỉnh sửa kênh nguồn khách"
                 : "Thêm mới kênh nguồn khách"}
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-400">
+            <DialogDescription className="text-xs text-muted-foreground">
               Cấu hình phân loại nguồn khách theo chuẩn US-22.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmitChannel} className="space-y-4 py-2">
             <div>
-              <Label htmlFor="channel-code" className="text-xs text-slate-300">
-                Mã kênh hệ thống <span className="text-red-400">*</span>
+              <Label
+                htmlFor="channel-code"
+                className="text-xs text-foreground/80"
+              >
+                Mã kênh hệ thống{" "}
+                <span className="text-red-700 dark:text-red-400">*</span>
               </Label>
               <Input
                 id="channel-code"
@@ -490,17 +496,21 @@ export function SourcesTable({ channels, partners }: Props) {
                 onChange={(e) => setChannelCode(e.target.value)}
                 placeholder="vd: traveloka, direct_walkin"
                 disabled={isPending || !!editingChannel}
-                className="mt-1 bg-slate-950 border-slate-800 font-mono text-xs text-slate-200"
+                className="mt-1 bg-muted/40 border-border font-mono text-xs text-foreground"
                 required
               />
-              <p className="text-[11px] text-slate-500 mt-1">
+              <p className="text-[11px] text-muted-foreground mt-1">
                 Chữ thường không dấu, số và gạch dưới (không đổi sau khi tạo).
               </p>
             </div>
 
             <div>
-              <Label htmlFor="channel-name" className="text-xs text-slate-300">
-                Tên hiển thị <span className="text-red-400">*</span>
+              <Label
+                htmlFor="channel-name"
+                className="text-xs text-foreground/80"
+              >
+                Tên hiển thị{" "}
+                <span className="text-red-700 dark:text-red-400">*</span>
               </Label>
               <Input
                 id="channel-name"
@@ -508,13 +518,16 @@ export function SourcesTable({ channels, partners }: Props) {
                 onChange={(e) => setChannelName(e.target.value)}
                 placeholder="vd: Traveloka OTA, Trực tiếp vãng lai"
                 disabled={isPending}
-                className="mt-1 bg-slate-950 border-slate-800 text-sm text-slate-200"
+                className="mt-1 bg-muted/40 border-border text-sm text-foreground"
                 required
               />
             </div>
 
             <div>
-              <Label htmlFor="channel-kind" className="text-xs text-slate-300">
+              <Label
+                htmlFor="channel-kind"
+                className="text-xs text-foreground/80"
+              >
                 Phân loại kênh
               </Label>
               <select
@@ -531,7 +544,7 @@ export function SourcesTable({ channels, partners }: Props) {
                   )
                 }
                 disabled={isPending}
-                className="w-full mt-1 h-9 rounded-md border border-slate-800 bg-slate-950 px-3 py-1 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full mt-1 h-9 rounded-md border border-border bg-muted/40 px-3 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500"
               >
                 <option value="direct">Trực tiếp (Tại quầy / Hotline)</option>
                 <option value="ota">Đại lý OTA trực tuyến</option>
@@ -548,11 +561,11 @@ export function SourcesTable({ channels, partners }: Props) {
                 checked={channelRequiresPartner}
                 onChange={(e) => setChannelRequiresPartner(e.target.checked)}
                 disabled={isPending}
-                className="h-4 w-4 rounded border-slate-700 bg-slate-950 text-indigo-600 focus:ring-indigo-500"
+                className="h-4 w-4 rounded border-border bg-muted/40 text-indigo-600 focus:ring-indigo-500"
               />
               <Label
                 htmlFor="channel-requires-partner"
-                className="text-xs text-amber-300 font-medium cursor-pointer"
+                className="text-xs text-amber-700 dark:text-amber-300 font-medium cursor-pointer"
               >
                 Bắt buộc chọn đối tác cụ thể khi check-in (US-22)
               </Label>
@@ -562,7 +575,7 @@ export function SourcesTable({ channels, partners }: Props) {
               <div>
                 <Label
                   htmlFor="channel-sort"
-                  className="text-xs text-slate-300"
+                  className="text-xs text-foreground/80"
                 >
                   Thứ tự sắp xếp
                 </Label>
@@ -572,7 +585,7 @@ export function SourcesTable({ channels, partners }: Props) {
                   value={channelSort}
                   onChange={(e) => setChannelSort(Number(e.target.value))}
                   disabled={isPending}
-                  className="mt-1 bg-slate-950 border-slate-800 text-sm text-slate-200"
+                  className="mt-1 bg-muted/40 border-border text-sm text-foreground"
                 />
               </div>
 
@@ -584,11 +597,11 @@ export function SourcesTable({ channels, partners }: Props) {
                     checked={channelIsActive}
                     onChange={(e) => setChannelIsActive(e.target.checked)}
                     disabled={isPending}
-                    className="h-4 w-4 rounded border-slate-700 bg-slate-950 text-emerald-600 focus:ring-emerald-500"
+                    className="h-4 w-4 rounded border-border bg-muted/40 text-emerald-600 focus:ring-emerald-500"
                   />
                   <Label
                     htmlFor="channel-active"
-                    className="text-xs text-slate-300 cursor-pointer"
+                    className="text-xs text-foreground/80 cursor-pointer"
                   >
                     Đang hoạt động
                   </Label>
@@ -602,7 +615,7 @@ export function SourcesTable({ channels, partners }: Props) {
                 variant="outline"
                 onClick={() => setIsChannelModalOpen(false)}
                 disabled={isPending}
-                className="border-slate-800 text-slate-300 hover:bg-slate-800"
+                className="border-border text-foreground/80 hover:bg-muted"
               >
                 Hủy
               </Button>
@@ -624,20 +637,24 @@ export function SourcesTable({ channels, partners }: Props) {
         open={isPartnerModalOpen}
         onOpenChange={(open) => !isPending && setIsPartnerModalOpen(open)}
       >
-        <DialogContent className="max-w-lg bg-slate-900 border-slate-800 text-slate-100">
+        <DialogContent className="max-w-lg bg-card border-border text-foreground">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-white">
+            <DialogTitle className="text-lg font-bold text-foreground">
               {editingPartner ? "Chỉnh sửa hồ sơ đối tác" : "Thêm đối tác mới"}
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-400">
+            <DialogDescription className="text-xs text-muted-foreground">
               Quản lý công ty lữ hành, đại lý du lịch hoặc đối tác doanh nghiệp.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmitPartner} className="space-y-4 py-2">
             <div>
-              <Label htmlFor="partner-name" className="text-xs text-slate-300">
-                Tên công ty / Đối tác <span className="text-red-400">*</span>
+              <Label
+                htmlFor="partner-name"
+                className="text-xs text-foreground/80"
+              >
+                Tên công ty / Đối tác{" "}
+                <span className="text-red-700 dark:text-red-400">*</span>
               </Label>
               <Input
                 id="partner-name"
@@ -645,7 +662,7 @@ export function SourcesTable({ channels, partners }: Props) {
                 onChange={(e) => setPartnerName(e.target.value)}
                 placeholder="vd: Saigontourist, Vietravel, FPT Software"
                 disabled={isPending}
-                className="mt-1 bg-slate-950 border-slate-800 text-sm text-slate-200"
+                className="mt-1 bg-muted/40 border-border text-sm text-foreground"
                 required
               />
             </div>
@@ -654,7 +671,7 @@ export function SourcesTable({ channels, partners }: Props) {
               <div>
                 <Label
                   htmlFor="partner-kind"
-                  className="text-xs text-slate-300"
+                  className="text-xs text-foreground/80"
                 >
                   Phân loại đối tác
                 </Label>
@@ -672,7 +689,7 @@ export function SourcesTable({ channels, partners }: Props) {
                     )
                   }
                   disabled={isPending}
-                  className="w-full mt-1 h-9 rounded-md border border-slate-800 bg-slate-950 px-3 py-1 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  className="w-full mt-1 h-9 rounded-md border border-border bg-muted/40 px-3 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 >
                   <option value="tour_operator">Công ty lữ hành (Tour)</option>
                   <option value="travel_agency">Đại lý du lịch</option>
@@ -685,7 +702,7 @@ export function SourcesTable({ channels, partners }: Props) {
               <div>
                 <Label
                   htmlFor="partner-contact"
-                  className="text-xs text-slate-300"
+                  className="text-xs text-foreground/80"
                 >
                   Người đại diện / liên hệ
                 </Label>
@@ -695,7 +712,7 @@ export function SourcesTable({ channels, partners }: Props) {
                   onChange={(e) => setPartnerContact(e.target.value)}
                   placeholder="Họ tên người phụ trách"
                   disabled={isPending}
-                  className="mt-1 bg-slate-950 border-slate-800 text-sm text-slate-200"
+                  className="mt-1 bg-muted/40 border-border text-sm text-foreground"
                 />
               </div>
             </div>
@@ -704,7 +721,7 @@ export function SourcesTable({ channels, partners }: Props) {
               <div>
                 <Label
                   htmlFor="partner-phone"
-                  className="text-xs text-slate-300"
+                  className="text-xs text-foreground/80"
                 >
                   Số điện thoại liên hệ
                 </Label>
@@ -714,14 +731,14 @@ export function SourcesTable({ channels, partners }: Props) {
                   onChange={(e) => setPartnerPhone(e.target.value)}
                   placeholder="0901234567"
                   disabled={isPending}
-                  className="mt-1 bg-slate-950 border-slate-800 text-sm text-slate-200"
+                  className="mt-1 bg-muted/40 border-border text-sm text-foreground"
                 />
               </div>
 
               <div>
                 <Label
                   htmlFor="partner-email"
-                  className="text-xs text-slate-300"
+                  className="text-xs text-foreground/80"
                 >
                   Email nhận hóa đơn / thông tin
                 </Label>
@@ -732,14 +749,17 @@ export function SourcesTable({ channels, partners }: Props) {
                   onChange={(e) => setPartnerEmail(e.target.value)}
                   placeholder="contact@doitac.com"
                   disabled={isPending}
-                  className="mt-1 bg-slate-950 border-slate-800 text-sm text-slate-200"
+                  className="mt-1 bg-muted/40 border-border text-sm text-foreground"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="partner-tax" className="text-xs text-slate-300">
+                <Label
+                  htmlFor="partner-tax"
+                  className="text-xs text-foreground/80"
+                >
                   Mã số thuế doanh nghiệp
                 </Label>
                 <Input
@@ -748,7 +768,7 @@ export function SourcesTable({ channels, partners }: Props) {
                   onChange={(e) => setPartnerTaxCode(e.target.value)}
                   placeholder="0300123456"
                   disabled={isPending}
-                  className="mt-1 bg-slate-950 border-slate-800 font-mono text-xs text-slate-200"
+                  className="mt-1 bg-muted/40 border-border font-mono text-xs text-foreground"
                 />
               </div>
 
@@ -760,11 +780,11 @@ export function SourcesTable({ channels, partners }: Props) {
                     checked={partnerIsActive}
                     onChange={(e) => setPartnerIsActive(e.target.checked)}
                     disabled={isPending}
-                    className="h-4 w-4 rounded border-slate-700 bg-slate-950 text-emerald-600 focus:ring-emerald-500"
+                    className="h-4 w-4 rounded border-border bg-muted/40 text-emerald-600 focus:ring-emerald-500"
                   />
                   <Label
                     htmlFor="partner-active"
-                    className="text-xs text-slate-300 cursor-pointer"
+                    className="text-xs text-foreground/80 cursor-pointer"
                   >
                     Đang thiết lập hợp tác
                   </Label>
@@ -773,7 +793,10 @@ export function SourcesTable({ channels, partners }: Props) {
             </div>
 
             <div>
-              <Label htmlFor="partner-note" className="text-xs text-slate-300">
+              <Label
+                htmlFor="partner-note"
+                className="text-xs text-foreground/80"
+              >
                 Ghi chú điều khoản / hợp đồng
               </Label>
               <textarea
@@ -783,7 +806,7 @@ export function SourcesTable({ channels, partners }: Props) {
                 onChange={(e) => setPartnerNote(e.target.value)}
                 placeholder="Ghi chú chiết khấu, chính sách thanh toán..."
                 disabled={isPending}
-                className="w-full mt-1 rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className="w-full mt-1 rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500"
               />
             </div>
 
@@ -793,7 +816,7 @@ export function SourcesTable({ channels, partners }: Props) {
                 variant="outline"
                 onClick={() => setIsPartnerModalOpen(false)}
                 disabled={isPending}
-                className="border-slate-800 text-slate-300 hover:bg-slate-800"
+                className="border-border text-foreground/80 hover:bg-muted"
               >
                 Hủy
               </Button>

@@ -4,7 +4,6 @@ import { DoorClosed } from "lucide-react";
 import { useState } from "react";
 import {
   Badge,
-  Button,
   Card,
   CardDescription,
   CardHeader,
@@ -80,14 +79,13 @@ export function RoomsTable({ rooms, branches }: RoomsTableProps) {
               <TableHead>Tầng</TableHead>
               <TableHead>Hạng / Loại phòng</TableHead>
               <TableHead>Trạng thái</TableHead>
-              <TableHead className="text-right">Hành động</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredRooms.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={5}
                   className="h-32 text-center text-xs text-muted-foreground"
                 >
                   Không tìm thấy phòng nào phù hợp với bộ lọc
@@ -125,15 +123,6 @@ export function RoomsTable({ rooms, branches }: RoomsTableProps) {
                     >
                       Hoạt động
                     </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 text-[11px] px-2 text-primary"
-                    >
-                      Sửa
-                    </Button>
                   </TableCell>
                 </TableRow>
               ))

@@ -55,9 +55,7 @@ export function AssetsTable({
     branches[0]?.id ||
     "";
   const [formBranchId, setFormBranchId] = useState(defaultBranchId);
-  const [formCategoryId, setFormCategoryId] = useState(
-    categories[0]?.id || "",
-  );
+  const [formCategoryId, setFormCategoryId] = useState(categories[0]?.id || "");
   const [formName, setFormName] = useState("");
   const [formCode, setFormCode] = useState("");
   const [formRoomId, setFormRoomId] = useState("");
@@ -296,7 +294,7 @@ export function AssetsTable({
 
         <div className="flex items-center gap-3 flex-wrap text-xs">
           <div className="flex items-center gap-1.5">
-            <span className="text-slate-400 font-medium">Cơ sở:</span>
+            <span className="text-muted-foreground font-medium">Cơ sở:</span>
             {branches.length === 1 ? (
               <div
                 className="flex items-center gap-1.5 py-1 px-2.5 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 font-semibold text-slate-800 dark:text-slate-200"
@@ -324,7 +322,9 @@ export function AssetsTable({
           </div>
 
           <div className="flex items-center gap-1.5">
-            <span className="text-slate-400 font-medium">Tình trạng:</span>
+            <span className="text-muted-foreground font-medium">
+              Tình trạng:
+            </span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -359,7 +359,7 @@ export function AssetsTable({
                 <tr>
                   <td
                     colSpan={6}
-                    className="py-12 text-center text-slate-400 text-xs"
+                    className="py-12 text-center text-muted-foreground text-xs"
                   >
                     Không tìm thấy trang thiết bị nào phù hợp bộ lọc.
                   </td>
@@ -379,7 +379,7 @@ export function AssetsTable({
                           <div className="font-semibold text-slate-900 dark:text-slate-100">
                             {a.name}
                           </div>
-                          <div className="font-mono text-[11px] text-slate-400">
+                          <div className="font-mono text-[11px] text-muted-foreground">
                             {a.code}
                           </div>
                         </div>
@@ -396,16 +396,16 @@ export function AssetsTable({
                       </div>
                       {a.room_number ? (
                         <div className="flex items-center gap-1 text-slate-500 mt-0.5">
-                          <DoorOpen className="w-3.5 h-3.5 text-slate-400" />
+                          <DoorOpen className="w-3.5 h-3.5 text-muted-foreground" />
                           Phòng {a.room_number}
                         </div>
                       ) : a.location_name ? (
                         <div className="flex items-center gap-1 text-slate-500 mt-0.5">
-                          <Building2 className="w-3.5 h-3.5 text-slate-400" />
+                          <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
                           {a.location_name}
                         </div>
                       ) : (
-                        <span className="text-slate-400">Kho cơ sở</span>
+                        <span className="text-muted-foreground">Kho cơ sở</span>
                       )}
                     </td>
 
@@ -413,7 +413,7 @@ export function AssetsTable({
                       {a.warranty_until ? (
                         <span>{formatDateVN(a.warranty_until)}</span>
                       ) : (
-                        <span className="text-slate-400">—</span>
+                        <span className="text-muted-foreground">—</span>
                       )}
                     </td>
 
@@ -427,7 +427,7 @@ export function AssetsTable({
                           onClick={() => handleOpenStatusModal(a)}
                           className="h-8 text-xs font-semibold rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900"
                         >
-                          <RefreshCw className="w-3.5 h-3.5 mr-1 text-slate-400" />
+                          <RefreshCw className="w-3.5 h-3.5 mr-1 text-muted-foreground" />
                           Đổi trạng thái
                         </Button>
                         <Link
@@ -461,14 +461,14 @@ export function AssetsTable({
                   <RefreshCw className="w-4 h-4 text-indigo-600" />
                   Cập nhật trạng thái thiết bị
                 </h2>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {editingAsset.name} ({editingAsset.code})
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setEditingAsset(null)}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-muted-foreground hover:text-slate-600"
               >
                 ✕
               </button>
@@ -541,7 +541,7 @@ export function AssetsTable({
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                className="text-muted-foreground hover:text-slate-600 dark:hover:text-slate-200"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -635,7 +635,9 @@ export function AssetsTable({
                     onChange={(e) => setFormRoomId(e.target.value)}
                     className="w-full text-xs font-medium px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
                   >
-                    <option value="">-- Khu vực chung / Chưa gắn phòng --</option>
+                    <option value="">
+                      -- Khu vực chung / Chưa gắn phòng --
+                    </option>
                     {modalRooms.map((r) => (
                       <option key={r.id} value={r.id}>
                         Phòng {r.number}
@@ -730,7 +732,9 @@ export function AssetsTable({
                     type="number"
                     min="1"
                     value={formQuantity}
-                    onChange={(e) => setFormQuantity(Number(e.target.value) || 1)}
+                    onChange={(e) =>
+                      setFormQuantity(Number(e.target.value) || 1)
+                    }
                     className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
                   />
                 </div>
@@ -741,12 +745,16 @@ export function AssetsTable({
                   </label>
                   <select
                     value={formStatus}
-                    onChange={(e) => setFormStatus(e.target.value as AssetStatus)}
+                    onChange={(e) =>
+                      setFormStatus(e.target.value as AssetStatus)
+                    }
                     className="w-full text-xs font-medium px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
                   >
                     <option value="in_use">Đang hoạt động</option>
                     <option value="in_storage">Trong kho lưu trữ</option>
-                    <option value="under_repair">Đang bảo hành / sửa chữa</option>
+                    <option value="under_repair">
+                      Đang bảo hành / sửa chữa
+                    </option>
                   </select>
                 </div>
 

@@ -293,12 +293,12 @@ export function InspectionRunner({
 
   if (!currentTemplate) {
     return (
-      <div className="max-w-xl mx-auto p-8 bg-slate-900 border border-slate-800 rounded-2xl text-center space-y-4">
-        <ClipboardCheck className="w-12 h-12 text-slate-600 mx-auto" />
-        <h2 className="text-lg font-semibold text-slate-200">
+      <div className="max-w-xl mx-auto p-8 bg-card border border-border rounded-2xl text-center space-y-4">
+        <ClipboardCheck className="w-12 h-12 text-muted-foreground mx-auto" />
+        <h2 className="text-lg font-semibold text-foreground">
           Chưa có mẫu kiểm tra nào đang kích hoạt
         </h2>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-muted-foreground">
           Vui lòng vào cài đặt Mẫu kiểm tra để tạo bộ tiêu chí trước khi thực
           hiện
         </p>
@@ -317,38 +317,38 @@ export function InspectionRunner({
       <div className="flex items-center justify-between gap-3">
         <Link
           href="/facilities/maintenance"
-          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 py-1"
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground py-1"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Quay lại Bảo trì & Kiểm tra</span>
         </Link>
 
-        <span className="text-xs text-slate-400 flex items-center gap-1.5">
-          <ClipboardCheck className="w-4 h-4 text-emerald-400" />
+        <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <ClipboardCheck className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
           <span>Biên bản kiểm tra điện tử</span>
         </span>
       </div>
 
       {/* Progress & Live Score Card */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sticky top-14 z-20 backdrop-blur-md shadow-lg">
+      <div className="bg-card border border-border rounded-2xl p-4 sticky top-14 z-20 backdrop-blur-md shadow-lg">
         <div className="flex items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-slate-300">
+              <span className="text-xs font-semibold text-foreground/80">
                 Tiến độ: {completedCount}/{totalCount} mục
               </span>
               {completedCount < totalCount && (
                 <button
                   type="button"
                   onClick={handleQuickPassAll}
-                  className="text-[11px] text-indigo-400 hover:text-indigo-300 font-medium underline"
+                  className="text-[11px] text-indigo-700 dark:text-indigo-400 hover:text-indigo-800 font-medium underline"
                 >
                   Đạt tất cả
                 </button>
               )}
             </div>
             {/* Progress bar */}
-            <div className="w-44 sm:w-64 h-2 bg-slate-800 rounded-full mt-2 overflow-hidden">
+            <div className="w-44 sm:w-64 h-2 bg-muted rounded-full mt-2 overflow-hidden">
               <div
                 className="h-full bg-emerald-500 transition-all duration-300 rounded-full"
                 style={{
@@ -360,27 +360,27 @@ export function InspectionRunner({
 
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground block">
                 Điểm dự kiến
               </span>
               <span
                 className={`text-xl font-black ${
                   liveScore >= 90
-                    ? "text-emerald-400"
+                    ? "text-emerald-700 dark:text-emerald-400"
                     : liveScore >= 75
-                      ? "text-amber-400"
-                      : "text-rose-400"
+                      ? "text-amber-700 dark:text-amber-400"
+                      : "text-rose-700 dark:text-rose-400"
                 }`}
               >
                 {liveScore}%
               </span>
             </div>
             <div className="flex items-center gap-1.5 text-xs font-semibold">
-              <span className="px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <span className="px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
                 {passedCount} Đạt
               </span>
               {failedCount > 0 && (
-                <span className="px-2 py-1 rounded-md bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                <span className="px-2 py-1 rounded-md bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20">
                   {failedCount} Lỗi
                 </span>
               )}
@@ -390,16 +390,18 @@ export function InspectionRunner({
       </div>
 
       {/* Target & Form Settings */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-4">
-        <h2 className="text-sm font-bold text-slate-200 uppercase tracking-wide flex items-center gap-2">
-          <Building2 className="w-4 h-4 text-indigo-400" />
+      <div className="bg-card border border-border rounded-2xl p-4 sm:p-5 space-y-4">
+        <h2 className="text-sm font-bold text-foreground uppercase tracking-wide flex items-center gap-2">
+          <Building2 className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
           <span>Thông tin địa điểm kiểm tra</span>
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Branch selector */}
           <div className="space-y-1">
-            <Label className="text-xs text-slate-400">Cơ sở khách sạn</Label>
+            <Label className="text-xs text-muted-foreground">
+              Cơ sở khách sạn
+            </Label>
             <select
               value={selectedBranchId}
               onChange={(e) => {
@@ -407,7 +409,7 @@ export function InspectionRunner({
                 setSelectedRoomId("");
                 setSelectedLocationId("");
               }}
-              className="w-full h-10 rounded-xl border border-slate-800 bg-slate-950 px-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500/30"
+              className="w-full h-10 rounded-xl border border-border bg-muted/40 px-3 text-xs text-foreground outline-none focus:ring-2 focus:ring-indigo-500/30"
             >
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -419,11 +421,13 @@ export function InspectionRunner({
 
           {/* Template selector */}
           <div className="space-y-1">
-            <Label className="text-xs text-slate-400">Mẫu kiểm tra</Label>
+            <Label className="text-xs text-muted-foreground">
+              Mẫu kiểm tra
+            </Label>
             <select
               value={selectedTemplateId}
               onChange={(e) => setSelectedTemplateId(e.target.value)}
-              className="w-full h-10 rounded-xl border border-slate-800 bg-slate-950 px-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500/30"
+              className="w-full h-10 rounded-xl border border-border bg-muted/40 px-3 text-xs text-foreground outline-none focus:ring-2 focus:ring-indigo-500/30"
             >
               {activeTemplates.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -444,11 +448,13 @@ export function InspectionRunner({
           {/* Scope-specific Target */}
           {currentTemplate.scope === "room" ? (
             <div className="space-y-1">
-              <Label className="text-xs text-slate-400">Số phòng *</Label>
+              <Label className="text-xs text-muted-foreground">
+                Số phòng *
+              </Label>
               <select
                 value={selectedRoomId}
                 onChange={(e) => setSelectedRoomId(e.target.value)}
-                className="w-full h-10 rounded-xl border border-slate-800 bg-slate-950 px-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500/30"
+                className="w-full h-10 rounded-xl border border-border bg-muted/40 px-3 text-xs text-foreground outline-none focus:ring-2 focus:ring-indigo-500/30"
                 required
               >
                 <option value="">-- Chọn phòng kiểm tra --</option>
@@ -461,11 +467,13 @@ export function InspectionRunner({
             </div>
           ) : currentTemplate.scope === "area" ? (
             <div className="space-y-1">
-              <Label className="text-xs text-slate-400">Khu vực kiểm tra</Label>
+              <Label className="text-xs text-muted-foreground">
+                Khu vực kiểm tra
+              </Label>
               <select
                 value={selectedLocationId}
                 onChange={(e) => setSelectedLocationId(e.target.value)}
-                className="w-full h-10 rounded-xl border border-slate-800 bg-slate-950 px-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500/30"
+                className="w-full h-10 rounded-xl border border-border bg-muted/40 px-3 text-xs text-foreground outline-none focus:ring-2 focus:ring-indigo-500/30"
               >
                 <option value="">-- Chọn khu vực chung --</option>
                 {filteredLocations.map((l) => (
@@ -477,13 +485,13 @@ export function InspectionRunner({
             </div>
           ) : (
             <div className="space-y-1">
-              <Label className="text-xs text-slate-400">
+              <Label className="text-xs text-muted-foreground">
                 Khu vực / Tòa nhà
               </Label>
               <select
                 value={selectedLocationId}
                 onChange={(e) => setSelectedLocationId(e.target.value)}
-                className="w-full h-10 rounded-xl border border-slate-800 bg-slate-950 px-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500/30"
+                className="w-full h-10 rounded-xl border border-border bg-muted/40 px-3 text-xs text-foreground outline-none focus:ring-2 focus:ring-indigo-500/30"
               >
                 <option value="">Toàn bộ cơ sở</option>
                 {filteredLocations.map((l) => (
@@ -503,30 +511,30 @@ export function InspectionRunner({
           {evaluationList.map((item, idx) => (
             <div
               key={item.key}
-              className={`bg-slate-900 border rounded-2xl p-4 sm:p-5 transition-all shadow-sm ${
+              className={`bg-card border rounded-2xl p-4 sm:p-5 transition-all shadow-sm ${
                 item.status === "pass"
                   ? "border-emerald-500/30 bg-emerald-950/10"
                   : item.status === "fail"
                     ? "border-rose-500/50 bg-rose-950/20 ring-1 ring-rose-500/30"
                     : item.status === "na"
-                      ? "border-slate-800 bg-slate-950/40 opacity-75"
-                      : "border-slate-800 hover:border-slate-700"
+                      ? "border-border bg-muted/40 opacity-75"
+                      : "border-border hover:border-border"
               }`}
             >
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                 {/* Title and notes */}
                 <div className="space-y-1 flex-1">
                   <div className="flex items-start gap-2">
-                    <span className="text-xs font-bold text-slate-400 mt-0.5">
+                    <span className="text-xs font-bold text-muted-foreground mt-0.5">
                       {idx + 1}.
                     </span>
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-100 leading-snug">
+                      <h3 className="text-sm font-semibold text-foreground leading-snug">
                         {item.label}
                       </h3>
                       {item.hint && (
-                        <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
-                          <Info className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                        <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                          <Info className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                           <span>{item.hint}</span>
                         </p>
                       )}
@@ -534,7 +542,7 @@ export function InspectionRunner({
                   </div>
 
                   {item.critical && (
-                    <span className="inline-flex items-center gap-1 mt-1 text-[11px] font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <span className="inline-flex items-center gap-1 mt-1 text-[11px] font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
                       <AlertTriangle className="w-3 h-3" />
                       <span>
                         Mục quan trọng (Tự sinh sự cố mức Cao nếu hỏng)
@@ -551,7 +559,7 @@ export function InspectionRunner({
                     className={`h-12 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all select-none active:scale-95 ${
                       item.status === "pass"
                         ? "bg-emerald-600 text-white shadow-md shadow-emerald-900/30"
-                        : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-emerald-400 hover:border-emerald-500/40"
+                        : "bg-muted/40 border border-border text-muted-foreground hover:text-emerald-800 hover:border-emerald-500/40"
                     }`}
                   >
                     <Check className="w-4 h-4 stroke-[3]" />
@@ -564,7 +572,7 @@ export function InspectionRunner({
                     className={`h-12 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all select-none active:scale-95 ${
                       item.status === "fail"
                         ? "bg-rose-600 text-white shadow-md shadow-rose-900/30"
-                        : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/40"
+                        : "bg-muted/40 border border-border text-muted-foreground hover:text-rose-800 hover:border-rose-500/40"
                     }`}
                   >
                     <X className="w-4 h-4 stroke-[3]" />
@@ -576,8 +584,8 @@ export function InspectionRunner({
                     onClick={() => handleSetStatus(item.key, "na")}
                     className={`h-12 rounded-xl flex items-center justify-center gap-1.5 text-xs font-semibold transition-all select-none active:scale-95 ${
                       item.status === "na"
-                        ? "bg-slate-700 text-slate-100 shadow-sm"
-                        : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200"
+                        ? "bg-muted-foreground/30 text-foreground shadow-sm"
+                        : "bg-muted/40 border border-border text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     <Minus className="w-3.5 h-3.5" />
@@ -590,8 +598,8 @@ export function InspectionRunner({
               {item.status === "fail" && (
                 <div className="mt-4 pt-3 border-t border-rose-500/20 space-y-3">
                   <div className="space-y-1">
-                    <Label className="text-xs font-semibold text-rose-300 flex items-center gap-1">
-                      <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+                    <Label className="text-xs font-semibold text-rose-700 dark:text-rose-300 flex items-center gap-1">
+                      <AlertTriangle className="w-3.5 h-3.5 text-rose-700 dark:text-rose-400" />
                       <span>Mô tả chi tiết sự cố / hư hỏng *</span>
                     </Label>
                     <Input
@@ -600,17 +608,17 @@ export function InspectionRunner({
                         handleSetFailReason(item.key, e.target.value)
                       }
                       placeholder="VD: Điều hòa chảy nước góc phải, quạt kêu to khi chạy"
-                      className="h-10 text-xs bg-slate-950 border-rose-500/40 focus:border-rose-400"
+                      className="h-10 text-xs bg-muted/40 border-rose-500/40 focus:border-rose-400"
                       required
                     />
-                    <p className="text-[11px] text-rose-400/80">
+                    <p className="text-[11px] text-rose-700 dark:text-rose-400/80">
                       Hệ thống sẽ tự động tạo một Phiếu công việc (Work Order)
                       để điều phối kỹ thuật xử lý.
                     </p>
                   </div>
 
                   <div className="space-y-1">
-                    <Label className="text-[11px] text-slate-400">
+                    <Label className="text-[11px] text-muted-foreground">
                       Link ảnh chụp hiện trường (tùy chọn)
                     </Label>
                     <Input
@@ -619,7 +627,7 @@ export function InspectionRunner({
                         handleSetPhotoUrl(item.key, e.target.value)
                       }
                       placeholder="https://..."
-                      className="h-8 text-xs bg-slate-950 border-slate-800"
+                      className="h-8 text-xs bg-muted/40 border-border"
                     />
                   </div>
                 </div>
@@ -629,10 +637,10 @@ export function InspectionRunner({
         </div>
 
         {/* General Note */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-2">
+        <div className="bg-card border border-border rounded-2xl p-4 sm:p-5 space-y-2">
           <Label
             htmlFor="generalNote"
-            className="text-xs font-semibold text-slate-300"
+            className="text-xs font-semibold text-foreground/80"
           >
             Ghi chú tổng kết kiểm tra
           </Label>
@@ -642,18 +650,18 @@ export function InspectionRunner({
             value={generalNote}
             onChange={(e) => setGeneralNote(e.target.value)}
             placeholder="Ghi chú thêm về vệ sinh, mùi phòng hoặc ý kiến cho ca làm việc tiếp theo..."
-            className="w-full rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs text-slate-200 outline-none focus:ring-2 focus:ring-indigo-500/30 resize-none"
+            className="w-full rounded-xl border border-border bg-muted/40 p-3 text-xs text-foreground outline-none focus:ring-2 focus:ring-indigo-500/30 resize-none"
           />
         </div>
 
         {/* Bottom Sticky Action Bar */}
-        <div className="fixed bottom-0 left-0 right-0 bg-slate-950/95 border-t border-slate-800 p-3 sm:p-4 backdrop-blur-md z-30">
+        <div className="fixed bottom-0 left-0 right-0 bg-card/95 border-t border-border p-3 sm:p-4 backdrop-blur-md z-30">
           <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
-            <div className="text-xs text-slate-300">
-              <span className="font-semibold text-slate-100">
+            <div className="text-xs text-foreground/80">
+              <span className="font-semibold text-foreground">
                 Đã đánh giá {completedCount}/{totalCount}
               </span>
-              <span className="text-slate-500 hidden sm:inline">
+              <span className="text-muted-foreground hidden sm:inline">
                 {" "}
                 • {passedCount} Đạt • {failedCount} Lỗi
               </span>
@@ -684,7 +692,7 @@ export function InspectionRunner({
           {completedResult && (
             <>
               <DialogHeader className="text-center sm:text-center">
-                <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-400 mx-auto flex items-center justify-center mb-2 border border-emerald-500/20">
+                <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 mx-auto flex items-center justify-center mb-2 border border-emerald-500/20">
                   <CheckCircle2 className="w-7 h-7" />
                 </div>
                 <DialogTitle className="text-lg">
@@ -698,22 +706,22 @@ export function InspectionRunner({
 
               <div className="space-y-4 py-2">
                 {/* Score Banner */}
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-center">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                <div className="p-4 rounded-xl bg-muted/40 border border-border text-center">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
                     Điểm số biên bản
                   </span>
                   <span
                     className={`text-4xl font-black mt-1 block ${
                       completedResult.score >= 90
-                        ? "text-emerald-400"
+                        ? "text-emerald-700 dark:text-emerald-400"
                         : completedResult.score >= 75
-                          ? "text-amber-400"
-                          : "text-rose-400"
+                          ? "text-amber-700 dark:text-amber-400"
+                          : "text-rose-700 dark:text-rose-400"
                     }`}
                   >
                     {completedResult.score}%
                   </span>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {completedResult.score >= 90
                       ? "Phòng đạt tiêu chuẩn sạch đẹp & an toàn vận hành"
                       : completedResult.score >= 75
@@ -725,22 +733,22 @@ export function InspectionRunner({
                 {/* Generated Work Orders Notice */}
                 {completedResult.work_order_ids &&
                   completedResult.work_order_ids.length > 0 && (
-                    <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 space-y-2">
-                      <div className="flex items-center gap-2 font-semibold text-rose-200">
-                        <Wrench className="w-4 h-4 text-rose-400" />
+                    <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-700 dark:text-rose-300 space-y-2">
+                      <div className="flex items-center gap-2 font-semibold text-rose-700 dark:text-rose-200">
+                        <Wrench className="w-4 h-4 text-rose-700 dark:text-rose-400" />
                         <span>
                           Đã tự động khởi tạo{" "}
                           {completedResult.work_order_ids.length} Phiếu sự cố kỹ
                           thuật:
                         </span>
                       </div>
-                      <p className="text-[11px] text-rose-300/80">
+                      <p className="text-[11px] text-rose-700 dark:text-rose-300/80">
                         Phiếu sự cố đã được giao đến ban kỹ thuật xử lý ngay
                         theo thứ tự ưu tiên.
                       </p>
                       <Link
                         href="/facilities/work-orders"
-                        className="inline-flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 font-semibold pt-1 underline"
+                        className="inline-flex items-center gap-1 text-xs text-indigo-700 dark:text-indigo-400 hover:text-indigo-800 font-semibold pt-1 underline"
                       >
                         <span>Xem danh sách Phiếu sự cố kỹ thuật</span>
                         <ChevronRight className="w-3.5 h-3.5" />

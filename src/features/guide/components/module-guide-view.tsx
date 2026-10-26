@@ -2,9 +2,12 @@
 
 import {
   BarChart3,
+  Award,
   CheckSquare,
   ChevronDown,
   ChevronUp,
+  Gift,
+  Handshake,
   HelpCircle,
   Lightbulb,
   Settings,
@@ -44,6 +47,12 @@ export function ModuleGuideView() {
         return BarChart3;
       case "mod-approvals":
         return CheckSquare;
+      case "mod-partners":
+        return Handshake;
+      case "mod-rewards":
+        return Gift;
+      case "mod-loyalty":
+        return Award;
       case "mod-prospects":
         return Target;
       case "mod-settings":
@@ -56,7 +65,7 @@ export function ModuleGuideView() {
   return (
     <div className="space-y-6">
       {/* Module Navigation Tabs */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
         {MODULE_GUIDES.map((mod) => {
           const isSelected = mod.id === selectedModuleId;
           const Icon = getModuleIcon(mod.id);
@@ -68,7 +77,7 @@ export function ModuleGuideView() {
               onClick={() => setSelectedModuleId(mod.id)}
               className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1.5 select-none ${
                 isSelected
-                  ? "bg-amber-500/15 border-amber-500/50 shadow-md shadow-amber-500/10 text-amber-300 ring-1 ring-amber-500/20"
+                  ? "bg-amber-500/15 border-amber-500/50 shadow-md shadow-amber-500/10 text-amber-700 dark:text-amber-300 ring-1 ring-amber-500/20"
                   : "bg-card/70 border-border/60 hover:bg-card text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -121,7 +130,7 @@ export function ModuleGuideView() {
           {/* Features Walkthrough */}
           <div className="space-y-4">
             <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+              <Sparkles className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400" />
               Các tính năng và hướng dẫn thao tác từng bước
             </h4>
 
@@ -154,8 +163,8 @@ export function ModuleGuideView() {
                   </div>
 
                   {feat.tips && (
-                    <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 flex items-start gap-2.5 text-xs text-amber-300/90">
-                      <Lightbulb className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+                    <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 flex items-start gap-2.5 text-xs text-amber-700 dark:text-amber-300/90">
+                      <Lightbulb className="h-4 w-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
                       <span className="leading-relaxed">{feat.tips}</span>
                     </div>
                   )}
@@ -186,7 +195,9 @@ export function ModuleGuideView() {
                         className="w-full p-3.5 text-left flex items-center justify-between gap-3 text-xs font-bold text-foreground hover:bg-muted/30 transition-colors"
                       >
                         <span className="flex items-center gap-2">
-                          <span className="text-amber-400 font-mono">Q:</span>
+                          <span className="text-amber-700 dark:text-amber-400 font-mono">
+                            Q:
+                          </span>
                           <span>{item.q}</span>
                         </span>
                         {isOpen ? (

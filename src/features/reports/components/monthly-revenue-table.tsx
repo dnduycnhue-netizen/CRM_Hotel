@@ -194,7 +194,7 @@ export function MonthlyRevenueTable({
                 <tr>
                   <td
                     colSpan={8}
-                    className="py-12 text-center text-slate-400 text-xs"
+                    className="py-12 text-center text-muted-foreground text-xs"
                   >
                     Chưa có dữ liệu doanh thu tháng cho năm {year}.
                   </td>
@@ -226,7 +226,9 @@ export function MonthlyRevenueTable({
                             Kết hợp
                           </span>
                         ) : (
-                          <span className="text-slate-400 text-xs">—</span>
+                          <span className="text-muted-foreground text-xs">
+                            —
+                          </span>
                         )}
                       </td>
 

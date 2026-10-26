@@ -128,20 +128,20 @@ export function GuestListTable({
               variant="outline"
               disabled={isExporting}
               onClick={handleExportExcel}
-              className={`rounded-xl font-medium border-slate-700 hover:bg-slate-800 ${
+              className={`rounded-xl font-medium ${
                 filterConsent !== "all"
-                  ? "text-teal-400 border-teal-700/60 bg-teal-950/20"
-                  : "text-slate-200"
+                  ? "text-teal-700 border-teal-500/50 bg-teal-50 hover:bg-teal-100"
+                  : "text-foreground"
               }`}
             >
               {isExporting ? (
-                <Loader2 className="w-4 h-4 mr-1.5 animate-spin text-slate-400" />
+                <Loader2 className="w-4 h-4 mr-1.5 animate-spin text-muted-foreground" />
               ) : (
                 <FileSpreadsheet
                   className={`w-4 h-4 mr-1.5 ${
                     filterConsent !== "all"
-                      ? "text-teal-400"
-                      : "text-emerald-400"
+                      ? "text-teal-600"
+                      : "text-emerald-600"
                   }`}
                 />
               )}
@@ -251,7 +251,7 @@ export function GuestListTable({
                 <tr>
                   <td
                     colSpan={6}
-                    className="py-12 text-center text-slate-400 text-xs"
+                    className="py-12 text-center text-muted-foreground text-xs"
                   >
                     Không tìm thấy hồ sơ khách hàng nào phù hợp bộ lọc.
                   </td>
@@ -277,7 +277,7 @@ export function GuestListTable({
                               {g.full_name}
                             </Link>
                             {g.birth_year && (
-                              <span className="text-[11px] text-slate-400">
+                              <span className="text-[11px] text-muted-foreground">
                                 ({g.birth_year})
                               </span>
                             )}
@@ -315,9 +315,9 @@ export function GuestListTable({
                             <span>{g.phone}</span>
                             <span
                               title="Số điện thoại được che mặt nạ theo chính sách bảo mật"
-                              className="inline-flex text-slate-400 cursor-help"
+                              className="inline-flex text-muted-foreground cursor-help"
                             >
-                              <Lock className="w-3 h-3 text-slate-400" />
+                              <Lock className="w-3 h-3 text-muted-foreground" />
                             </span>
                           </div>
                         ) : currentUserId &&
@@ -340,7 +340,7 @@ export function GuestListTable({
                         <div>—</div>
                       )}
                       {g.doc_masked && (
-                        <div className="font-mono text-[11px] text-slate-400 mt-0.5">
+                        <div className="font-mono text-[11px] text-muted-foreground mt-0.5">
                           {g.doc_masked}
                         </div>
                       )}
@@ -350,7 +350,7 @@ export function GuestListTable({
                       <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                         {g.total_stays} lượt ở
                       </div>
-                      <div className="text-[11px] text-slate-400">
+                      <div className="text-[11px] text-muted-foreground">
                         {g.total_nights} đêm
                       </div>
                     </td>
@@ -360,13 +360,15 @@ export function GuestListTable({
                         <div>
                           <div>{formatDateVN(g.last_stay_at)}</div>
                           {g.last_branch_name && (
-                            <div className="text-[11px] text-slate-400 mt-0.5">
+                            <div className="text-[11px] text-muted-foreground mt-0.5">
                               {g.last_branch_name}
                             </div>
                           )}
                         </div>
                       ) : (
-                        <span className="text-slate-400">Chưa lưu trú</span>
+                        <span className="text-muted-foreground">
+                          Chưa lưu trú
+                        </span>
                       )}
                     </td>
 
@@ -385,7 +387,9 @@ export function GuestListTable({
                             )}
                         </div>
                       ) : (
-                        <span className="text-slate-400 italic">Chưa gán</span>
+                        <span className="text-muted-foreground italic">
+                          Chưa gán
+                        </span>
                       )}
                     </td>
 
