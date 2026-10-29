@@ -83,9 +83,14 @@ export async function updateGuestAction(
     }
 
     const supabase = await createClient();
+    const patch = { ...parsed.data };
+    if (patch.phone && patch.phone.includes("*")) {
+      delete patch.phone;
+    }
+
     const { data, error } = await supabase.rpc("update_guest", {
       p_guest_id: guestId,
-      p_patch: parsed.data,
+      p_patch: patch,
       p_expected_updated_at: expectedUpdatedAt,
     });
 

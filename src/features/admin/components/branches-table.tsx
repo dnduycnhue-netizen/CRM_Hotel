@@ -105,7 +105,7 @@ export function BranchesTable({ branches }: BranchesTableProps) {
         setIsDialogOpen(false);
         router.refresh();
       } else {
-        toast.error(`Không thể lưu cơ sở: ${res.error}`);
+        toast.error(`Không thể lưu cơ sở: ${res.error.message || res.error.code}`);
       }
     });
   };

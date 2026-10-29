@@ -88,7 +88,7 @@ export function EditGuestForm({
         router.push(`/guests/${guest.id}`);
         router.refresh();
       } else {
-        toast.error(`Cập nhật thất bại: ${res.error}`);
+        toast.error(`Cập nhật thất bại: ${res.error.message || res.error.code}`);
       }
     });
   };
@@ -175,9 +175,16 @@ export function EditGuestForm({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="phone" className="text-xs font-semibold">
-                  Số điện thoại
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="phone" className="text-xs font-semibold">
+                    Số điện thoại
+                  </Label>
+                  {phone.includes("*") && (
+                    <span className="text-[10px] text-amber-600 font-medium">
+                      Đang được che bảo mật
+                    </span>
+                  )}
+                </div>
                 <Input
                   id="phone"
                   value={phone}
@@ -185,6 +192,11 @@ export function EditGuestForm({
                   placeholder="0905123456"
                   className="h-9 text-xs"
                 />
+                {phone.includes("*") && (
+                  <p className="text-[10px] text-muted-foreground">
+                    Giữ nguyên nếu không đổi. Để cập nhật số mới, nhập đầy đủ 10 chữ số.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-1.5">

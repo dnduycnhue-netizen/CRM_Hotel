@@ -53,6 +53,7 @@ export const WORKFLOW_DIAGRAMS: WorkflowDiagram[] = [
           "Chọn phòng trên lưới theo tầng, chọn kênh nguồn và giờ dự kiến trả phòng.",
         details: [
           "Màu trạng thái phòng: Sẵn sàng đón khách · Chờ dọn dẹp · Đang có khách · Khóa OOO. Phòng đang có khách hoặc khóa OOO không chọn được.",
+          "Phòng 'Chờ dọn dẹp' có nút 'Báo sạch': Lễ tân xác nhận buồng phòng dọn xong để mở bán check-in ngay mà không cần chờ hết 6 giờ mặc định.",
           "Kênh nguồn: khách vãng lai, điện thoại / Zalo, OTA (Booking.com, Agoda…), đối tác tour, khách công ty. Kênh đại lý / công ty bắt buộc chọn đối tác liên kết.",
           "Dự kiến trả phòng mặc định 12:00 ngày hôm sau. Giá phòng/đêm và tiền cọc là tùy chọn.",
         ],
@@ -112,6 +113,7 @@ export const WORKFLOW_DIAGRAMS: WorkflowDiagram[] = [
           "Bấm 'Trả phòng' trên dòng khách, kiểm tra giờ trả thực tế rồi xác nhận.",
         details: [
           "Giờ ghi nhận theo múi giờ Việt Nam; phòng chuyển sang trạng thái chờ dọn dẹp.",
+          "Nút 'Báo sạch' (trên lưới chọn phòng /check-in hoặc bảng /stays): cho phép mở bán phòng ngay khi buồng phòng hoàn tất dọn trước 6 giờ mặc định.",
           "Số lượt ở, số đêm và hạng thành viên của khách được tính lại tự động từ lượt ở thực tế (không nhập tay).",
         ],
         caution:
@@ -692,13 +694,14 @@ export const WORKFLOW_DIAGRAMS: WorkflowDiagram[] = [
       {
         id: "adm-2",
         stepNumber: 2,
-        title: "Kiểm tra danh mục phòng",
-        role: "Chủ chuỗi",
+        title: "Quản lý danh mục phòng",
+        role: "Quản lý cơ sở & Chủ chuỗi",
         screen: "/settings/rooms",
-        action: "Tra cứu danh mục phòng của từng cơ sở theo số phòng.",
+        action: "Thêm mới, sửa thông tin phòng, ngừng/mở lại kinh doanh và xóa phòng.",
         details: [
-          "Màn hình hiển thị số phòng, tầng, hạng / loại phòng và trạng thái hoạt động.",
-          "Danh mục phòng là nguồn của lưới chọn phòng ở màn hình check-in; hiện chưa có thao tác thêm / sửa phòng trên giao diện.",
+          "Quản lý cơ sở: thêm phòng mới, sửa số phòng/tầng/loại phòng/giá, tạm ngừng kinh doanh và mở lại bán cho cơ sở mình.",
+          "Chủ chuỗi: quản lý danh mục toàn bộ 8 cơ sở, có thêm quyền 'Xóa vĩnh viễn' các phòng trống chưa từng có lịch sử lưu trú.",
+          "Phòng đang có khách (in_house) bị chặn không cho phép ngừng kinh doanh.",
         ],
       },
       {

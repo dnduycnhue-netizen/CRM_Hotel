@@ -124,7 +124,7 @@ export function MaintenanceHub({
         setPlanName("");
         router.refresh();
       } else {
-        toast.error(`Không thể tạo kế hoạch: ${res.error}`);
+        toast.error(`Không thể tạo kế hoạch: ${res.error.message || res.error.code}`);
       }
     });
   };
