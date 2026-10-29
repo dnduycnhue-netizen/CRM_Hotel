@@ -64,3 +64,4 @@ select has_function(
 
 select * from finish();
 rollback;
+
