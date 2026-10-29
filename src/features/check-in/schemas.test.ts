@@ -132,4 +132,61 @@ describe("CheckIn Schemas", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("từ chối khi chọn kênh partner nhưng không chọn đối tác", () => {
+    const result = checkInSchema.safeParse({
+      branchId: validBranchId,
+      roomId: validRoomId,
+      fullName: "Đoàn Thanh Nghĩa",
+      phone: "0902000024",
+      sourceChannelCode: "partner",
+      expectedCheckOutAt: "2026-10-25T12:00:00+07:00",
+      partnerId: "",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.message).toContain(
+        "Vui lòng chọn đối tác tour / đại lý du lịch",
+      );
+    }
+  });
+
+  it("từ chối khi chọn kênh corporate nhưng không chọn công ty", () => {
+    const result = checkInSchema.safeParse({
+      branchId: validBranchId,
+      roomId: validRoomId,
+      fullName: "Đoàn Thanh Nghĩa",
+      phone: "0902000024",
+      sourceChannelCode: "corporate",
+      expectedCheckOutAt: "2026-10-25T12:00:00+07:00",
+      partnerId: "",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.message).toContain(
+        "Vui lòng chọn công ty / doanh nghiệp hợp đồng",
+      );
+    }
+  });
+
+  it("chấp nhận khi chọn kênh partner hoặc corporate có partnerId hợp lệ", () => {
+    const validPartnerId = "770e8400-e29b-41d4-a716-446655440000";
+    const result = checkInSchema.safeParse({
+      branchId: validBranchId,
+      roomId: validRoomId,
+      fullName: "Đoàn Thanh Nghĩa",
+      phone: "0902000024",
+      addressLine: "123 Lê Lợi, Hải Châu",
+      provinceCode: "48",
+      sourceChannelCode: "partner",
+      partnerId: validPartnerId,
+      expectedCheckOutAt: "2026-10-25T12:00:00+07:00",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.partnerId).toBe(validPartnerId);
+      expect(result.data.addressLine).toBe("123 Lê Lợi, Hải Châu");
+      expect(result.data.provinceCode).toBe("48");
+    }
+  });
 });

@@ -45,6 +45,40 @@ export async function checkoutStayAction(
   }
 }
 
+export async function confirmRoomCleanedAction(
+  roomId: string,
+  branchId: string,
+): Promise<
+  ActionResult<{ success: boolean; noop: boolean; stayId?: string | null }>
+> {
+  const auth = await requirePermission("stay.checkout", branchId);
+  if (!auth.ok) return auth;
+
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("confirm_room_cleaned", {
+      p_room_id: roomId,
+    });
+
+    if (error) {
+      if (error.message?.includes("room not found")) {
+        return fail("NOT_FOUND", undefined, "Không tìm thấy thông tin phòng");
+      }
+      return fail(error.code);
+    }
+
+    revalidatePath("/stays");
+    revalidatePath("/check-in");
+    return ok({
+      success: true,
+      noop: (data as any)?.noop ?? false,
+      stayId: (data as any)?.stay_id ?? null,
+    });
+  } catch {
+    return fail("UNKNOWN");
+  }
+}
+
 export async function cancelStayAction(
   stayId: string,
   branchId: string,
@@ -321,9 +355,7 @@ export async function getInHouseStays(
 ): Promise<InHouseStay[]> {
   try {
     const supabase = await createClient();
-    let query = supabase
-      .from("stays")
-      .select(`
+    let query = supabase.from("stays").select(`
         id,
         branch_id,
         branches (name),

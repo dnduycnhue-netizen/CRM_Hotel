@@ -308,10 +308,14 @@ export async function saveBranchAction(
 }
 
 import {
+  type CreateRoomInput,
+  createRoomSchema,
   type PartnerInput,
   partnerSchema,
   type SourceChannelInput,
   sourceChannelSchema,
+  type UpdateRoomInput,
+  updateRoomSchema,
 } from "./schemas";
 
 /**
@@ -507,4 +511,200 @@ export async function setBranchModulesAction(
     applied: appliedCount,
     cascaded: Array.from(allCascaded),
   });
+}
+
+/**
+ * Thêm phòng mới cho cơ sở
+ */
+export async function createRoomAction(
+  rawInput: CreateRoomInput,
+): Promise<ActionResult<{ id: string }>> {
+  const parsed = createRoomSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return fail("VALIDATION", parsed.error.flatten().fieldErrors);
+  }
+
+  const { branch_id, number, floor, room_type, opened_on } = parsed.data;
+  const hasPerm = await requirePermission("settings.rooms", branch_id);
+  if (!hasPerm.ok) return hasPerm;
+
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("create_room", {
+      p_branch_id: branch_id,
+      p_number: number,
+      p_floor: floor || null,
+      p_room_type: room_type || null,
+      p_opened_on: opened_on || null,
+    });
+
+    if (error) {
+      if (error.message?.includes("room number already exists in branch")) {
+        return fail(
+          "CONFLICT",
+          undefined,
+          "Số phòng này đã tồn tại ở chi nhánh này",
+        );
+      }
+      return fail(error.code || "UNKNOWN", undefined, error.message);
+    }
+
+    revalidatePath("/settings/rooms");
+    revalidatePath("/check-in");
+    return ok({ id: data as string });
+  } catch {
+    return fail("UNKNOWN");
+  }
+}
+
+/**
+ * Cập nhật thông tin phòng
+ */
+export async function updateRoomAction(
+  roomId: string,
+  branchId: string,
+  rawInput: UpdateRoomInput,
+): Promise<ActionResult<{ id: string }>> {
+  const parsed = updateRoomSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return fail("VALIDATION", parsed.error.flatten().fieldErrors);
+  }
+
+  const hasPerm = await requirePermission("settings.rooms", branchId);
+  if (!hasPerm.ok) return hasPerm;
+
+  const { number, floor, room_type, opened_on } = parsed.data;
+
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("update_room", {
+      p_room_id: roomId,
+      p_number: number,
+      p_floor: floor || null,
+      p_room_type: room_type || null,
+      p_opened_on: opened_on || null,
+    });
+
+    if (error) {
+      if (error.message?.includes("room number already exists in branch")) {
+        return fail(
+          "CONFLICT",
+          undefined,
+          "Số phòng này đã tồn tại ở chi nhánh này",
+        );
+      }
+      return fail(error.code || "UNKNOWN", undefined, error.message);
+    }
+
+    revalidatePath("/settings/rooms");
+    revalidatePath("/check-in");
+    return ok({ id: data as string });
+  } catch {
+    return fail("UNKNOWN");
+  }
+}
+
+/**
+ * Ngừng kinh doanh phòng
+ */
+export async function deactivateRoomAction(
+  roomId: string,
+  branchId: string,
+): Promise<ActionResult<{ success: boolean }>> {
+  const hasPerm = await requirePermission("settings.rooms", branchId);
+  if (!hasPerm.ok) return hasPerm;
+
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("deactivate_room", {
+      p_room_id: roomId,
+    });
+
+    if (error) {
+      return fail(error.code || "UNKNOWN", undefined, error.message);
+    }
+
+    revalidatePath("/settings/rooms");
+    revalidatePath("/check-in");
+    return ok({ success: true });
+  } catch {
+    return fail("UNKNOWN");
+  }
+}
+
+/**
+ * Mở bán lại phòng đã ngừng kinh doanh
+ */
+export async function reactivateRoomAction(
+  roomId: string,
+  branchId: string,
+): Promise<ActionResult<{ success: boolean }>> {
+  const hasPerm = await requirePermission("settings.rooms", branchId);
+  if (!hasPerm.ok) return hasPerm;
+
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("reactivate_room", {
+      p_room_id: roomId,
+    });
+
+    if (error) {
+      return fail(error.code || "UNKNOWN", undefined, error.message);
+    }
+
+    revalidatePath("/settings/rooms");
+    revalidatePath("/check-in");
+    return ok({ success: true });
+  } catch {
+    return fail("UNKNOWN");
+  }
+}
+
+/**
+ * Xóa vĩnh viễn phòng (Chỉ Chủ chuỗi, khi chưa phát sinh lưu trú / block)
+ */
+export async function deleteRoomPermanentAction(
+  roomId: string,
+  branchId: string,
+): Promise<ActionResult<{ success: boolean }>> {
+  const hasPerm = await requirePermission("settings.rooms", branchId);
+  if (!hasPerm.ok) return hasPerm;
+
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("delete_room_permanent", {
+      p_room_id: roomId,
+    });
+
+    if (error) {
+      if (error.message?.includes("cannot delete room with stay history")) {
+        return fail(
+          "CONFLICT",
+          undefined,
+          "Không thể xóa vĩnh viễn phòng đã có lịch sử lưu trú. Hãy chọn Ngừng kinh doanh.",
+        );
+      }
+      if (error.message?.includes("cannot delete room with block history")) {
+        return fail(
+          "CONFLICT",
+          undefined,
+          "Không thể xóa vĩnh viễn phòng đã có lịch sử khóa phòng (OOO). Hãy chọn Ngừng kinh doanh.",
+        );
+      }
+      if (error.message?.includes("only owner can permanently delete room")) {
+        return fail(
+          "FORBIDDEN",
+          undefined,
+          "Chỉ Chủ chuỗi mới có quyền xóa vĩnh viễn phòng.",
+        );
+      }
+      return fail(error.code || "UNKNOWN", undefined, error.message);
+    }
+
+    revalidatePath("/settings/rooms");
+    revalidatePath("/check-in");
+    return ok({ success: true });
+  } catch {
+    return fail("UNKNOWN");
+  }
 }

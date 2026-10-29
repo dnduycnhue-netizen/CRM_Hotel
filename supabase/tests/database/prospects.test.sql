@@ -1,7 +1,7 @@
 -- pgTAP: khách hàng tiềm năng B2B (migration 52)
 -- Chạy bằng `pnpm supabase test db`
 begin;
-select plan(35);
+select plan(36);
 
 -- 1. Hàm chuẩn hóa dùng chung
 select is(private.normalize_phone('090 978 92 32'), '0909789232', 'SĐT: bỏ khoảng trắng');
@@ -49,7 +49,9 @@ select is((select count(*)::int from public.role_permissions rp join public.role
 select is((select count(*)::int from public.role_permissions rp join public.roles r on r.id = rp.role_id
             where r.key = 'owner' and rp.permission_key like 'prospect.%'), 6, 'owner: đủ 6 quyền');
 select ok(not exists (select 1 from public.role_permissions rp join public.roles r on r.id = rp.role_id
-            where r.key in ('receptionist', 'technician') and rp.permission_key like 'prospect.%'), 'lễ tân / kỹ thuật không có quyền prospect');
+            where r.key = 'technician' and rp.permission_key like 'prospect.%'), 'kỹ thuật không có quyền prospect');
+select is((select count(*)::int from public.role_permissions rp join public.roles r on r.id = rp.role_id
+            where r.key = 'receptionist' and rp.permission_key like 'prospect.%'), 6, 'lễ tân có đủ 6 quyền prospect');
 
 select * from finish();
 rollback;

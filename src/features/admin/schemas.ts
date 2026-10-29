@@ -55,3 +55,30 @@ export const partnerSchema = z.object({
 });
 
 export type PartnerInput = z.infer<typeof partnerSchema>;
+
+export const createRoomSchema = z.object({
+  branch_id: z.string().uuid("Vui lòng chọn cơ sở hợp lệ"),
+  number: z
+    .string()
+    .trim()
+    .min(1, "Số phòng tối thiểu 1 ký tự")
+    .max(10, "Số phòng tối đa 10 ký tự"),
+  floor: z.coerce.number().int().min(1, "Tầng phải >= 1").optional().nullable(),
+  room_type: z.string().trim().max(50).optional().nullable(),
+  opened_on: z.string().optional().nullable(),
+});
+
+export type CreateRoomInput = z.infer<typeof createRoomSchema>;
+
+export const updateRoomSchema = z.object({
+  number: z
+    .string()
+    .trim()
+    .min(1, "Số phòng tối thiểu 1 ký tự")
+    .max(10, "Số phòng tối đa 10 ký tự"),
+  floor: z.coerce.number().int().min(1, "Tầng phải >= 1").optional().nullable(),
+  room_type: z.string().trim().max(50).optional().nullable(),
+  opened_on: z.string().optional().nullable(),
+});
+
+export type UpdateRoomInput = z.infer<typeof updateRoomSchema>;

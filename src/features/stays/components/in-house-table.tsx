@@ -135,7 +135,7 @@ export function InHouseTable({
       const res = await checkoutStayAction(stayId, currentBranchId);
       if (res.ok) {
         toast.success(
-          `Đã hoàn tất trả phòng ${roomNumber}! Phòng sẵn sàng đón khách.`,
+          `Đã trả phòng ${roomNumber}. Phòng chuyển sang chờ dọn dẹp — bấm Báo sạch để mở bán ngay.`,
         );
         setActiveStayList((prev) =>
           prev.map((s) =>

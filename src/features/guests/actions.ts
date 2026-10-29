@@ -39,6 +39,7 @@ export async function createGuestAction(
       phone: parsed.data.phone || null,
       email: parsed.data.email || null,
       address_line: parsed.data.address_line || null,
+      province_code: parsed.data.province_code || null,
       source_channel_id: parsed.data.source_channel_id || null,
       tags: parsed.data.tags || [],
       document: parsed.data.document

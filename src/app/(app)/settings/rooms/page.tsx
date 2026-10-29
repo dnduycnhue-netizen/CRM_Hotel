@@ -16,10 +16,26 @@ export default async function SettingsRoomsPage() {
     redirect("/?denied=1");
   }
 
-  const [rooms, branches] = await Promise.all([
+  const [allRooms, allBranches] = await Promise.all([
     getRooms(),
     getActiveBranches(),
   ]);
+
+  const isOwner =
+    session.can("settings.branches") ||
+    session.branchIds.length >= allBranches.length;
+
+  const allowedBranches = isOwner
+    ? allBranches
+    : allBranches.filter((b) => session.branchIds.includes(b.id));
+
+  const initialBranchId = isOwner
+    ? "all"
+    : session.currentBranchId || allowedBranches[0]?.id || "all";
+
+  const rooms = isOwner
+    ? allRooms
+    : allRooms.filter((r) => session.branchIds.includes(r.branchId));
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -28,11 +44,18 @@ export default async function SettingsRoomsPage() {
           Cài đặt Danh Mục Phòng
         </h1>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Danh mục 240 phòng thuộc 8 khách sạn, hỗ trợ lọc theo tầng và cơ sở
+          {isOwner
+            ? "Danh mục phòng thuộc 8 khách sạn, hỗ trợ thêm, sửa, ngừng kinh doanh và xóa phòng"
+            : `Quản lý danh mục phòng cơ sở ${allowedBranches[0]?.name || ""}`}
         </p>
       </div>
 
-      <RoomsTable rooms={rooms} branches={branches} />
+      <RoomsTable
+        rooms={rooms}
+        branches={allowedBranches}
+        isOwner={isOwner}
+        defaultBranchId={initialBranchId}
+      />
     </div>
   );
 }

@@ -22,9 +22,12 @@ import {
   UserCheck,
   Users,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import type React from "react";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { confirmRoomCleanedAction } from "@/features/stays";
+import { VIETNAM_PROVINCES } from "@/shared/constants/provinces";
 import {
   Badge,
   Button,
@@ -71,20 +74,31 @@ interface CheckInFormProps {
     isOccupied?: boolean;
     isBlocked?: boolean;
     isCleaning?: boolean;
+    isActive?: boolean;
+  }>;
+  partners?: Array<{
+    id: string;
+    name: string;
+    kind: string;
   }>;
   isCompanionsEnabled?: boolean;
   companionsCountDefault?: boolean;
+  canConfirmClean?: boolean;
 }
 
 export function CheckInForm({
   currentBranchId,
   branchName,
   rooms,
+  partners = [],
   isCompanionsEnabled = true,
   companionsCountDefault = true,
+  canConfirmClean = false,
 }: CheckInFormProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isLookingUp, setIsLookingUp] = useState(false);
+  const [cleaningRoomId, setCleaningRoomId] = useState<string | null>(null);
 
   // Form Fields
   const [queryValue, setQueryValue] = useState("");
@@ -95,8 +109,11 @@ export function CheckInForm({
   const [dob, setDob] = useState("");
   const [phone, setPhone] = useState("");
   const [docNumber, setDocNumber] = useState("");
+  const [addressLine, setAddressLine] = useState("");
+  const [provinceCode, setProvinceCode] = useState("");
   const [selectedRoomId, setSelectedRoomId] = useState("");
   const [sourceChannel, setSourceChannel] = useState("walk_in");
+  const [partnerId, setPartnerId] = useState("");
   const [roomPrice, setRoomPrice] = useState<number | string>("");
   const [depositAmount, setDepositAmount] = useState<number | string>("");
   const [expectedCheckOut, setExpectedCheckOut] = useState(() => {
@@ -151,6 +168,37 @@ export function CheckInForm({
 
   const handleRemoveCompanion = (id: string) => {
     setCompanions((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  // Đối tác được lọc theo kênh
+  const filteredPartners = useMemo(() => {
+    if (sourceChannel === "partner") {
+      return partners.filter(
+        (p) => p.kind === "tour_operator" || p.kind === "travel_agency",
+      );
+    }
+    if (sourceChannel === "corporate") {
+      return partners.filter((p) => p.kind === "corporate");
+    }
+    return [];
+  }, [partners, sourceChannel]);
+
+  // Báo phòng sạch nhanh
+  const handleConfirmClean = async (roomId: string) => {
+    setCleaningRoomId(roomId);
+    try {
+      const res = await confirmRoomCleanedAction(roomId, currentBranchId);
+      if (res.ok) {
+        toast.success("Phòng đã dọn sạch và sẵn sàng đón khách");
+        router.refresh();
+      } else {
+        toast.error("Không thể báo phòng sạch, vui lòng thử lại");
+      }
+    } catch {
+      toast.error("Đã xảy ra lỗi khi báo phòng sạch");
+    } finally {
+      setCleaningRoomId(null);
+    }
   };
 
   const handleLookupCompanion = async (id: string, query: string) => {
@@ -378,7 +426,13 @@ export function CheckInForm({
         documentType: detectedKind === "passport" ? "passport" : "cccd",
         documentNumber:
           docNumber && !docNumber.includes("*") ? docNumber : undefined,
+        addressLine: addressLine.trim() || undefined,
+        provinceCode: provinceCode || undefined,
         sourceChannelCode: sourceChannel,
+        partnerId:
+          sourceChannel === "partner" || sourceChannel === "corporate"
+            ? partnerId || undefined
+            : undefined,
         expectedCheckOutAt: expectedCheckOut,
         isBackdated,
         actualCheckInAt: actualCheckIn || undefined,
@@ -424,6 +478,9 @@ export function CheckInForm({
         setDepositAmount("");
         setBlacklistAck(false);
         setCompanions([]);
+        setAddressLine("");
+        setProvinceCode("");
+        setPartnerId("");
         setConsents({ zalo: false, sms: false, email: false, phone: false });
       } else {
         toast.error(res.error.message || "Lỗi khi thực hiện check-in");
@@ -431,17 +488,21 @@ export function CheckInForm({
     });
   };
 
+  const activeRooms = useMemo(() => {
+    return rooms.filter((r) => r.isActive !== false);
+  }, [rooms]);
+
   // Group rooms by floor (extracted from room number, e.g. 701 -> Tầng 7)
   const roomsByFloor = useMemo(() => {
     const map = new Map<number, typeof rooms>();
-    for (const r of rooms) {
+    for (const r of activeRooms) {
       const floor =
         r.number.length >= 3 ? parseInt(r.number.slice(0, -2), 10) : 1;
       if (!map.has(floor)) map.set(floor, []);
       map.get(floor)?.push(r);
     }
     return Array.from(map.entries()).sort((a, b) => b[0] - a[0]); // top floors first
-  }, [rooms]);
+  }, [activeRooms]);
 
   return (
     <div className="space-y-6">
@@ -657,6 +718,46 @@ export function CheckInForm({
                   </div>
                 </div>
 
+                {/* 3.1. Địa chỉ chi tiết & Tỉnh/thành cư trú */}
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                  <div className="sm:col-span-7 space-y-1.5">
+                    <Label
+                      htmlFor="addressLine"
+                      className="text-xs font-semibold text-muted-foreground"
+                    >
+                      Địa chỉ cư trú
+                    </Label>
+                    <Input
+                      id="addressLine"
+                      value={addressLine}
+                      onChange={(e) => setAddressLine(e.target.value)}
+                      placeholder="Số nhà, tên đường, phường/xã..."
+                      className="h-9.5 text-xs rounded-xl"
+                    />
+                  </div>
+                  <div className="sm:col-span-5 space-y-1.5">
+                    <Label
+                      htmlFor="provinceCode"
+                      className="text-xs font-semibold text-muted-foreground"
+                    >
+                      Tỉnh / Thành phố cư trú
+                    </Label>
+                    <select
+                      id="provinceCode"
+                      value={provinceCode}
+                      onChange={(e) => setProvinceCode(e.target.value)}
+                      className="w-full h-9.5 rounded-xl border border-input bg-background px-3 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+                    >
+                      <option value="">-- Chọn tỉnh/thành (tùy chọn) --</option>
+                      {VIETNAM_PROVINCES.map((p) => (
+                        <option key={p.code} value={p.code}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
                 {/* 4. Visual Room Selector (Hot Feature for UX!) */}
                 <div className="space-y-2 pt-1">
                   <div className="flex items-center justify-between">
@@ -721,7 +822,7 @@ export function CheckInForm({
                               isOccupied || isBlocked || isCleaning;
 
                             if (isUnavailable) {
-                              return (
+                              const chipNode = (
                                 <button
                                   key={r.id}
                                   type="button"
@@ -762,6 +863,38 @@ export function CheckInForm({
                                   </span>
                                 </button>
                               );
+
+                              if (isCleaning && canConfirmClean) {
+                                return (
+                                  <div
+                                    key={r.id}
+                                    className="inline-flex items-center gap-1"
+                                  >
+                                    {chipNode}
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      variant="outline"
+                                      disabled={cleaningRoomId === r.id}
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleConfirmClean(r.id);
+                                      }}
+                                      className="h-7 px-1.5 text-[10px] font-bold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 rounded-lg cursor-pointer"
+                                      title="Xác nhận phòng đã dọn dẹp xong để mở bán ngay"
+                                    >
+                                      {cleaningRoomId === r.id ? (
+                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                      ) : (
+                                        "Báo sạch"
+                                      )}
+                                    </Button>
+                                  </div>
+                                );
+                              }
+
+                              return chipNode;
                             }
 
                             return (
@@ -798,7 +931,7 @@ export function CheckInForm({
                     required
                   >
                     <option value="">-- Hoặc chọn từ danh sách --</option>
-                    {rooms.map((r) => {
+                    {activeRooms.map((r) => {
                       const isUnavailable =
                         r.isOccupied || r.isBlocked || r.isCleaning;
                       return (
@@ -833,7 +966,10 @@ export function CheckInForm({
                     <select
                       id="sourceChannel"
                       value={sourceChannel}
-                      onChange={(e) => setSourceChannel(e.target.value)}
+                      onChange={(e) => {
+                        setSourceChannel(e.target.value);
+                        setPartnerId("");
+                      }}
                       className="w-full h-9.5 rounded-xl border border-input bg-background px-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500/30"
                     >
                       <option value="walk_in">
@@ -876,6 +1012,44 @@ export function CheckInForm({
                       required
                     />
                   </div>
+
+                  {/* Dropdown chọn đối tác cụ thể khi nguồn là partner hoặc corporate */}
+                  {(sourceChannel === "partner" ||
+                    sourceChannel === "corporate") && (
+                    <div className="sm:col-span-12 space-y-1.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                      <Label
+                        htmlFor="partnerSelect"
+                        className="text-xs font-bold text-amber-700 dark:text-amber-400"
+                      >
+                        {sourceChannel === "corporate"
+                          ? "Công ty / Doanh nghiệp hợp đồng *"
+                          : "Đối tác tour / Đại lý du lịch *"}
+                      </Label>
+                      <select
+                        id="partnerSelect"
+                        value={partnerId}
+                        onChange={(e) => setPartnerId(e.target.value)}
+                        className="w-full h-9.5 rounded-xl border border-amber-500/40 bg-background px-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+                        required
+                      >
+                        <option value="">
+                          {sourceChannel === "corporate"
+                            ? "-- Chọn công ty hợp đồng --"
+                            : "-- Chọn đối tác tour / đại lý --"}
+                        </option>
+                        {filteredPartners.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name}
+                          </option>
+                        ))}
+                      </select>
+                      {filteredPartners.length === 0 && (
+                        <p className="text-[11px] text-amber-700 dark:text-amber-400">
+                          Chưa có đối tác nào thuộc nhóm này đang hoạt động.
+                        </p>
+                      )}
+                    </div>
+                  )}
 
                   {/* Giá phòng & Tiền đặt cọc */}
                   <div className="sm:col-span-6 space-y-1.5">

@@ -12,6 +12,7 @@ import {
   Loader2,
   Lock,
   Mail,
+  MapPin,
   MessageSquare,
   Phone,
   Plus,
@@ -32,6 +33,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { StayCompanionsDialog } from "@/features/stays";
 import { useCan } from "@/shared/auth";
+import { getProvinceName } from "@/shared/constants/provinces";
 import { Button } from "@/shared/ui";
 import { formatDateVN } from "@/shared/utils/date";
 import {
@@ -590,6 +592,20 @@ export function GuestProfileView({
                     </strong>
                   </span>
                 </span>
+
+                {(guest.address_line || guest.province_code) && (
+                  <span className="inline-flex items-center gap-1 text-slate-700 dark:text-slate-300">
+                    <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                    <span>
+                      {[
+                        guest.address_line,
+                        getProvinceName(guest.province_code),
+                      ]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </span>
+                  </span>
+                )}
               </div>
 
               {/* Tags */}

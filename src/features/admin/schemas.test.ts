@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { partnerSchema, sourceChannelSchema } from "./schemas";
+import {
+  createRoomSchema,
+  partnerSchema,
+  sourceChannelSchema,
+  updateRoomSchema,
+} from "./schemas";
 
 describe("sourceChannelSchema", () => {
   it("validates a correct source channel", () => {
@@ -68,5 +73,45 @@ describe("partnerSchema", () => {
     };
     const res = partnerSchema.safeParse(invalid);
     expect(res.success).toBe(false);
+  });
+});
+
+describe("createRoomSchema & updateRoomSchema", () => {
+  const validBranchId = "550e8400-e29b-41d4-a716-446655440000";
+
+  it("validates valid room creation input", () => {
+    const valid = {
+      branch_id: validBranchId,
+      number: "501",
+      floor: 5,
+      room_type: "Deluxe Suite",
+      opened_on: "2026-01-01",
+    };
+    const res = createRoomSchema.safeParse(valid);
+    expect(res.success).toBe(true);
+  });
+
+  it("fails when room number is empty or exceeds 10 chars", () => {
+    const empty = {
+      branch_id: validBranchId,
+      number: " ",
+    };
+    expect(createRoomSchema.safeParse(empty).success).toBe(false);
+
+    const tooLong = {
+      branch_id: validBranchId,
+      number: "12345678901",
+    };
+    expect(createRoomSchema.safeParse(tooLong).success).toBe(false);
+  });
+
+  it("validates room update input", () => {
+    const valid = {
+      number: "502",
+      floor: 5,
+      room_type: "Standard",
+    };
+    const res = updateRoomSchema.safeParse(valid);
+    expect(res.success).toBe(true);
   });
 });

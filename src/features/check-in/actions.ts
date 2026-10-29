@@ -167,7 +167,11 @@ export async function checkInGuestAction(
         ? toVnTimestamptz(data.actualCheckOutAt) || null
         : undefined,
       source_channel_id: channelId,
-      partner_id: data.partnerId || null,
+      partner_id:
+        data.sourceChannelCode === "partner" ||
+        data.sourceChannelCode === "corporate"
+          ? data.partnerId || null
+          : null,
       blacklist_ack: data.blacklistAck,
       note: data.notes || null,
       primary: {
@@ -178,6 +182,8 @@ export async function checkInGuestAction(
         nationality: (data.nationality || "VN").slice(0, 2).toUpperCase(),
         phone: data.phone || null,
         email: data.email || null,
+        address_line: data.addressLine || null,
+        province_code: data.provinceCode || null,
         document: hasCleanDoc
           ? {
               type: data.documentType,

@@ -39,6 +39,19 @@ describe("Guests Schemas", () => {
       expect(valid.success).toBe(true);
     });
 
+    it("hỗ trợ lưu địa chỉ và mã tỉnh thành cư trú", () => {
+      const valid = createGuestSchema.safeParse({
+        full_name: "Lê Văn C",
+        address_line: "456 Nguyễn Huệ, Phường Bến Nghé",
+        province_code: "79",
+      });
+      expect(valid.success).toBe(true);
+      if (valid.success) {
+        expect(valid.data.address_line).toBe("456 Nguyễn Huệ, Phường Bến Nghé");
+        expect(valid.data.province_code).toBe("79");
+      }
+    });
+
     it("từ chối email sai định dạng", () => {
       const result = createGuestSchema.safeParse({
         full_name: "Trần Thị B",

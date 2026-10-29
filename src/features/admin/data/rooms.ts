@@ -33,7 +33,8 @@ export async function getRooms(branchId?: string | null): Promise<RoomItem[]> {
       .from("stays")
       .select("room_id")
       .eq("status", "checked_out")
-      .gte("checked_out_at", sixHoursAgo);
+      .gte("checked_out_at", sixHoursAgo)
+      .is("cleaned_at", null);
 
     if (branchId) {
       staysQuery = staysQuery.eq("branch_id", branchId);

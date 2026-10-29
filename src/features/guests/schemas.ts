@@ -18,6 +18,7 @@ export const createGuestSchema = z.object({
     .nullable()
     .or(z.literal("")),
   address_line: z.string().optional().nullable(),
+  province_code: z.string().optional().nullable(),
   source_channel_id: z
     .string()
     .uuid("Nguồn khách phải là UUID hợp lệ")

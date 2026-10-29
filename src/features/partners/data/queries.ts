@@ -257,3 +257,14 @@ export async function getPartnersOverview(branchId?: string | null): Promise<{
     stats,
   };
 }
+
+export async function getActivePartners(): Promise<
+  Array<{ id: string; name: string; kind: string }>
+> {
+  const supabase = await createClient();
+  const { data } = await (supabase.from("partners") as any)
+    .select("id, name, kind")
+    .eq("is_active", true)
+    .order("name");
+  return data || [];
+}

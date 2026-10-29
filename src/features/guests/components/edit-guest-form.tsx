@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import type { SourceChannelItem } from "@/features/admin/data/sources";
+import { VIETNAM_PROVINCES } from "@/shared/constants/provinces";
 import {
   Button,
   Card,
@@ -52,6 +53,7 @@ export function EditGuestForm({
   const [phone, setPhone] = useState(guest.phone || "");
   const [email, setEmail] = useState(guest.email || "");
   const [addressLine, setAddressLine] = useState(guest.address_line || "");
+  const [provinceCode, setProvinceCode] = useState(guest.province_code || "");
   const [sourceChannelId, setSourceChannelId] = useState(
     guest.source_channel_id || "",
   );
@@ -75,6 +77,7 @@ export function EditGuestForm({
           phone: phone.trim() || null,
           email: email.trim() || null,
           address_line: addressLine.trim() || null,
+          province_code: provinceCode || null,
           source_channel_id: sourceChannelId || null,
         },
         guest.updated_at,
@@ -237,17 +240,38 @@ export function EditGuestForm({
               </div>
             )}
 
-            <div className="space-y-1.5">
-              <Label htmlFor="addressLine" className="text-xs font-semibold">
-                Địa chỉ thường trú
-              </Label>
-              <Input
-                id="addressLine"
-                value={addressLine}
-                onChange={(e) => setAddressLine(e.target.value)}
-                placeholder="123 Lê Duẩn, Hải Châu, Đà Nẵng"
-                className="h-9 text-xs"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="addressLine" className="text-xs font-semibold">
+                  Địa chỉ chi tiết
+                </Label>
+                <Input
+                  id="addressLine"
+                  value={addressLine}
+                  onChange={(e) => setAddressLine(e.target.value)}
+                  placeholder="123 Lê Duẩn, Hải Châu..."
+                  className="h-9 text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="provinceCode" className="text-xs font-semibold">
+                  Tỉnh / Thành phố cư trú
+                </Label>
+                <select
+                  id="provinceCode"
+                  value={provinceCode}
+                  onChange={(e) => setProvinceCode(e.target.value)}
+                  className="w-full h-9 rounded-md border border-input bg-background px-3 text-xs outline-none focus:ring-2 focus:ring-amber-500/30"
+                >
+                  <option value="">-- Chọn tỉnh/thành (tùy chọn) --</option>
+                  {VIETNAM_PROVINCES.map((p) => (
+                    <option key={p.code} value={p.code}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="pt-4 flex items-center justify-end gap-3 border-t border-border/50">

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import type { SourceChannelItem } from "@/features/admin/data/sources";
+import { VIETNAM_PROVINCES } from "@/shared/constants/provinces";
 import { Button } from "@/shared/ui";
 import { createGuestAction } from "../actions";
 import type { CreateGuestInput } from "../schemas";
@@ -27,6 +28,7 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
     phone: "",
     email: "",
     address_line: "",
+    province_code: "",
     source_channel_id: defaultSourceId,
     tags: [],
     document: {
@@ -325,12 +327,12 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
               </select>
             </div>
 
-            <div className="sm:col-span-2">
+            <div>
               <label
                 htmlFor="address_line"
                 className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1"
               >
-                Địa chỉ cư trú
+                Địa chỉ chi tiết
               </label>
               <input
                 id="address_line"
@@ -340,9 +342,34 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, address_line: e.target.value })
                 }
-                placeholder="Số nhà, đường phố, quận huyện..."
+                placeholder="Số nhà, đường phố, phường/xã..."
                 className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
               />
+            </div>
+
+            <div>
+              <label
+                htmlFor="province_code"
+                className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1"
+              >
+                Tỉnh / Thành phố cư trú
+              </label>
+              <select
+                id="province_code"
+                name="province_code"
+                value={formData.province_code || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, province_code: e.target.value })
+                }
+                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
+              >
+                <option value="">-- Chọn tỉnh/thành (tùy chọn) --</option>
+                {VIETNAM_PROVINCES.map((p) => (
+                  <option key={p.code} value={p.code}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>

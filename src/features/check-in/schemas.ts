@@ -46,6 +46,12 @@ export const checkInSchema = z
       .email("Email không đúng định dạng")
       .optional()
       .or(z.literal("")),
+    addressLine: z
+      .string()
+      .max(200, "Địa chỉ tối đa 200 ký tự")
+      .optional()
+      .or(z.literal("")),
+    provinceCode: z.string().optional().or(z.literal("")),
     documentType: z.enum(["cccd", "passport"]).default("cccd"),
     documentNumber: z
       .string()
@@ -110,6 +116,23 @@ export const checkInSchema = z
     notes: z.string().optional(),
   })
   .superRefine((val, ctx) => {
+    // Validate partner when source channel requires partner/corporate
+    if (
+      val.sourceChannelCode === "partner" ||
+      val.sourceChannelCode === "corporate"
+    ) {
+      if (!val.partnerId || val.partnerId.trim() === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            val.sourceChannelCode === "corporate"
+              ? "Vui lòng chọn công ty / doanh nghiệp hợp đồng"
+              : "Vui lòng chọn đối tác tour / đại lý du lịch",
+          path: ["partnerId"],
+        });
+      }
+    }
+
     // Validate duplicate documents
     const seenDocs = new Set<string>();
     const cleanPrimaryDoc = val.documentNumber?.trim().toUpperCase();
