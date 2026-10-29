@@ -595,7 +595,8 @@ insert into public.roles (key, name, is_system) values
   ('technician',     'Kỹ thuật, bảo trì', true),
   ('owner',          'Chủ chuỗi',         true);
 
--- Lễ tân: theo phản hồi CĐT — xem đầy đủ hồ sơ toàn chuỗi, xuất Excel (che CCCD, giới hạn dòng, cơ sở mình)
+-- Lễ tân: theo phản hồi CĐT — xem đầy đủ hồ sơ toàn chuỗi, xuất Excel (che CCCD, giới hạn dòng, cơ sở mình).
+-- Bổ sung (20261101000057): Cấp đủ 6 quyền quản lý khách tiềm năng B2B (prospect.*).
 insert into public.role_permissions (role_id, permission_key)
 select r.id, k from public.roles r, unnest(array[
   'stay.view','stay.create','stay.update','stay.checkout','stay.cancel','room.block',
@@ -603,7 +604,8 @@ select r.id, k from public.roles r, unnest(array[
   'guest.note_create','guest.tag_manage','guest.export',
   'companion.manage','merge.propose','blacklist.view','blacklist.propose',
   'loyalty.view','consent.manage','voucher.redeem','feedback.manage',
-  'facility.view','wo.view','wo.create','inspection.perform','compliance.view'
+  'facility.view','wo.view','wo.create','inspection.perform','compliance.view',
+  'prospect.read','prospect.read_sensitive','prospect.create','prospect.update','prospect.import','prospect.convert'
 ]) k where r.key = 'receptionist';
 
 -- Quản lý (2 người, phạm vi toàn chuỗi): mọi quyền trừ xuất CCCD đầy đủ.

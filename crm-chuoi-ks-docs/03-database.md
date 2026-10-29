@@ -52,6 +52,10 @@ Bảng phân quyền (`modules`, `permissions`, `roles`, `role_permissions`, `us
 | `20261101000011_cron.sql` | Job hằng đêm (pg_cron) | 06 |
 | `20261101000012_facilities.sql` | Cơ sở vật chất: tài sản, sự cố, bảo trì định kỳ, kiểm tra, hồ sơ pháp lý | 12 |
 | `20261101000013_reports.sql` | Hàm báo cáo, so sánh cùng kỳ, số liệu nền, doanh thu tháng | 13 |
+| `20261101000054_confirm_room_cleaned.sql` | Thêm `cleaned_at` vào `stays`, RPC `confirm_room_cleaned` cho phép lễ tân báo sạch phòng nhanh | 03, 06 |
+| `20261101000055_manage_rooms_rpc.sql` | Cấp quyền `settings.rooms` cho Quản lý cơ sở + 5 RPC CRUD/ngừng kinh doanh/xóa phòng | 04, 12 |
+| `20261101000056_vietnam_provinces_and_guest_address.sql` | Nạp 34 tỉnh/thành phố 2025 sau sáp nhập vào `admin_provinces` | 03 |
+| `20261101000057_grant_prospect_perms_to_receptionist.sql` | Cấp đủ 6 quyền `prospect.*` cho vai trò `receptionist` và rebuild quyền | 04 |
 
 ## 4. SQL
 
@@ -349,6 +353,7 @@ create table public.stays (
   check_in_at           timestamptz not null default now(),
   expected_check_out_at timestamptz not null,
   checked_out_at        timestamptz,
+  cleaned_at            timestamptz,                  -- lễ tân xác nhận phòng sạch (20261101000054)
   business_date         date not null,                -- trigger điền
   nights                smallint not null,            -- trigger điền
   source_channel_id     uuid not null references public.source_channels(id),
@@ -631,7 +636,7 @@ insert into public.admin_provinces (code, name) values ('46', 'Thành phố Hu�
 -- Tài khoản mẫu: tạo bằng script `pnpm seed:users` (dùng Admin API), không insert thẳng auth.users.
 ```
 
-Mã tỉnh trong `admin_provinces` ở seed chỉ minh hoạ. Khi triển khai thật, nạp đầy đủ danh mục từ nguồn chính thức (Cục Thống kê / Bộ Nội vụ) bằng file seed riêng `supabase/seed/admin_units.sql`.
+Mã tỉnh trong `admin_provinces` đã được nạp đầy đủ danh mục 34 tỉnh/thành phố theo quy chuẩn cải cách hành chính 2025 bằng migration `20261101000056_vietnam_provinces_and_guest_address.sql`.
 
 ## 6. Quy ước khi thêm bảng mới
 

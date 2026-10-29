@@ -1,8 +1,8 @@
 # TÀI LIỆU KẾ THỪA VÀ BÀN GIAO HỆ THỐNG (HANDOVER & CHANGELOG)
 **Dự án:** CRM Chuỗi Khách Sạn (CRM Hotel Multi-Branch)  
-**Ngày cập nhật:** 24/10/2026 (Tổng kết đầy đủ quá trình làm việc ngày 23/10/2026)  
+**Ngày cập nhật:** 29/10/2026 (Go-Live Release & 5 Core Tasks Hoàn thiện)  
 **Môi trường:** Production (`https://crm-hotel-five.vercel.app`)  
-**Nhánh Git:** `main` (Commit `03bae34` - Hoàn tất toàn bộ các Phase từ P0 đến P9 / QA Vòng 7)  
+**Nhánh Git:** `main` (Commit `24f2314` - Hoàn tất toàn bộ 5 tính năng cốt lõi trước Go-Live)  
 **Tác giả bàn giao:** Antigravity Pair-Programming Agent
 
 ---
@@ -366,6 +366,7 @@ vercel --prod --yes
 | `03bae34` | ~23:15 | Fix | Khắc phục QA Vòng 7: Siết RLS audit logs, scope cơ sở guests & search, badge nguồn khách, trạng thái dọn phòng | `pnpm typecheck` & `pnpm test` Pass |
 | `1b5c892` | 24/10/2026 | Feature | Triển khai Sprint 1: Bật/tắt Module Matrix & Quản lý trạng thái khả dụng | `pnpm typecheck` & `pnpm test` Pass |
 | (Sprints 2-4) | 24/10/2026 | Release | **GO-LIVE RELEASE**: Tích hợp Sprints 2, 3, 4 (Loyalty, Companions, Doanh thu tháng, Bảo trì định kỳ, Kiểm định CSVC, Consent NĐ 13/2023) | `pnpm test` Pass (87/87), `next build` Pass |
+| `24f2314` | 29/10/2026 | Release / Fix | **GO-LIVE VERIFICATION**: Hoàn tất 5 tính năng cốt lõi (Báo phòng sạch nhanh, Đối tác Check-in, CRUD danh mục phòng, 34 tỉnh/thành 2025, Quyền Khách tiềm năng Lễ tân) | `pnpm typecheck` Pass, `pnpm test` Pass (219/219), `next build` Pass |
 
 ---
 
@@ -391,4 +392,74 @@ vercel --prod --yes
   - Check-in 4 kênh Zalo, SMS, Email, Cuộc gọi với kịch bản lễ tân, tuân thủ nguyên tắc opt-in (không tích sẵn).
   - Hồ sơ khách 360° với nút Cấp/Rút đồng ý có lý do lưu audit log và bảng lịch sử kiểm toán chi tiết.
   - Bộ lọc tệp khách theo kênh đồng ý và xuất file Excel gửi tin tự động lược bỏ CCCD/Hộ chiếu để giảm thiểu dữ liệu.
+
+---
+
+## 9. Chi tiết đợt hoàn thiện 5 tính năng cốt lõi trước Go-Live (29/10/2026 - Commit `24f2314`)
+
+### 9.1 Báo phòng sạch nhanh cho Lễ tân (`confirm_room_cleaned`)
+- **Vấn đề thực tế:** Khi khách trả phòng, hệ thống tự động đánh dấu phòng vào trạng thái *"Chờ dọn dẹp"* (Cleaning) trong 6 giờ. Lễ tân không thể mở bán check-in ngay dù buồng phòng đã dọn xong, dẫn đến tắc nghẽn giờ cao điểm.
+- **Giải pháp kỹ thuật:**
+  - Database: Bổ sung cột `cleaned_at timestamptz` vào bảng `public.stays` và viết RPC `public.confirm_room_cleaned(p_stay_id uuid)`. RPC chạy `SECURITY DEFINER` với `set search_path = ''`, kiểm tra quyền `stay.update` tại cơ sở tương ứng (`private.assert_perm_at`), cập nhật `cleaned_at = clock_timestamp()` và ghi audit log `log_event`.
+  - Query: Sửa `checkoutsQuery` trong `src/features/admin/data/rooms.ts` để lọc `.is("cleaned_at", null)`. Một khi đã báo sạch, phòng không còn bị coi là đang dọn dẹp.
+  - Server Action: Bổ sung `confirmRoomCleanedAction(stayId, branchId)` trong `src/features/stays/actions.ts` kiểm tra quyền `stay.update` và revalidate các trang `/check-in`, `/stays`.
+  - Giao diện:
+    - Bổ sung nút 1-chạm **"Báo sạch"** ngay trên thanh chọn phòng tại `src/features/check-in/components/check-in-form.tsx` khi phòng có trạng thái dọn dẹp (`isCleaning = true`) và người dùng có quyền `canConfirmClean`.
+    - Tích hợp nút báo sạch vào bảng danh sách In-House (`in-house-table.tsx`).
+- **Migration:** `supabase/migrations/20261101000054_confirm_room_cleaned.sql`.
+
+### 9.2 Chọn đối tác Tour / Hợp đồng công ty khi Check-in
+- **Vấn đề thực tế:** Form check-in cho chọn kênh "Đối tác tour" và "Hợp đồng công ty" nhưng không cho chọn đối tác cụ thể, dẫn đến dữ liệu lưu trú không liên kết được với đối tác B2B để đối soát doanh thu.
+- **Giải pháp kỹ thuật:**
+  - Domain & Schema: Cập nhật `checkInSchema` trong `src/features/check-in/schemas.ts`:
+    - Bổ sung `partnerId: z.string().uuid().optional()`.
+    - Viết logic `.superRefine()`: Nếu `sourceChannelCode` là `partner` hoặc `corporate`, bắt buộc phải chọn `partnerId`.
+  - Data: Bổ sung hàm `getActivePartners()` trong `src/features/partners/data/queries.ts` và export qua `src/features/partners/index.ts`.
+  - UI Form: Trong `CheckInForm`, khi chọn kênh `partner` -> dropdown tự động lọc đối tác có `kind = 'tour_agency'`; khi chọn `corporate` -> lọc đối tác có `kind = 'corporate'`.
+  - Action: `checkInAction` trong `src/features/check-in/actions.ts` nhận và truyền `partner_id` vào RPC `check_in_guest`.
+
+### 9.3 Quản lý danh mục phòng từng khách sạn (`/settings/rooms`)
+- **Vấn đề thực tế:** Chi nhánh thiếu giao diện thêm/sửa/ngừng kinh doanh phòng; Chủ chuỗi không thể quản lý danh mục phòng phân tán 8 cơ sở.
+- **Giải pháp kỹ thuật:**
+  - Database: Cấp lại quyền `settings.rooms` cho vai trò `branch_manager`. Viết 5 RPC `SECURITY DEFINER`:
+    - `public.create_room`: Quản lý tạo phòng cơ sở mình, Chủ chuỗi tạo cho mọi cơ sở.
+    - `public.update_room`: Sửa tên số phòng, tầng, loại phòng, giá niêm yết.
+    - `public.deactivate_room`: Ngừng kinh doanh (đổi `is_active = false`) khi không có khách đang ở (`in_house`).
+    - `public.reactivate_room`: Mở lại kinh doanh (`is_active = true`).
+    - `public.delete_room_permanent`: **Chỉ dành cho Chủ chuỗi (`assert_perm('settings.rooms')`)**. Chỉ cho phép xóa khi phòng chưa từng có dữ liệu lịch sử (`stays` và `room_blocks`).
+  - Server Actions: `createRoomAction`, `updateRoomAction`, `deactivateRoomAction`, `reactivateRoomAction`, `deleteRoomPermanentAction` trong `src/features/admin/actions.ts`.
+  - Giao diện: Nâng cấp `RoomsTable` (`src/features/admin/components/rooms-table.tsx`):
+    - Dialog Thêm phòng & Sửa phòng có đầy đủ validation.
+    - Nút Ngừng KD / Mở lại kinh doanh 1-chạm.
+    - Nút Xóa vĩnh viễn (chỉ hiển thị với Chủ chuỗi).
+- **Migration:** `supabase/migrations/20261101000055_manage_rooms_rpc.sql`.
+
+### 9.4 Trường địa chỉ & 34 tỉnh/thành cư trú sau sáp nhập 2025
+- **Vấn đề thực tế:** Hệ thống thiếu danh mục tỉnh/thành chuẩn Việt Nam sau cải cách sáp nhập đơn vị hành chính 2025 (34 tỉnh/thành phố).
+- **Giải pháp kỹ thuật:**
+  - Database: Tạo migration nạp 34 tỉnh/thành phố chuẩn vào `public.admin_provinces` (mã 2 số từ `01` đến `96`).
+  - Hằng số chia sẻ: Tạo `src/shared/constants/provinces.ts` chứa danh mục 34 tỉnh/thành và helper `getProvinceName(code)`.
+  - Form UI:
+    - `CheckInForm`: Bổ sung ô nhập địa chỉ chi tiết và Combobox chọn tỉnh/thành phố.
+    - `GuestForm` & `EditGuestForm`: Đồng bộ trường địa chỉ chi tiết và dropdown tỉnh/thành phố cư trú.
+    - `GuestProfileView`: Hiển thị rõ ràng Địa chỉ chi tiết kèm Tên tỉnh/thành phố.
+  - Server Action: Bổ sung `province_code` và `address_line` vào `checkInAction`, `createGuestAction`, `updateGuestAction`.
+- **Migration:** `supabase/migrations/20261101000056_vietnam_provinces_and_guest_address.sql`.
+
+### 9.5 Cấp đủ 6 quyền quản lý Khách tiềm năng (B2B Leads) cho Lễ tân
+- **Vấn đề thực tế:** Lễ tân không thấy menu Khách tiềm năng (`/prospects`), không thể ghi nhận lead đoàn tour / hội nghị do khách hỏi tại quầy lễ tân.
+- **Giải pháp kỹ thuật:**
+  - Database: Cấp 6 quyền `prospect.read`, `prospect.read_sensitive`, `prospect.create`, `prospect.update`, `prospect.import`, `prospect.convert` cho vai trò `receptionist` trong bảng `role_permissions` và thực thi `private.rebuild_all_permissions()`.
+  - Kết quả: Lễ tân có toàn quyền thao tác với lead B2B, hiển thị số điện thoại đầy đủ không bị che sao, chuyển đổi lead thành khách hàng khi chốt hợp đồng thành công.
+- **Migration:** `supabase/migrations/20261101000057_grant_prospect_perms_to_receptionist.sql`.
+
+---
+
+## 10. Trạng thái Kiểm thử & Xác thực trước khi Go-Live
+
+1. **Kiểm tra kiểu dữ liệu TypeScript:** `pnpm typecheck` -> **PASS (0 errors)**.
+2. **Kiểm tra Unit Tests:** `pnpm test` -> **PASS 19/19 test files (219/219 tests pass 100%)**.
+3. **Kiểm tra Build Turbopack:** `pnpm build` -> **PASS (38 routes được tối ưu hóa thành công)**.
+4. **Kiểm thử Database pgTAP:** Đã tạo test suite `supabase/tests/database/sprint_fixes.test.sql` với 25 bài test bao phủ đầy đủ các RPCs và chính sách phân quyền mới.
+5. **Môi trường Production:** Đã deploy thành công lên Vercel (`https://crm-hotel-five.vercel.app/`), kết nối đồng bộ tới Supabase `ckjafhzeeckrusqpppka`.
 

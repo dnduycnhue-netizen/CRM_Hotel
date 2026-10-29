@@ -901,8 +901,26 @@ end $$;
 | `/facilities/inspections` | Người kiểm tra | Chọn mẫu → chấm từng mục trên điện thoại |
 | `/facilities/compliance` | Quản lý | Hồ sơ theo cơ sở, trạng thái Còn hạn / Sắp hết / Hết hạn |
 | `/facilities/alerts` | Quản lý, chủ chuỗi | Danh sách cảnh báo ở mục 3.5 |
+| `/settings/rooms` | Quản lý cơ sở, Chủ chuỗi | Quản lý danh mục phòng từng cơ sở: Thêm mới, Sửa thông tin/giá, Ngừng kinh doanh, Mở lại, Xóa vĩnh viễn (Chủ chuỗi) |
 
 Trên điện thoại, mục **Báo sự cố** nằm ở thanh điều hướng dưới để ai cũng báo được trong vài giây. Tem QR dán trên tài sản chứa URL `/facilities/assets/<code>`; quét bằng camera điện thoại mở thẳng trang tài sản.
+
+## 5.1 Quản lý danh mục phòng & Báo phòng sạch (Cập nhật 29/10/2026)
+
+### Quản lý danh mục phòng (`/settings/rooms`)
+- **Phân quyền hai lớp**:
+  - `branch_manager`: Toàn quyền thêm phòng mới, sửa phòng, ngừng kinh doanh (`is_active = false`), mở lại kinh doanh (`is_active = true`) trong phạm vi cơ sở mình quản lý.
+  - `owner`: Quản lý danh mục phòng toàn chuỗi (cả 8 cơ sở) và có thêm quyền **Xóa vĩnh viễn** phòng (`delete_room_permanent`) đối với phòng chưa phát sinh dữ liệu (chưa từng có `stays` và `room_blocks`).
+- **RPCs hỗ trợ**:
+  - `create_room(p_branch_id, p_number, p_floor, p_type, p_price, p_description)`
+  - `update_room(p_room_id, p_number, p_floor, p_type, p_price, p_description)`
+  - `deactivate_room(p_room_id, p_reason)` (chặn nếu đang có khách ở `in_house`)
+  - `reactivate_room(p_room_id)`
+  - `delete_room_permanent(p_room_id)`
+
+### Báo phòng sạch nhanh (`confirm_room_cleaned`)
+- Khi khách trả phòng, hệ thống tự động gán nhãn *"Chờ dọn dẹp"* trong 6 giờ.
+- Nút 1-chạm **"Báo sạch"** trên form Check-in (`/check-in`) và màn hình In-House (`/stays`) cho phép lễ tân/quản lý (`stay.update`) xác nhận buồng phòng đã dọn xong thông qua RPC `confirm_room_cleaned(p_stay_id)`, phòng chuyển ngay sang trạng thái *"Trống"* và mở bán check-in được ngay.
 
 ## 6. Kiểm thử bắt buộc
 
