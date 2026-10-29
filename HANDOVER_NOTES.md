@@ -2,7 +2,7 @@
 **Dự án:** CRM Chuỗi Khách Sạn (CRM Hotel Multi-Branch)  
 **Ngày cập nhật:** 29/10/2026 (Go-Live Release & 5 Core Tasks Hoàn thiện)  
 **Môi trường:** Production (`https://crm-hotel-five.vercel.app`)  
-**Nhánh Git:** `main` (Commit `24f2314` - Hoàn tất toàn bộ 5 tính năng cốt lõi trước Go-Live)  
+**Nhánh Git:** `main` (Commit `7bcf961` - Fix QA Vòng 19 & Triển khai Production chính thức)  
 **Tác giả bàn giao:** Antigravity Pair-Programming Agent
 
 ---
@@ -367,6 +367,7 @@ vercel --prod --yes
 | `1b5c892` | 24/10/2026 | Feature | Triển khai Sprint 1: Bật/tắt Module Matrix & Quản lý trạng thái khả dụng | `pnpm typecheck` & `pnpm test` Pass |
 | (Sprints 2-4) | 24/10/2026 | Release | **GO-LIVE RELEASE**: Tích hợp Sprints 2, 3, 4 (Loyalty, Companions, Doanh thu tháng, Bảo trì định kỳ, Kiểm định CSVC, Consent NĐ 13/2023) | `pnpm test` Pass (87/87), `next build` Pass |
 | `24f2314` | 29/10/2026 | Release / Fix | **GO-LIVE VERIFICATION**: Hoàn tất 5 tính năng cốt lõi (Báo phòng sạch nhanh, Đối tác Check-in, CRUD danh mục phòng, 34 tỉnh/thành 2025, Quyền Khách tiềm năng Lễ tân) | `pnpm typecheck` Pass, `pnpm test` Pass (219/219), `next build` Pass |
+| `7bcf961` | 29/10/2026 | Release / Fix | **QA ROUND 19 FIXES**: Chuẩn hóa 34 tỉnh 2025 (Migration 58), sửa phone masking & toast [object Object] khi sửa khách, cập nhật SOPs, triển khai Vercel Production | `pnpm typecheck` Pass, `pnpm test` Pass (219/219), Vercel Production Ready |
 
 ---
 
@@ -462,4 +463,33 @@ vercel --prod --yes
 3. **Kiểm tra Build Turbopack:** `pnpm build` -> **PASS (38 routes được tối ưu hóa thành công)**.
 4. **Kiểm thử Database pgTAP:** Đã tạo test suite `supabase/tests/database/sprint_fixes.test.sql` với 25 bài test bao phủ đầy đủ các RPCs và chính sách phân quyền mới.
 5. **Môi trường Production:** Đã deploy thành công lên Vercel (`https://crm-hotel-five.vercel.app/`), kết nối đồng bộ tới Supabase `ckjafhzeeckrusqpppka`.
+
+---
+
+## 11. Bàn giao QA Vòng 19 & Triển khai Production chính thức (29/10/2026 - Commit `7bcf961`)
+
+- **Thời gian triển khai:** 21:41 ngày 29/10/2026 (UTC+7).
+- **Vercel Deployment ID:** `dpl_7TRW2mF6VCmDmjpvmeGaXhUYDciM` -> URL: `https://crm-hotel-five.vercel.app`.
+- **Git Commit:** `7bcf961` (`fix(qa-v19): address QA round 19 feedback (provinces 2025, phone masking in edit, error toasts, SOPs)`).
+- **Chi tiết các mục xử lý theo báo cáo QA Vòng 19:**
+  - **F0 (Xác nhận Production Deploy):** Triển khai trực tiếp qua `vercel --prod --yes` thay vì dựa vào webhook git. Đã xác minh URL `https://crm-hotel-five.vercel.app` nạp bản build mới nhất `READY`.
+  - **F1 (Danh mục 34 tỉnh/thành phố chuẩn 2025 theo QĐ 19/2025/QĐ-TTg):**
+    - Migration: `20261101000058_fix_vietnam_provinces_2025.sql`.
+    - Chuẩn hóa danh mục 34 tỉnh/thành: Hà Nội 01, Cao Bằng 04, Tuyên Quang 08, Điện Biên 11, Lai Châu 12, Sơn La 14, Lào Cai 15, Thái Nguyên 19, Lạng Sơn 20, Quảng Ninh 22, Bắc Ninh 24, Phú Thọ 25, Hải Phòng 31, Hưng Yên 33, Ninh Bình 37, Thanh Hóa 38, Nghệ An 40, Hà Tĩnh 42, Quảng Trị 44, Huế 46, Đà Nẵng 48, Quảng Ngãi 51, Gia Lai 52, Khánh Hòa 56, Đắk Lắk 66, Lâm Đồng 68, Đồng Nai 75, TP.HCM 79, Tây Ninh 80, Đồng Tháp 82, Vĩnh Long 86, An Giang 91, Cần Thơ 92, Cà Mau 96.
+    - Đã nạp thành công lên remote database Supabase và cập nhật `src/shared/constants/provinces.ts`.
+  - **F2 (Lỗi SĐT che mặt nạ khi lưu form sửa khách):**
+    - Server Action: Bổ sung logic tự động bỏ qua `patch.phone` nếu chuỗi chứa ký tự `*` (mặt nạ bảo mật), tránh gửi dữ liệu che vi phạm constraint Regex của Postgres.
+    - Database RPC: Sửa hàm `update_guest` để nếu `p_patch ->> 'phone'` chứa `*` thì tự động giữ nguyên SĐT hiện có của khách.
+    - RPC `guest_profile`: Sửa logic `v_full` với trường hợp khách mới chưa phát sinh lượt ở (`v_branch_id is null`) thì kiểm tra `exists (select 1 from private.branches_with('guest.view_full'))` để lễ tân/quản lý vẫn xem được đầy đủ dữ liệu khi sửa khách.
+    - Form UI: Thêm ghi chú hướng dẫn và huy hiệu nhận biết SĐT đang được bảo vệ.
+  - **F3 (Toast lỗi "[object Object]"):**
+    - Sửa toàn bộ các vị trí gọi `toast.error` trong `edit-guest-form.tsx`, `branches-table.tsx`, `maintenance-hub.tsx` để hiển thị `res.error.message || res.error.code`, chấm dứt hoàn toàn lỗi serialize object ra toast.
+  - **F4 (Lint Biome format):**
+    - Định dạng chuẩn cho `provinces.ts` qua `biome format --write`, `pnpm exec biome check` PASS 100%.
+  - **F5 (Cập nhật SOP-ADM-04 & SOP-FO-01):**
+    - Cập nhật tài liệu quy trình `src/features/guide/data/workflows.ts`:
+      - `SOP-ADM-04` (Bước 2): Cập nhật quyền quản lý danh mục phòng cho Quản lý cơ sở (thêm, sửa, ngừng/mở lại kinh doanh cơ sở mình) và Chủ chuỗi (xóa vĩnh viễn phòng trống).
+      - `SOP-FO-01` (Bước 3 & 7): Cập nhật vị trí nút "Báo sạch" tại lưới chọn phòng `/check-in` và bảng Khách đang ở `/stays`.
+  - **F6 (Nút Export tại /prospects):**
+    - Xác nhận: Hệ thống đã đăng ký quyền `prospect.export` ở tầng Database RBAC và permission keys, tuy nhiên giao diện `/prospects` hiện tại chỉ triển khai nút "Nhập Excel/CSV" (`canImport`) và "Thêm khách tiềm năng" (`canManage`), chưa có nút xuất file ra Excel. Đã ghi nhận để phát triển trong đợt tiếp theo.
 

@@ -5,7 +5,7 @@ Hệ thống quản lý quan hệ khách hàng và vận hành dành riêng cho 
 - **Production App**: [https://crm-hotel-five.vercel.app](https://crm-hotel-five.vercel.app)
 - **Tài liệu bàn giao & Kế thừa**: [HANDOVER_NOTES.md](file:///Users/duyduong/Documents/code/CRM_Hotel/HANDOVER_NOTES.md)
 - **Quy chuẩn phát triển bắt buộc**: [AGENTS.md](file:///Users/duyduong/Documents/code/CRM_Hotel/AGENTS.md)
-- **Trạng thái Go-Live**: ✅ Đã hoàn tất 5 tính năng cốt lõi (Commit `24f2314`, 29/10/2026).
+- **Trạng thái Go-Live**: ✅ Đã hoàn tất & Đã triển khai Production (Commit `7bcf961`, 29/10/2026).
 
 ---
 
