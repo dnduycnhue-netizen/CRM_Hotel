@@ -148,3 +148,4 @@ $function$;
 
 grant execute on function public.guest_profile(uuid) to authenticated;
 grant execute on function public.get_guest_profile(uuid) to authenticated;
+

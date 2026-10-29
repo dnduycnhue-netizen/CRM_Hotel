@@ -3,6 +3,7 @@
 import {
   AlertTriangle,
   CalendarClock,
+  Download,
   FileSpreadsheet,
   Handshake,
   Loader2,
@@ -37,6 +38,7 @@ import {
 import {
   claimProspectAction,
   convertProspectAction,
+  exportProspectsAction,
   getProspectsOverviewAction,
   listProspectsAction,
   unassignProspectsAction,
@@ -44,17 +46,16 @@ import {
 import {
   prospectKindLabels,
   prospectKinds,
-  prospectPriorityLabels,
-  prospectStatusLabels,
   prospectStatuses,
+  prospectStatusLabels,
   UNASSIGNED_FILTER,
 } from "../schemas";
 import type {
   Prospect,
   ProspectFilters,
   ProspectKind,
-  ProspectsOverview,
   ProspectStatus,
+  ProspectsOverview,
 } from "../types";
 import { ImportDialog } from "./import-dialog";
 import { ProspectDetailDialog } from "./prospect-detail";
@@ -68,6 +69,7 @@ interface ProspectsHubProps {
   canAssign: boolean;
   canConvert: boolean;
   canImport: boolean;
+  canExport?: boolean;
 }
 
 /** Số dòng mỗi trang (danh sách có thể lên tới hàng trăm công ty) */
@@ -88,6 +90,7 @@ export function ProspectsHub({
   canAssign,
   canConvert,
   canImport,
+  canExport = false,
 }: ProspectsHubProps) {
   const [prospects, setProspects] = useState(initialProspects);
   const [overview, setOverview] = useState(initialOverview);
@@ -109,6 +112,7 @@ export function ProspectsHub({
   const [importOpen, setImportOpen] = useState(false);
   const [convertingId, setConvertingId] = useState<string | null>(null);
   const [claimingId, setClaimingId] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   // Chọn nhiều dòng để bỏ gán hàng loạt (chỉ quản lý/owner)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -239,6 +243,40 @@ export function ProspectsHub({
     }
   }
 
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await exportProspectsAction(filtersRef.current);
+      if (!res.ok) {
+        toast.error(res.error.message || "Xuất danh sách thất bại");
+        return;
+      }
+      const { filename, base64, count } = res.data;
+      const byteCharacters = atob(base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success(`Đã xuất ${count} khách hàng tiềm năng B2B ra file Excel`);
+    } catch {
+      toast.error("Không thể xuất file lúc này");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const byStatus = overview.by_status;
   // Chỉ chọn được dòng đang có người phụ trách (dòng chưa gán không cần bỏ gán)
   const selectableIds = useMemo(
@@ -279,6 +317,20 @@ export function ProspectsHub({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          {canExport && (
+            <Button
+              variant="outline"
+              onClick={handleExport}
+              disabled={exporting}
+            >
+              {exporting ? (
+                <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4 mr-1.5" />
+              )}
+              Xuất Excel
+            </Button>
+          )}
           {canImport && (
             <Button variant="outline" onClick={() => setImportOpen(true)}>
               <FileSpreadsheet className="h-4 w-4 mr-1.5" />

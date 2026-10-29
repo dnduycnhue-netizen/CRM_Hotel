@@ -31,6 +31,7 @@ export default async function ProspectsPage() {
         canAssign={session.can("prospect.assign")}
         canConvert={session.can("prospect.convert")}
         canImport={session.can("prospect.import")}
+        canExport={session.can("prospect.export")}
       />
     </div>
   );

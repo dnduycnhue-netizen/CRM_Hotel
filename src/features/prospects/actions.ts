@@ -5,27 +5,30 @@ import { requirePermission } from "@/shared/auth/server";
 import { type ActionResult, fail, ok, toFieldErrors } from "@/shared/errors";
 import { messages } from "@/shared/i18n/vi";
 import { parseProspectImportFile } from "./data/import-file";
-import { callRpc as rpc, type RpcError } from "./data/rpc";
+import { type RpcError, callRpc as rpc } from "./data/rpc";
 import { buildImportSavePayload } from "./domain/import-payload";
 import {
+  assignProspectSchema,
   type CheckDuplicatesInput,
   type CommitImportInput,
-  type ImportRow,
-  type LogInteractionInput,
-  type SaveProspectData,
-  type SaveProspectRequest,
-  type SetProspectStatusInput,
-  UNASSIGNED_FILTER,
-  assignProspectSchema,
   checkDuplicatesSchema,
   commitImportSchema,
+  type ImportRow,
+  type LogInteractionInput,
   logInteractionSchema,
   mergeProspectSchema,
   previewImportSchema,
   prospectFiltersSchema,
   prospectIdSchema,
+  prospectKindLabels,
+  prospectPriorityLabels,
+  prospectStatusLabels,
+  type SaveProspectData,
+  type SaveProspectRequest,
+  type SetProspectStatusInput,
   saveProspectRequestSchema,
   setProspectStatusSchema,
+  UNASSIGNED_FILTER,
   unassignProspectsSchema,
 } from "./schemas";
 import type {
@@ -530,4 +533,104 @@ export async function commitProspectImportAction(
 
   revalidatePath("/prospects");
   return ok(report);
+}
+
+export async function exportProspectsAction(
+  rawFilters: ProspectFilters = {},
+): Promise<ActionResult<{ filename: string; base64: string; count: number }>> {
+  const parsed = prospectFiltersSchema.safeParse(rawFilters);
+  if (!parsed.success) return fail("VALIDATION", toFieldErrors(parsed.error));
+  const auth = await requirePermission("prospect.export");
+  if (!auth.ok) return auth;
+
+  const f = parsed.data;
+  const { data, error } = await rpc<Prospect[]>("get_prospects", {
+    p_search: nz(f.search),
+    p_status: nz(f.status),
+    p_kind: nz(f.kind),
+    p_province: nz(f.province),
+    p_assigned_to:
+      f.assigned_to && f.assigned_to !== UNASSIGNED_FILTER
+        ? f.assigned_to
+        : null,
+    p_unassigned_only: f.assigned_to === UNASSIGNED_FILTER,
+    p_overdue_only: f.overdue_only ?? false,
+    p_dup_pending: f.dup_pending ?? false,
+    p_limit: 1000,
+  });
+  if (error) return failFromRpc(error);
+
+  const list = data ?? [];
+
+  const ExcelJS = (await import("exceljs")).default;
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "CRM Chuỗi Khách Sạn";
+  workbook.created = new Date();
+
+  const sheet = workbook.addWorksheet("Khách tiềm năng B2B", {
+    views: [{ showGridLines: true }],
+  });
+
+  sheet.columns = [
+    { header: "Tên công ty / Doanh nghiệp", key: "company_name", width: 35 },
+    { header: "Phân loại", key: "kind", width: 22 },
+    { header: "Mã số thuế", key: "tax_code", width: 16 },
+    { header: "Người liên hệ", key: "contact_name", width: 24 },
+    { header: "Chức vụ", key: "contact_title", width: 18 },
+    { header: "SĐT Công ty", key: "phone", width: 16 },
+    { header: "SĐT Người liên hệ", key: "contact_phone", width: 18 },
+    { header: "Email", key: "email", width: 25 },
+    { header: "Website", key: "website", width: 25 },
+    { header: "Tỉnh / Thành phố", key: "province", width: 20 },
+    { header: "Địa chỉ", key: "address", width: 35 },
+    { header: "Trạng thái", key: "status", width: 18 },
+    { header: "Mức ưu tiên", key: "priority", width: 15 },
+    { header: "Người phụ trách", key: "assigned", width: 24 },
+    { header: "Ngày hẹn tiếp theo", key: "next_follow_up", width: 20 },
+    { header: "Ngày liên hệ gần nhất", key: "last_contacted", width: 22 },
+    { header: "Ghi chú", key: "note", width: 30 },
+  ];
+
+  const headerRow = sheet.getRow(1);
+  headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+  headerRow.fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FF1E3A8A" }, // Blue-900
+  };
+  headerRow.alignment = { vertical: "middle", horizontal: "center" };
+  headerRow.height = 28;
+
+  for (const item of list) {
+    sheet.addRow({
+      company_name: item.company_name,
+      kind: prospectKindLabels[item.kind] ?? item.kind,
+      tax_code: item.tax_code ?? "—",
+      contact_name: item.contact_name ?? "—",
+      contact_title: item.contact_title ?? "—",
+      phone: item.phone_display ?? "—",
+      contact_phone: item.contact_phone_display ?? "—",
+      email: item.email ?? "—",
+      website: item.website ?? "—",
+      province: item.province ?? "—",
+      address: item.address ?? "—",
+      status: prospectStatusLabels[item.status] ?? item.status,
+      priority: prospectPriorityLabels[item.priority] ?? item.priority,
+      assigned: item.assigned_to_name ?? "Chưa gán",
+      next_follow_up: item.next_follow_up_at ?? "—",
+      last_contacted: item.last_contacted_at ?? "—",
+      note: item.note ?? "—",
+    });
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const base64 = Buffer.from(buffer).toString("base64");
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const filename = `Danh_sach_khach_tiem_nang_B2B_${dateStr}.xlsx`;
+
+  return ok({
+    filename,
+    base64,
+    count: list.length,
+  });
 }
