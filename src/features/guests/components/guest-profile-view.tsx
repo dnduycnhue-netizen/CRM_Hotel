@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  AlertTriangle,
   Award,
   Building2,
   CheckCircle2,
@@ -34,11 +35,20 @@ import { toast } from "sonner";
 import { StayCompanionsDialog } from "@/features/stays";
 import { useCan } from "@/shared/auth";
 import { getProvinceName } from "@/shared/constants/provinces";
-import { Button } from "@/shared/ui";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui";
 import { formatDateVN } from "@/shared/utils/date";
 import {
   addGuestNoteAction,
   assignSalesOwnerAction,
+  deleteGuestAction,
   deleteGuestNoteAction,
   getGuestConsentHistoryAction,
   proposeGuestFlagAction,
@@ -86,6 +96,26 @@ export function GuestProfileView({
   const router = useRouter();
   const [companionDialogOpen, setCompanionDialogOpen] = useState(false);
   const [showFullDoc, setShowFullDoc] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeletingGuest, setIsDeletingGuest] = useState(false);
+
+  const handleDeleteGuest = async () => {
+    setIsDeletingGuest(true);
+    try {
+      const res = await deleteGuestAction(profile.guest.id);
+      if (res.ok) {
+        toast.success(`Đã xóa hồ sơ khách hàng ${profile.guest.full_name}`);
+        setDeleteDialogOpen(false);
+        router.push("/guests");
+      } else {
+        toast.error(res.error.message || "Không thể xóa hồ sơ khách hàng");
+      }
+    } catch (_err) {
+      toast.error("Đã xảy ra lỗi khi xóa hồ sơ khách hàng");
+    } finally {
+      setIsDeletingGuest(false);
+    }
+  };
 
   // Tier manual override modal state
   const [showOverrideModal, setShowOverrideModal] = useState(false);
@@ -2105,6 +2135,91 @@ export function GuestProfileView({
           </div>
         </div>
       )}
+
+      {/* Vùng nguy hiểm: Xóa khách hàng (chỉ render khi tài khoản có quyền guest.delete) */}
+      {canPerm("guest.delete") && (
+        <div className="mt-10 pt-6 border-t border-rose-200 dark:border-rose-950/50">
+          <div className="rounded-2xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/30 dark:bg-rose-950/10 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-bold text-sm">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>Khu vực thao tác dữ liệu đặc biệt (Danger Zone)</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Chỉ xóa khách khi hồ sơ nhập sai hoặc là dữ liệu rác/test chưa từng phát sinh lượt lưu trú.
+                Hồ sơ đã có lượt ở hoặc đang bị Blacklist sẽ bị hệ thống chặn xóa.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(true)}
+              className="border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 hover:bg-rose-100/60 dark:hover:bg-rose-950/40 text-xs font-semibold shrink-0 gap-1.5 rounded-xl h-9"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Xóa khách hàng</span>
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Dialog xác nhận xóa vĩnh viễn khách hàng */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="max-w-md rounded-2xl">
+          <DialogHeader>
+            <div className="h-10 w-10 rounded-xl bg-rose-500/15 text-rose-600 flex items-center justify-center mb-2">
+              <Trash2 className="h-5 w-5" />
+            </div>
+            <DialogTitle className="text-base font-bold text-slate-900 dark:text-slate-100">
+              Xác nhận xóa vĩnh viễn khách hàng
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground pt-1.5 leading-relaxed">
+              Bạn có chắc chắn muốn xóa hồ sơ khách hàng{" "}
+              <strong className="text-foreground">{profile.guest.full_name}</strong>{" "}
+              (SĐT: {profile.guest.phone || "Chưa có"}) không?
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-950/20 p-3 text-xs text-amber-800 dark:text-amber-300 space-y-1.5 my-2">
+            <p className="font-semibold flex items-center gap-1.5">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+              Điều kiện xóa hồ sơ hợp lệ:
+            </p>
+            <ul className="list-disc list-inside text-[11px] space-y-0.5 text-amber-700 dark:text-amber-400">
+              <li>Khách chưa từng phát sinh bất kỳ lượt lưu trú nào</li>
+              <li>Khách không nằm trong danh sách đen (Blacklist)</li>
+              <li>Toàn bộ ghi chú, thẻ thành viên liên quan sẽ bị xóa vĩnh viễn</li>
+            </ul>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isDeletingGuest}
+              onClick={() => setDeleteDialogOpen(false)}
+              className="text-xs rounded-xl"
+            >
+              Hủy
+            </Button>
+            <Button
+              type="button"
+              disabled={isDeletingGuest}
+              onClick={handleDeleteGuest}
+              className="text-xs rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold"
+            >
+              {isDeletingGuest ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                  Đang xóa...
+                </>
+              ) : (
+                "Xác nhận xóa vĩnh viễn"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

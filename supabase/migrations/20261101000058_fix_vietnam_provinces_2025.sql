@@ -235,3 +235,4 @@ end $$;
 
 grant execute on function public.update_guest(uuid, jsonb, timestamptz) to authenticated;
 grant execute on function public.guest_profile(uuid) to authenticated;
+

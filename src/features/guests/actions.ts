@@ -160,6 +160,59 @@ export async function deleteGuestNoteAction(
   }
 }
 
+export async function deleteGuestAction(
+  guestId: string,
+): Promise<ActionResult<{ id: string; deleted: boolean }>> {
+  try {
+    const hasPerm = await requirePermission("guest.delete");
+    if (!hasPerm.ok) {
+      return hasPerm;
+    }
+
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("delete_guest", {
+      p_guest_id: guestId,
+    });
+
+    if (error) {
+      if (error.message?.includes("GUEST_HAS_STAYS")) {
+        return fail(
+          "VALIDATION",
+          undefined,
+          "Khách đã có lịch sử lưu trú, không thể xoá. Dùng gộp hồ sơ hoặc blacklist.",
+        );
+      }
+      if (error.message?.includes("GUEST_IS_BLACKLISTED")) {
+        return fail(
+          "VALIDATION",
+          undefined,
+          "Khách đang trong danh sách đen (Blacklist). Cần gỡ cờ trước khi xoá.",
+        );
+      }
+      if (error.message?.includes("GUEST_HAS_VOUCHER_REDEMPTIONS")) {
+        return fail(
+          "VALIDATION",
+          undefined,
+          "Khách đã từng sử dụng voucher, không thể xoá.",
+        );
+      }
+      if (error.message?.includes("GUEST_HAS_MERGED_PROFILES")) {
+        return fail(
+          "VALIDATION",
+          undefined,
+          "Hồ sơ này là đích của các hồ sơ khác đã gộp vào, không thể xoá.",
+        );
+      }
+      return fail(error.code);
+    }
+
+    revalidatePath("/guests");
+    return ok(data as { id: string; deleted: boolean });
+  } catch (_err: unknown) {
+    return fail("UNKNOWN");
+  }
+}
+
 export async function setGuestTagsAction(
   guestId: string,
   tags: string[],

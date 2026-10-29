@@ -493,3 +493,21 @@ vercel --prod --yes
   - **F6 (Nút Export tại /prospects):**
     - Xác nhận: Hệ thống đã đăng ký quyền `prospect.export` ở tầng Database RBAC và permission keys, tuy nhiên giao diện `/prospects` hiện tại chỉ triển khai nút "Nhập Excel/CSV" (`canImport`) và "Thêm khách tiềm năng" (`canManage`), chưa có nút xuất file ra Excel. Đã ghi nhận để phát triển trong đợt tiếp theo.
 
+---
+
+## 12. Tính năng bổ sung: Xoá khách hàng khi dữ liệu không đạt (Migration 59)
+
+- **Mục tiêu:** Cung cấp tính năng xóa cứng an toàn các hồ sơ khách hàng tạo nhầm, dữ liệu test, rác khi chưa từng phát sinh giao dịch.
+- **Phân quyền:** Cấp quyền mới `guest.delete` cho các vai trò: `sales`, `branch_manager`, `receptionist`, `owner`. Khai báo đồng bộ tại `src/shared/auth/permission-keys.ts` và bảng `public.permissions`.
+- **Cơ chế an toàn (Chặn xóa):**
+  - Chặn tuyệt đối nếu khách đã có bất kỳ lượt lưu trú nào trong `stays` (`P0422`: "Khách đã có lịch sử lưu trú, không thể xoá. Dùng gộp hồ sơ hoặc blacklist.").
+  - Chặn tuyệt đối nếu khách đang nằm trong danh sách đen (`guest_flags` status `approved`).
+  - Chặn nếu khách đã đổi voucher hoặc là đích của hồ sơ gộp.
+- **Server Action & RPC:**
+  - `delete_guest(p_guest_id)`: RPC `SECURITY DEFINER`, `set search_path = ''`, assert `guest.delete`, dọn sạch các bảng liên quan (cascade) và ghi vết kiểm toán `log_event`.
+  - `deleteGuestAction`: Server Action trong `src/features/guests/actions.ts` kiểm tra quyền `guest.delete`, gọi RPC và revalidate `/guests`.
+- **Giao diện:**
+  - Khu vực Danger Zone ở cuối trang hồ sơ khách (`/guests/[id]`), chỉ hiển thị với người dùng có quyền `guest.delete`.
+  - Dialog xác nhận trong trang (sử dụng `@/shared/ui` Dialog) với cảnh báo rõ ràng điều kiện xóa và tên khách hàng, không sử dụng `window.confirm()`.
+- **Migration:** `supabase/migrations/20261101000059_delete_guest.sql`.
+

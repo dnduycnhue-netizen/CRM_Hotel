@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { PERMISSIONS } from "./permission-keys";
 
 describe("Permission Keys (AGENTS.md Rule 11)", () => {
-  it("danh sách PERMISSIONS phải có 74 quyền hợp lệ", () => {
-    expect(PERMISSIONS.length).toBe(74);
+  it("danh sách PERMISSIONS phải có 75 quyền hợp lệ", () => {
+    expect(PERMISSIONS.length).toBe(75);
   });
 
   it("không có quyền nào bị trùng lặp trong PERMISSIONS", () => {

@@ -14,6 +14,7 @@ export const PERMISSIONS = [
   "guest.view_full_own",
   "guest.create",
   "guest.update",
+  "guest.delete",
   "guest.assign_owner",
   "guest.note_create",
   "guest.note_delete_any",
