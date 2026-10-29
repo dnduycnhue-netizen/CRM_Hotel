@@ -634,3 +634,19 @@ export async function exportProspectsAction(
     count: list.length,
   });
 }
+
+export async function deleteProspectAction(
+  id: string,
+): Promise<ActionResult<{ id: string }>> {
+  const parsed = prospectIdSchema.safeParse({ id });
+  if (!parsed.success) return fail("VALIDATION", toFieldErrors(parsed.error));
+
+  const auth = await requirePermission("prospect.delete");
+  if (!auth.ok) return auth;
+
+  const { error } = await rpc("delete_prospect", { p_id: id });
+  if (error) return failFromRpc(error);
+
+  revalidatePath("/prospects");
+  return ok({ id });
+}

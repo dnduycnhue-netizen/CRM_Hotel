@@ -10,6 +10,7 @@ import {
   Plus,
   Search,
   Target,
+  Trash2,
   Trophy,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -38,6 +39,7 @@ import {
 import {
   claimProspectAction,
   convertProspectAction,
+  deleteProspectAction,
   exportProspectsAction,
   getProspectsOverviewAction,
   listProspectsAction,
@@ -70,6 +72,7 @@ interface ProspectsHubProps {
   canConvert: boolean;
   canImport: boolean;
   canExport?: boolean;
+  canDelete?: boolean;
 }
 
 /** Số dòng mỗi trang (danh sách có thể lên tới hàng trăm công ty) */
@@ -91,6 +94,7 @@ export function ProspectsHub({
   canConvert,
   canImport,
   canExport = false,
+  canDelete = false,
 }: ProspectsHubProps) {
   const [prospects, setProspects] = useState(initialProspects);
   const [overview, setOverview] = useState(initialOverview);
@@ -113,6 +117,10 @@ export function ProspectsHub({
   const [convertingId, setConvertingId] = useState<string | null>(null);
   const [claimingId, setClaimingId] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [deletingProspect, setDeletingProspect] = useState<Prospect | null>(
+    null,
+  );
+  const [deleting, setDeleting] = useState(false);
 
   // Chọn nhiều dòng để bỏ gán hàng loạt (chỉ quản lý/owner)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -274,6 +282,27 @@ export function ProspectsHub({
       toast.error("Không thể xuất file lúc này");
     } finally {
       setExporting(false);
+    }
+  };
+
+  const handleQuickDelete = async () => {
+    if (!deletingProspect) return;
+    setDeleting(true);
+    try {
+      const res = await deleteProspectAction(deletingProspect.id);
+      if (!res.ok) {
+        toast.error(res.error.message || "Xóa khách tiềm năng thất bại");
+        return;
+      }
+      toast.success(
+        `Đã xóa khách tiềm năng "${deletingProspect.company_name}"`,
+      );
+      setDeletingProspect(null);
+      await reload();
+    } catch {
+      toast.error("Không thể xóa khách tiềm năng lúc này");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -734,6 +763,20 @@ export function ProspectsHub({
                             )}
                           </Button>
                         )}
+                      {canDelete && p.status !== "converted" && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive hover:bg-destructive/10 hover:text-destructive px-2"
+                          title="Xóa khách tiềm năng"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeletingProspect(p);
+                          }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -828,6 +871,7 @@ export function ProspectsHub({
         siblings={siblings}
         canAssign={canAssign}
         canConvert={canConvert}
+        canDelete={canDelete}
         onEdit={(p) => {
           setDetailOpen(false);
           setEditing(p);
@@ -835,6 +879,44 @@ export function ProspectsHub({
         }}
         onChanged={() => void reload()}
       />
+
+      {/* Dialog xác nhận xóa nhanh khách tiềm năng B2B */}
+      <Dialog
+        open={!!deletingProspect}
+        onOpenChange={(open) => !open && setDeletingProspect(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              Xóa khách hàng tiềm năng B2B
+            </DialogTitle>
+            <DialogDescription>
+              Bạn có chắc chắn muốn xóa vĩnh viễn{" "}
+              <strong>{deletingProspect?.company_name}</strong> khỏi hệ thống?
+              Toàn bộ lịch sử chăm sóc và tương tác cũng sẽ bị xóa. Thao tác này
+              không thể hoàn tác.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              disabled={deleting}
+              onClick={() => setDeletingProspect(null)}
+            >
+              Hủy
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={deleting}
+              onClick={() => void handleQuickDelete()}
+            >
+              {deleting && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
+              Xóa vĩnh viễn
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {canImport && (
         <ImportDialog
