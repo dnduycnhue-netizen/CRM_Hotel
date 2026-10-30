@@ -511,3 +511,44 @@ vercel --prod --yes
   - Dialog xác nhận trong trang (sử dụng `@/shared/ui` Dialog) với cảnh báo rõ ràng điều kiện xóa và tên khách hàng, không sử dụng `window.confirm()`.
 - **Migration:** `supabase/migrations/20261101000059_delete_guest.sql`.
 
+
+
+## 13. Tính năng bổ sung: Xoá khách hàng tiềm năng B2B (Migration 61 & 62)
+
+- **Mục tiêu:** Cho phép xóa bỏ khách tiềm năng rác hoặc tạo nhầm nếu chưa phát sinh chuyển đổi sang hợp đồng đối tác.
+- **Phân quyền (Quy định tại Migration 62 theo spec chuẩn):**
+  - Chỉ cấp quyền `prospect.delete` cho các vai trò quản trị: **`branch_manager`** và **`owner`**.
+  - **Thu hồi** quyền `prospect.delete` từ vai trò `sales` và `receptionist` để tránh nhân viên bán hàng/lễ tân tùy tiện xóa thông tin lead B2B mà không thông qua cấp quản lý.
+  - Cấp bổ sung quyền `prospect.export` cho vai trò `sales` để phục vụ trích xuất danh sách khách hàng doanh nghiệp.
+- **Ràng buộc an toàn:**
+  - Chặn tuyệt đối nếu khách tiềm năng đã được chuyển đổi thành công (`status = 'converted'` hoặc `converted_partner_id is not null`).
+  - Ghi nhận đầy đủ vết kiểm toán `log_event` với hành động `prospect.delete`.
+- **Giao diện:**
+  - Nút "Xoá" và Dialog xác nhận chi tiết tên công ty, người liên hệ và cảnh báo không thể hoàn tác, chỉ hiển thị với vai trò quản lý/chủ chuỗi có quyền `prospect.delete`.
+
+---
+
+## 14. Xử lý Báo cáo QA Vòng 20 & Cải tiến Menu Sidebar (Commit bbfe8fc)
+
+- **Thời gian:** Ngày 30/10/2026.
+- **Nội dung xử lý chi tiết:**
+  1. **Bug 1 [CAO] - Ngừng kinh doanh phòng thất bại (`rooms_check`):**
+     - Sửa constraint check trong bảng `rooms`: Đổi từ `closed_on > opened_on` thành `closed_on >= opened_on` (Migration 62), cho phép đóng phòng mở trong cùng ngày.
+     - Bổ sung Dialog xác nhận "Ngừng kinh doanh phòng" trong giao diện `rooms-table.tsx` thay vì thực thi ngay lập tức.
+     - Cải thiện thông điệp lỗi tiếng Việt trong Server Action `deactivateRoomAction` / `reactivateRoomAction` nếu vi phạm constraint.
+  2. **Bug 2 [CAO] - Điều chỉnh phạm vi quyền xóa khách tiềm năng:**
+     - Thu hồi quyền `prospect.delete` từ nhân viên kinh doanh (`sales`) và lễ tân (`receptionist`), đảm bảo chỉ cấp quản lý (`branch_manager`, `owner`) mới có quyền xóa lead.
+     - Cập nhật test pgTAP `delete_prospect.test.sql` để xác minh ma trận quyền chuẩn xác.
+  3. **Bug 3 [TRUNG BÌNH] - Tạo phiếu sự cố liên chi nhánh thất bại âm thầm:**
+     - Tại `src/app/(app)/facilities/report/page.tsx`: Lọc dropdown cơ sở theo quyền thực tế `session.can("wo.create", b.id)` thay vì chỉ dựa vào `report.view_chain`.
+     - Tại `report-issue-form.tsx`: Thêm thông báo `toast.success` khi tạo phiếu thành công (hiển thị kèm mã phiếu) và `toast.error` kèm message lỗi cụ thể từ Server Action.
+  4. **Bug 4 & 5 [TRUNG BÌNH] - Hiển thị tên đối tác trên `/stays` & Cấp quyền Export cho Sales:**
+     - Cấp quyền `prospect.export` cho vai trò `sales` trong Migration 62.
+     - Bổ sung trường `partnerName` vào kiểu `InHouseStay` và câu truy vấn `getInHouseStays` (`stays.partner_id -> partners.name`).
+     - Hiển thị nhãn tên đối tác (công ty/lữ hành) có biểu tượng tòa nhà ngay cạnh/dưới kênh nguồn khách tại bảng Khách đang ở `/stays`.
+  5. **Yêu cầu Sidebar - Bổ sung các nút chức năng theo nhóm:**
+     - **Lễ tân & Vận hành:** Giữ nguyên các thao tác cốt lõi.
+     - **Khách hàng & Sales:** Thêm liên kết trực tiếp "Thêm hồ sơ khách" (`/guests/new`, icon `UserPlus`, quyền `guest.create`).
+     - **Cơ sở vật chất & CSVC:** Thêm liên kết "Tạo phiếu kiểm tra" (`/facilities/inspections/new`, icon `CheckSquare`, quyền `inspection.perform`).
+     - **Báo cáo & Doanh thu:** Thêm liên kết "Báo cáo CSVC & Bảo trì" (`/reports/facilities`, icon `Wrench`, quyền `report.view_branch` / `report.view_chain` / `facility.view`).
+     - **Hệ thống & Cài đặt:** Tách bạch "Quản lý cơ sở" (`/settings/branches`, quyền `settings.branches` của Owner) và "Danh mục phòng" (`/settings/rooms`, icon `DoorClosed`, quyền `settings.rooms` của Quản lý chi nhánh & Owner).
