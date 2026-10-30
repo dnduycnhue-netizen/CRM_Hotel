@@ -8,6 +8,7 @@ import {
   Handshake,
   Loader2,
   Pencil,
+  RotateCcw,
   Trash2,
   UserCog,
 } from "lucide-react";
@@ -31,7 +32,9 @@ import {
   convertProspectAction,
   deleteProspectAction,
   getProspectDetailAction,
+  purgeProspectAction,
   resolveProspectDuplicateAction,
+  restoreProspectAction,
   setProspectStatusAction,
 } from "../actions";
 import {
@@ -66,6 +69,7 @@ interface ProspectDetailProps {
   canAssign: boolean;
   canConvert: boolean;
   canDelete?: boolean;
+  canPurge?: boolean;
   onEdit: (prospect: Prospect) => void;
   onChanged: () => void;
 }
@@ -99,6 +103,7 @@ export function ProspectDetailDialog({
   canAssign,
   canConvert,
   canDelete = false,
+  canPurge = false,
   onEdit,
   onChanged,
 }: ProspectDetailProps) {
@@ -115,6 +120,7 @@ export function ProspectDetailDialog({
   const [assignee, setAssignee] = useState("");
   const [confirmingConvert, setConfirmingConvert] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [confirmingPurge, setConfirmingPurge] = useState(false);
   const [partnerClash, setPartnerClash] = useState<{
     message: string;
     name: string | null;
@@ -268,6 +274,49 @@ export function ProspectDetailDialog({
       onChanged();
     } catch {
       toast.error("Không thể xóa khách tiềm năng lúc này");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function submitRestore() {
+    if (!p) return;
+    setBusy(true);
+    try {
+      const res = await restoreProspectAction(p.id);
+      if (!res.ok) {
+        toast.error(res.error.message || "Khôi phục khách tiềm năng thất bại");
+        return;
+      }
+      toast.success(
+        `Đã khôi phục khách tiềm năng "${p.company_name}" về danh sách theo dõi`,
+      );
+      onOpenChange(false);
+      onChanged();
+    } catch {
+      toast.error("Không thể khôi phục khách tiềm năng lúc này");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function submitPurge() {
+    if (!p) return;
+    setBusy(true);
+    try {
+      const res = await purgeProspectAction(p.id);
+      if (!res.ok) {
+        toast.error(
+          res.error.message || "Xóa vĩnh viễn khách tiềm năng thất bại",
+        );
+        return;
+      }
+      toast.success(`Đã xóa vĩnh viễn khách tiềm năng "${p.company_name}"`);
+      setConfirmingPurge(false);
+      onOpenChange(false);
+      onChanged();
+    } catch {
+      toast.error("Không thể xóa vĩnh viễn khách tiềm năng lúc này");
     } finally {
       setBusy(false);
     }
@@ -437,46 +486,123 @@ export function ProspectDetailDialog({
               </div>
             )}
 
-            {/* Hành động */}
-            {p.can_edit && (
-              <div className="flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" onClick={() => onEdit(p)}>
-                  <Pencil className="h-3.5 w-3.5 mr-1.5" />
-                  Sửa thông tin
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() =>
-                    setPanel(panel === "status" ? "none" : "status")
-                  }
-                >
-                  <ArrowRightLeft className="h-3.5 w-3.5 mr-1.5" />
-                  Đổi trạng thái
-                </Button>
-                {canAssign && (
+            {p.deleted_at && (
+              <div className="rounded-xl border border-amber-500/40 bg-amber-50/60 dark:bg-amber-950/30 p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs text-amber-800 dark:text-amber-300">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <span>
+                    Hồ sơ này đang nằm trong <strong>Thùng rác</strong> (đã xóa
+                    tạm thời).
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {canDelete && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={busy}
+                      onClick={() => void submitRestore()}
+                      className="h-8 text-xs text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 gap-1 font-medium"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      Khôi phục
+                    </Button>
+                  )}
+                  {canPurge && p.status !== "converted" && (
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      disabled={busy}
+                      onClick={() => setConfirmingPurge(true)}
+                      className="h-8 text-xs gap-1 font-medium"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Xóa vĩnh viễn
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {confirmingPurge && (
+              <div className="rounded-lg border border-destructive/40 p-3.5 space-y-2.5 bg-destructive/10">
+                <div className="flex items-center gap-2 text-destructive font-semibold text-sm">
+                  <AlertTriangle className="h-4 w-4" />
+                  Xác nhận xóa vĩnh viễn khách tiềm năng
+                </div>
+                <p className="text-sm text-foreground">
+                  Hành động này <strong>không thể hoàn tác</strong>. Toàn bộ thông
+                  tin của <strong>{p.company_name}</strong> và toàn bộ nhật ký
+                  tương tác liên quan sẽ bị xóa vĩnh viễn khỏi hệ thống.
+                </p>
+                <div className="flex gap-2 justify-end">
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() =>
-                      setPanel(panel === "assign" ? "none" : "assign")
-                    }
+                    disabled={busy}
+                    onClick={() => setConfirmingPurge(false)}
                   >
-                    <UserCog className="h-3.5 w-3.5 mr-1.5" />
-                    Chuyển phụ trách
+                    Hủy
                   </Button>
-                )}
-                {canConvert && isActive && (
                   <Button
                     size="sm"
-                    onClick={() => setConfirmingConvert(true)}
+                    variant="destructive"
                     disabled={busy}
+                    onClick={() => void submitPurge()}
                   >
-                    <Handshake className="h-3.5 w-3.5 mr-1.5" />
-                    Chuyển thành đối tác
+                    {busy && (
+                      <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                    )}
+                    Xác nhận xóa vĩnh viễn
                   </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Hành động */}
+            {!p.deleted_at && (p.can_edit || canDelete) && (
+              <div className="flex flex-wrap gap-2">
+                {p.can_edit && (
+                  <>
+                    <Button size="sm" variant="outline" onClick={() => onEdit(p)}>
+                      <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                      Sửa thông tin
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        setPanel(panel === "status" ? "none" : "status")
+                      }
+                    >
+                      <ArrowRightLeft className="h-3.5 w-3.5 mr-1.5" />
+                      Đổi trạng thái
+                    </Button>
+                    {canAssign && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          setPanel(panel === "assign" ? "none" : "assign")
+                        }
+                      >
+                        <UserCog className="h-3.5 w-3.5 mr-1.5" />
+                        Chuyển phụ trách
+                      </Button>
+                    )}
+                    {canConvert && isActive && (
+                      <Button
+                        size="sm"
+                        onClick={() => setConfirmingConvert(true)}
+                        disabled={busy}
+                      >
+                        <Handshake className="h-3.5 w-3.5 mr-1.5" />
+                        Chuyển thành đối tác
+                      </Button>
+                    )}
+                  </>
                 )}
-                {canDelete && p.status !== "converted" && (
+                {canDelete && (
                   <Button
                     size="sm"
                     variant="outline"

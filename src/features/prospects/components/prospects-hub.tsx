@@ -273,16 +273,21 @@ export function ProspectsHub({
   }
 
   const handleExport = async () => {
+    if (exporting) return;
     setExporting(true);
+    const toastId = "export-prospects";
+    toast.loading("Đang chuẩn bị và kết xuất dữ liệu Excel...", { id: toastId });
     try {
       const res = await exportProspectsAction(filtersRef.current);
       if (!res.ok) {
-        toast.error(res.error.message || "Xuất danh sách thất bại");
+        toast.error(res.error.message || "Xuất danh sách thất bại", {
+          id: toastId,
+        });
         return;
       }
       const { files, totalCount, fileCount } = res.data;
       if (!files || files.length === 0) {
-        toast.info("Không có dữ liệu để xuất");
+        toast.info("Không có dữ liệu để xuất", { id: toastId });
         return;
       }
 
@@ -311,14 +316,18 @@ export function ProspectsHub({
       if (fileCount > 1) {
         toast.success(
           `Đã xuất ${totalCount} khách hàng tiềm năng B2B, chia làm ${fileCount} file Excel`,
+          { id: toastId },
         );
       } else {
         toast.success(
           `Đã xuất ${totalCount} khách hàng tiềm năng B2B ra file Excel`,
+          { id: toastId },
         );
       }
     } catch {
-      toast.error("Không thể xuất file lúc này");
+      toast.error("Không thể xuất file lúc này. Vui lòng thử lại sau.", {
+        id: toastId,
+      });
     } finally {
       setExporting(false);
     }
@@ -451,11 +460,16 @@ export function ProspectsHub({
               disabled={exporting}
             >
               {exporting ? (
-                <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                <>
+                  <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                  Đang xuất file...
+                </>
               ) : (
-                <Download className="h-4 w-4 mr-1.5" />
+                <>
+                  <Download className="h-4 w-4 mr-1.5" />
+                  Xuất Excel
+                </>
               )}
-              Xuất Excel
             </Button>
           )}
           {canImport && !inTrash && (
@@ -1027,6 +1041,7 @@ export function ProspectsHub({
         canAssign={canAssign}
         canConvert={canConvert}
         canDelete={canDelete}
+        canPurge={canPurge}
         onEdit={(p) => {
           setDetailOpen(false);
           setEditing(p);

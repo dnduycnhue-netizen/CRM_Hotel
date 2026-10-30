@@ -1,5 +1,6 @@
 "use server";
 
+import ExcelJS from "exceljs";
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/shared/auth/server";
 import { type ActionResult, fail, ok, toFieldErrors } from "@/shared/errors";
@@ -569,7 +570,6 @@ export async function exportProspectsAction(
   if (error) return failFromRpc(error);
 
   const list = data ?? [];
-  const ExcelJS = (await import("exceljs")).default;
   const dateStr = new Date().toISOString().slice(0, 10);
   const CHUNK_SIZE = 1000;
   const chunks: Prospect[][] = [];

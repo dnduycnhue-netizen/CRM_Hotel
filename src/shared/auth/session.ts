@@ -17,7 +17,7 @@ export const getSession = cache(async () => {
   const [{ data: access }, { data: profile }, cookieStore] = await Promise.all([
     supabase.rpc("my_access"),
     (supabase.from("profiles") as any)
-      .select("full_name")
+      .select("full_name, default_branch_id")
       .eq("id", data.claims.sub)
       .maybeSingle(),
     cookies(),
@@ -54,6 +54,8 @@ export const getSession = cache(async () => {
     userId: data.claims.sub as string,
     email: data.claims.email as string | undefined,
     fullName: ((profile as any)?.full_name as string) || undefined,
+    defaultBranchId:
+      ((profile as any)?.default_branch_id as string | null) || null,
     access: a,
     branchIds,
     currentBranchId,

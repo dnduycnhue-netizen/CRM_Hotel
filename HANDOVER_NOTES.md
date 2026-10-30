@@ -583,3 +583,25 @@ vercel --prod --yes
      - Tại `GuestProfileView`: Kiểm tra trước `profile.stays.length > 0` và trạng thái Blacklist (`flags.status === 'approved'`).
      - Nếu khách đã có lượt ở: Hiển thị callout cảnh báo màu đỏ "Không thể xóa: Khách đã có X lượt lưu trú. Hệ thống bảo vệ toàn vẹn lịch sử lưu trú và doanh thu. Nếu hồ sơ bị trùng lặp, vui lòng sử dụng chức năng Đề xuất gộp hồ sơ" và **vô hiệu hóa** nút "Xác nhận xóa vĩnh viễn".
      - Nếu khách đang trong Blacklist: Hiển thị callout cảnh báo màu đỏ và vô hiệu hóa nút xóa.
+
+
+---
+
+### 16. Bàn giao sau QA Vòng 22 (Trưa 30/10/2026) — Sửa triệt để khóa chi nhánh báo sự cố, tối ưu Export Excel & đồng bộ chi tiết Prospect
+
+- **Ngữ cảnh:** QA Vòng 22 xác nhận 3/4 mục đã PASS hoàn toàn (Xóa mềm prospect + Thùng rác, Export tách file, Cảnh báo xóa khách có lượt ở). Phát hiện 1 mục FAIL (Khóa chi nhánh sự cố vẫn ra 8 cơ sở với tech do dùng sai `session.branchIds` thay vì chi nhánh cố định) và 2 nits hiển thị.
+- **Các giải pháp kỹ thuật đã triển khai:**
+  1. **Khóa chi nhánh cố định tại `/facilities/report` (Sửa tận gốc):**
+     - **Database (Migration 64):** Cập nhật `default_branch_id` trong `public.profiles` cho tài khoản kỹ thuật CSVC (`kythuat@khachsan.vn`) thành cơ sở Ngô Mây (`NGOMAY`), và các tài khoản cơ sở khác (`alohaquynhon@gmail.com` $\rightarrow$ `ALOHA`, `mirasunhotelquynhon@gmail.com` $\rightarrow$ `SUN`, `miraecoquynhon@gmail.com` $\rightarrow$ `ECO`).
+     - **Session (`src/shared/auth/session.ts`):** Truy vấn thêm cột `default_branch_id` từ `public.profiles` và trả về `defaultBranchId: string | null` trong `Session`.
+     - **Page (`src/app/(app)/facilities/report/page.tsx`):**
+       - Xác định `isOwner = session.can("settings.branches")` (loại bỏ hoàn toàn điều kiện `session.branchIds.length >= allBranches.length` vốn bị bypass bởi vai trò technician cấp chain-wide).
+       - Đối với non-owner: Lọc theo `session.defaultBranchId` cố định của hồ sơ tài khoản (`allBranches.filter(b => b.id === session.defaultBranchId)`). Khi `branches.length === 1`, giao diện hiển thị badge cố định cơ sở Ngô Mây, triệt tiêu dropdown 8 chi nhánh.
+  2. **Tối ưu Export Excel Prospect (`actions.ts` & `prospects-hub.tsx`):**
+     - Chuyển `ExcelJS` sang static import ở đầu file `src/features/prospects/actions.ts` thay vì dynamic import trong handler, loại bỏ độ trễ cold-start.
+     - Tại `prospects-hub.tsx`: Thêm `toast.loading("Đang chuẩn bị và kết xuất dữ liệu Excel...", { id: "export-prospects" })` phản hồi ngay lập tức lúc bấm nút, hiển thị trạng thái "Đang xuất file..." kèm biểu tượng spinner xoay tròn trên nút và disabled nút trong lúc xuất dữ liệu.
+  3. **Đồng bộ hiển thị nút Chuyển vào thùng rác cho prospect đã `converted` (`prospect-detail.tsx`):**
+     - Tại `ProspectDetail`: Bỏ điều kiện ẩn nút theo `status !== 'converted'`, cho phép hiển thị nút "Chuyển vào thùng rác" (`canDelete && !p.deleted_at`) cho mọi trạng thái kể cả đã chuyển đổi.
+     - Khi mở xem prospect trong Thùng rác (`p.deleted_at`): Hiển thị banner thông tin màu hổ phách, nút "Khôi phục" (`RotateCcw`, canDelete) và nút "Xóa vĩnh viễn" (`Trash2`, canPurge khi chưa converted).
+  4. **Nạp dữ liệu mẫu kiểm thử Blacklist xóa khách hàng:**
+     - Migration 64 đã nạp sẵn khách hàng `[SEED QA] Khách Blacklist Test Xóa` (SĐT `0988887766`, 0 lượt ở, cờ cảnh báo approved) để QA kiểm thử trực quan cảnh báo đỏ và nút xóa bị disabled trên UI.

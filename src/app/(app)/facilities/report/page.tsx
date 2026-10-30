@@ -24,20 +24,30 @@ export default async function ReportIssuePage() {
     getFacilityLocations(),
   ]);
 
-  const isOwner =
-    session.can("settings.branches") ||
-    session.branchIds.length >= allBranches.length;
+  // Chỉ Chủ chuỗi (có quyền settings.branches) mới được báo sự cố trên toàn chuỗi
+  const isOwner = session.can("settings.branches");
 
-  // Khóa danh sách cơ sở phát sinh sự cố về đúng chi nhánh cố định của tài khoản (với Chủ chuỗi thì được chọn toàn chuỗi)
-  const branches = isOwner
-    ? allBranches
-    : allBranches.filter((b) => session.branchIds.includes(b.id));
+  // Khóa danh sách cơ sở phát sinh sự cố về đúng chi nhánh CỐ ĐỊNH của tài khoản (profile.default_branch_id)
+  let branches = allBranches;
+  if (!isOwner) {
+    if (session.defaultBranchId) {
+      const fixed = allBranches.filter((b) => b.id === session.defaultBranchId);
+      branches =
+        fixed.length > 0
+          ? fixed
+          : allBranches.filter((b) => b.id === session.currentBranchId);
+    } else if (session.currentBranchId) {
+      branches = allBranches.filter((b) => b.id === session.currentBranchId);
+    } else {
+      branches = allBranches.slice(0, 1);
+    }
+  }
 
   const currentBranchId =
-    session.currentBranchId &&
-    branches.some((b) => b.id === session.currentBranchId)
-      ? session.currentBranchId
-      : branches[0]?.id || null;
+    branches.find((b) => b.id === session.defaultBranchId)?.id ||
+    branches.find((b) => b.id === session.currentBranchId)?.id ||
+    branches[0]?.id ||
+    null;
 
   return (
     <ReportIssueForm
