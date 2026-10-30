@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { requirePermission } from "@/shared/auth/server";
+import { requireAnyPermission, requirePermission } from "@/shared/auth/server";
 import { type ActionResult, fail, ok, toFieldErrors } from "@/shared/errors";
 import { getComplianceHistory } from "./data/compliance";
 import {
@@ -547,8 +547,8 @@ export async function upsertComplianceDocAction(
       return fail("VALIDATION", toFieldErrors(parsed.error));
     }
 
-    const auth = await requirePermission(
-      "compliance.manage",
+    const auth = await requireAnyPermission(
+      ["compliance.manage", "facility.manage"],
       parsed.data.branch_id,
     );
     if (!auth.ok) return auth;
@@ -598,7 +598,10 @@ export async function createComplianceUploadSignedUrlAction(
   fileName: string,
 ): Promise<ActionResult<{ signedUrl: string; token: string; path: string }>> {
   try {
-    const auth = await requirePermission("compliance.manage", branchId);
+    const auth = await requireAnyPermission(
+      ["compliance.manage", "facility.manage"],
+      branchId,
+    );
     if (!auth.ok) return auth;
 
     const supabase = await createClient();

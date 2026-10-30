@@ -25,12 +25,26 @@ export default async function CompliancePage() {
     redirect("/?denied=1");
   }
 
-  const canViewChain =
-    session.can("report.view_chain") || session.branchIds.length > 1;
+  const isOwner = session.can("settings.branches");
+  const canViewChain = session.can("report.view_chain") || isOwner;
   const allBranches = await getActiveBranches();
-  const branches = session.can("report.view_chain")
-    ? allBranches
-    : allBranches.filter((b) => session.branchIds.includes(b.id));
+
+  // Khóa danh sách chi nhánh: Chỉ Chủ chuỗi (hoặc có quyền xem toàn chuỗi) mới xem tất cả cơ sở;
+  // Nhân viên cơ sở & kỹ thuật chỉ xem cơ sở cố định của mình (session.defaultBranchId)
+  let branches = allBranches;
+  if (!canViewChain) {
+    if (session.defaultBranchId) {
+      const fixed = allBranches.filter((b) => b.id === session.defaultBranchId);
+      branches =
+        fixed.length > 0
+          ? fixed
+          : allBranches.filter((b) => b.id === session.currentBranchId);
+    } else if (session.currentBranchId) {
+      branches = allBranches.filter((b) => b.id === session.currentBranchId);
+    } else {
+      branches = allBranches.slice(0, 1);
+    }
+  }
 
   const targetBranchId = canViewChain ? undefined : branches[0]?.id;
 

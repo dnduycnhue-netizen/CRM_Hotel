@@ -13,3 +13,14 @@ export async function requirePermission(
   if (!s.can(perm, branchId)) return fail("FORBIDDEN");
   return ok({ userId: s.userId });
 }
+
+export async function requireAnyPermission(
+  perms: Permission[],
+  branchId?: string | null,
+): Promise<ActionResult<{ userId: string }>> {
+  const s = await getSession();
+  if (!s) return fail("UNAUTHENTICATED");
+  const hasAny = perms.some((p) => s.can(p, branchId));
+  if (!hasAny) return fail("FORBIDDEN");
+  return ok({ userId: s.userId });
+}

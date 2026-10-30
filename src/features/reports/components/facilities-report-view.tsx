@@ -12,9 +12,14 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { toast } from "sonner";
 import { Button } from "@/shared/ui";
-import { formatDateVN, getVnDateRange } from "@/shared/utils/date";
+import {
+  formatDateVN,
+  getVnDateRange,
+  getVnDateString,
+} from "@/shared/utils/date";
 import type { FacilityReportResponse } from "../types";
 
 interface FacilitiesReportViewProps {
@@ -37,8 +42,27 @@ export function FacilitiesReportView({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
+  const defaultRange = getVnDateRange("30days");
+  const [customFrom, setCustomFrom] = useState(
+    initialFrom || defaultRange.from,
+  );
+  const [customTo, setCustomTo] = useState(initialTo || defaultRange.to);
+
+  useEffect(() => {
+    if (initialFrom) setCustomFrom(initialFrom);
+    if (initialTo) setCustomTo(initialTo);
+  }, [initialFrom, initialTo]);
+
+  const todayVN = getVnDateString(new Date());
+  const isCustomActive =
+    initialPreset === "custom" ||
+    (!["7days", "30days", "thisMonth"].includes(initialPreset || "") &&
+      Boolean(initialFrom && initialTo));
+
   const handlePresetChange = (preset: "7days" | "30days" | "thisMonth") => {
     const r = getVnDateRange(preset);
+    setCustomFrom(r.from);
+    setCustomTo(r.to);
     startTransition(() => {
       const params = new URLSearchParams();
       if (initialBranchId && initialBranchId !== "all")
@@ -46,6 +70,32 @@ export function FacilitiesReportView({
       params.set("preset", preset);
       params.set("from", r.from);
       params.set("to", r.to);
+      router.push(`/reports/facilities?${params.toString()}`);
+    });
+  };
+
+  const handleApplyCustomDate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customFrom || !customTo) {
+      toast.error("Vui lòng chọn đầy đủ Từ ngày và Đến ngày");
+      return;
+    }
+    if (customFrom > customTo) {
+      toast.error("Ngày bắt đầu không được lớn hơn ngày kết thúc");
+      return;
+    }
+    if (customTo > todayVN) {
+      toast.error("Khoảng ngày không được vượt quá ngày hiện tại");
+      return;
+    }
+
+    startTransition(() => {
+      const params = new URLSearchParams();
+      if (initialBranchId && initialBranchId !== "all")
+        params.set("branchId", initialBranchId);
+      params.set("preset", "custom");
+      params.set("from", customFrom);
+      params.set("to", customTo);
       router.push(`/reports/facilities?${params.toString()}`);
     });
   };
@@ -196,7 +246,52 @@ export function FacilitiesReportView({
             >
               Tháng này
             </button>
+            {isCustomActive && (
+              <span className="px-2.5 py-1 rounded-lg font-bold bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs">
+                Tùy chỉnh
+              </span>
+            )}
           </div>
+
+          {/* Chọn khoảng ngày tùy chỉnh */}
+          <form
+            onSubmit={handleApplyCustomDate}
+            className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl"
+          >
+            <div className="flex items-center gap-1 px-1.5">
+              <span className="text-slate-500 font-medium">Từ:</span>
+              <input
+                type="date"
+                value={customFrom}
+                max={todayVN}
+                onChange={(e) => setCustomFrom(e.target.value)}
+                disabled={isPending}
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/60 rounded-lg px-2 py-0.5 font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs"
+              />
+            </div>
+            <div className="flex items-center gap-1 px-1.5">
+              <span className="text-slate-500 font-medium">Đến:</span>
+              <input
+                type="date"
+                value={customTo}
+                max={todayVN}
+                onChange={(e) => setCustomTo(e.target.value)}
+                disabled={isPending}
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/60 rounded-lg px-2 py-0.5 font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={isPending}
+              className={`px-3 py-1 rounded-lg font-semibold transition ${
+                isCustomActive
+                  ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs"
+                  : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:text-indigo-600 border border-slate-200 dark:border-slate-700/60"
+              }`}
+            >
+              Áp dụng
+            </button>
+          </form>
         </div>
 
         <div className="flex items-center gap-2">

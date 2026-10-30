@@ -605,3 +605,30 @@ vercel --prod --yes
      - Khi mở xem prospect trong Thùng rác (`p.deleted_at`): Hiển thị banner thông tin màu hổ phách, nút "Khôi phục" (`RotateCcw`, canDelete) và nút "Xóa vĩnh viễn" (`Trash2`, canPurge khi chưa converted).
   4. **Nạp dữ liệu mẫu kiểm thử Blacklist xóa khách hàng:**
      - Migration 64 đã nạp sẵn khách hàng `[SEED QA] Khách Blacklist Test Xóa` (SĐT `0988887766`, 0 lượt ở, cờ cảnh báo approved) để QA kiểm thử trực quan cảnh báo đỏ và nút xóa bị disabled trên UI.
+
+
+---
+
+### 17. Bàn giao sau QA (Chiều 30/10/2026) — Fix upload Hồ sơ pháp lý cho Kỹ thuật, Toast lỗi chuỗi & Chọn ngày tùy chỉnh Báo cáo
+
+- **Ngữ cảnh:** QA phát hiện lỗi upload hồ sơ pháp lý với tài khoản kỹ thuật CSVC (do cổng server action và RPC chỉ check `compliance.manage` trong khi kỹ thuật chỉ có `facility.manage`), toast lỗi hiển thị `[object Object]`, và yêu cầu bổ sung chọn khoảng ngày tùy chỉnh ("Từ ngày" - "Đến ngày") cho 2 trang Báo cáo.
+- **Các giải pháp kỹ thuật đã triển khai:**
+  1. **Upload Hồ sơ pháp lý & Phân quyền Kỹ thuật (Chọn Phương án b):**
+     - **Quyền (`src/shared/auth/require-permission.ts`):** Thêm hàm `requireAnyPermission(perms: Permission[], branchId?: string | null)` cho phép kiểm tra nếu người dùng sở hữu ít nhất 1 trong danh sách quyền.
+     - **Server Actions (`src/features/facilities/actions.ts`):**
+       - `createComplianceUploadSignedUrlAction`: Gọi `requireAnyPermission(["compliance.manage", "facility.manage"], branchId)`
+       - `upsertComplianceDocAction`: Gọi `requireAnyPermission(["compliance.manage", "facility.manage"], parsed.data.branch_id)`
+     - **Database (Migration 65):** Cập nhật RPC `public.upsert_compliance_doc` chấp nhận `compliance.manage` HOẶC `facility.manage` tại cơ sở `v_branch_id`.
+     - **Khóa phạm vi chi nhánh (`/facilities/compliance`):** Khóa danh sách chi nhánh và targetBranchId theo `session.defaultBranchId` đối với non-chain admin (kỹ thuật viên Ngô Mây chỉ quản lý hồ sơ cơ sở Ngô Mây; chủ chuỗi quản lý toàn chuỗi).
+     - **Dọn file mồ côi:** Đã xóa file rác `c7b341a4-d67c-482c-a54f-74290548d403/1793349746933_test-upload.pdf` khỏi bucket storage `compliance`.
+  2. **Khắc phục triệt để Toast lỗi `[object Object]`:**
+     - Thay thế toàn bộ pattern nội suy chuỗi lỗi `${res.error}` thành `res.error.message || res.error.code` tại tất cả các component:
+       - `compliance-manager.tsx` (tải file, mở file, lưu hồ sơ)
+       - `maintenance-hub.tsx` (cập nhật kế hoạch, đổi trạng thái, xóa kế hoạch, kích hoạt phiếu)
+       - `checklists-manager.tsx` (lưu mẫu kiểm tra)
+       - `inspection-runner.tsx` (lưu biên bản kiểm tra)
+  3. **Thêm chọn khoảng ngày tùy chỉnh cho Báo cáo CSVC (`/reports/facilities`) và Tổng quan KPI (`/reports`):**
+     - Bổ sung 2 input date "Từ ngày" + "Đến ngày" kèm nút "Áp dụng" trên toolbar của cả 2 trang.
+     - Hỗ trợ chọn nhanh preset ("7 ngày qua", "30 ngày qua", "Tháng này") tự động điền ngày vào 2 ô nhập; khi khoảng ngày không thuộc preset hoặc URL mang `preset=custom` thì hiển thị chỉ báo "Tùy chỉnh".
+     - **Validate client chặt chẽ:** Kiểm tra đủ từ ngày và đến ngày; chặn ngày bắt đầu > ngày kết thúc; giới hạn `max={todayVN}` và chặn ngày kết thúc vượt quá ngày hiện tại.
+     - **Đổi cơ sở:** Tự động giữ nguyên khoảng ngày tùy chỉnh (`from`, `to`, `preset`).
