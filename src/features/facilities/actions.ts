@@ -559,11 +559,18 @@ export async function upsertComplianceDocAction(
     });
 
     if (error) {
-      return fail(
-        error.code,
-        undefined,
-        error.message || "Không thể lưu hồ sơ pháp lý",
-      );
+      let friendlyMessage = error.message || "Không thể lưu hồ sơ pháp lý";
+      if (
+        error.code?.startsWith("42") ||
+        error.code?.startsWith("XX") ||
+        friendlyMessage.includes("does not exist") ||
+        friendlyMessage.includes("syntax error")
+      ) {
+        console.error("[upsertComplianceDocAction] Database error:", error);
+        friendlyMessage =
+          "Đã xảy ra lỗi hệ thống khi lưu hồ sơ. Vui lòng liên hệ quản trị viên.";
+      }
+      return fail(error.code, undefined, friendlyMessage);
     }
 
     revalidatePath("/facilities/compliance");

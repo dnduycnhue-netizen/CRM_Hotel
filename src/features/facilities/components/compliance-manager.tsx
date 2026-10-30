@@ -239,7 +239,9 @@ export function ComplianceManager({
         file.name,
       );
       if (!res.ok) {
-        toast.error(`Lỗi: ${res.error.message || res.error.code || "Không thể tải file"}`);
+        toast.error(
+          `Lỗi: ${res.error.message || res.error.code || "Không thể tải file"}`,
+        );
         setIsUploading(false);
         return;
       }
@@ -260,7 +262,9 @@ export function ComplianceManager({
       }
 
       setFormFilePaths((prev) => [...prev, res.data.path]);
-      toast.success(`Đã tải lên tệp: ${file.name}`);
+      toast.success(`Đã tải lên tệp: ${file.name}`, {
+        duration: 4000,
+      });
       e.target.value = "";
     } catch (err: unknown) {
       toast.error(
@@ -278,7 +282,9 @@ export function ComplianceManager({
       if (res.ok) {
         window.open(res.data.signedUrl, "_blank");
       } else {
-        toast.error(`Không thể mở file: ${res.error.message || res.error.code || "File không tồn tại"}`);
+        toast.error(
+          `Không thể mở file: ${res.error.message || res.error.code || "File không tồn tại"}`,
+        );
       }
     } catch {
       toast.error("Không thể mở file đính kèm");
@@ -343,7 +349,9 @@ export function ComplianceManager({
         setIsModalOpen(false);
         router.refresh();
       } else {
-        toast.error(`Lỗi: ${res.error.message || res.error.code || "Không thể lưu hồ sơ"}`);
+        toast.error(
+          `Lỗi: ${res.error.message || res.error.code || "Không thể lưu hồ sơ"}`,
+        );
       }
     });
   };
