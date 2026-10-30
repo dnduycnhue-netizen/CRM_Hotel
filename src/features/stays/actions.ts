@@ -368,6 +368,8 @@ export async function getInHouseStays(
         created_at,
         source_channel_id,
         source_channels (name),
+        partner_id,
+        partners (name),
         rooms (number, room_type),
         stay_guests (
           is_primary,
@@ -401,6 +403,7 @@ export async function getInHouseStays(
         const channel = Array.isArray(s.source_channels)
           ? s.source_channels[0]
           : s.source_channels;
+        const partner = Array.isArray(s.partners) ? s.partners[0] : s.partners;
         return {
           id: s.id,
           branchId: s.branch_id,
@@ -420,6 +423,8 @@ export async function getInHouseStays(
           status: s.status || "in_house",
           isOverdue: s.status === "in_house" && s.expected_check_out_at < now,
           sourceChannelName: channel?.name || "Khách vãng lai (Quầy)",
+          partnerId: s.partner_id || null,
+          partnerName: partner?.name || null,
         };
       });
     }

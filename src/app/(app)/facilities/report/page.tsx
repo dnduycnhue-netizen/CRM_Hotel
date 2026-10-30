@@ -17,21 +17,24 @@ export default async function ReportIssuePage() {
   if (!session.can("wo.create")) {
     redirect("/?denied=1");
   }
-  const canViewChain = session.can("report.view_chain");
+
   const [allBranches, rooms, locations] = await Promise.all([
     getActiveBranches(),
     getRooms(),
     getFacilityLocations(),
   ]);
 
-  const branches = canViewChain
-    ? allBranches
-    : allBranches.filter((b) => session.branchIds.includes(b.id));
+  // Chỉ cho phép chọn cơ sở mà người dùng có quyền tạo phiếu sự cố (wo.create)
+  const branches = allBranches.filter((b) => session.can("wo.create", b.id));
+  const currentBranchId =
+    session.currentBranchId && session.can("wo.create", session.currentBranchId)
+      ? session.currentBranchId
+      : branches[0]?.id || null;
 
   return (
     <ReportIssueForm
       branches={branches}
-      currentBranchId={session?.currentBranchId || branches[0]?.id || null}
+      currentBranchId={currentBranchId}
       rooms={rooms.map((r) => ({
         id: r.id,
         number: r.number,

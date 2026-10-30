@@ -8,14 +8,14 @@ select has_row(
   'Permission prospect.delete phai ton tai trong bang permissions'
 );
 
--- 2. Quyền prospect.delete duoc cap cho cac vai tro phu hop
+-- 2. Quyền prospect.delete duoc cap cho Branch Manager va Owner (khong cap cho Sales/Receptionist/Technician)
 select ok(
-  exists (
+  not exists (
     select 1 from public.role_permissions rp
     join public.roles r on r.id = rp.role_id
     where r.key = 'receptionist' and rp.permission_key = 'prospect.delete'
   ),
-  'Receptionist co quyen prospect.delete'
+  'Receptionist khong co quyen prospect.delete'
 );
 
 select ok(
@@ -28,12 +28,12 @@ select ok(
 );
 
 select ok(
-  exists (
+  not exists (
     select 1 from public.role_permissions rp
     join public.roles r on r.id = rp.role_id
     where r.key = 'sales' and rp.permission_key = 'prospect.delete'
   ),
-  'Sales co quyen prospect.delete'
+  'Sales khong co quyen prospect.delete'
 );
 
 select ok(

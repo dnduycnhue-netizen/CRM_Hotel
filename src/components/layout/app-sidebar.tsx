@@ -10,6 +10,7 @@ import {
   ChevronRight,
   ClipboardList,
   Compass,
+  DoorClosed,
   FileCheck2,
   FileSpreadsheet,
   Gift,
@@ -22,6 +23,7 @@ import {
   ShieldCheck,
   Target,
   UserCheck,
+  UserPlus,
   Users,
   Wrench,
 } from "lucide-react";
@@ -87,6 +89,12 @@ const NAV_GROUPS: NavGroup[] = [
         perm: "guest.view_summary",
       },
       {
+        title: "Thêm hồ sơ khách",
+        href: "/guests/new",
+        icon: UserPlus,
+        perm: "guest.create",
+      },
+      {
         title: "Đối tác & Khách đoàn",
         href: "/partners",
         icon: Handshake,
@@ -120,6 +128,12 @@ const NAV_GROUPS: NavGroup[] = [
         href: "/facilities/work-orders",
         icon: Wrench,
         perm: "wo.view",
+      },
+      {
+        title: "Tạo phiếu kiểm tra",
+        href: "/facilities/inspections/new",
+        icon: CheckSquare,
+        perm: "inspection.perform",
       },
       {
         title: "Khóa phòng ngừng bán",
@@ -163,6 +177,12 @@ const NAV_GROUPS: NavGroup[] = [
         perms: ["report.view_branch", "report.view_chain"],
       },
       {
+        title: "Báo cáo CSVC & Bảo trì",
+        href: "/reports/facilities",
+        icon: Wrench,
+        perms: ["report.view_branch", "report.view_chain", "facility.view"],
+      },
+      {
         title: "Doanh thu & Cùng kỳ",
         href: "/reports/monthly",
         icon: FileSpreadsheet,
@@ -174,10 +194,16 @@ const NAV_GROUPS: NavGroup[] = [
     group: "Hệ thống & Cài đặt",
     items: [
       {
-        title: "Cơ sở & Phòng",
+        title: "Quản lý cơ sở",
         href: "/settings/branches",
         icon: Building,
         perm: "settings.branches",
+      },
+      {
+        title: "Danh mục phòng",
+        href: "/settings/rooms",
+        icon: DoorClosed,
+        perm: "settings.rooms",
       },
       {
         title: "Người dùng & Tài khoản",

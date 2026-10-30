@@ -13,6 +13,8 @@ export interface InHouseStay {
   expectedCheckOutAt: string;
   isOverdue: boolean;
   sourceChannelName: string;
+  partnerId?: string | null;
+  partnerName?: string | null;
   tierName?: string;
   discountPct?: number;
   status?: "in_house" | "checked_out" | "cancelled" | string;

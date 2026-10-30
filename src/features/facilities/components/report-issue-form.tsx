@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
+import { toast } from "sonner";
 import { Button } from "@/shared/ui";
 import { createWorkOrderAction } from "../actions";
 import type { ReportIssueInput } from "../schemas";
@@ -88,9 +89,16 @@ export function ReportIssueForm({
 
       const res = await createWorkOrderAction(payload);
       if (res.ok) {
+        toast.success(
+          res.data?.number
+            ? `Đã tạo phiếu sự cố #${res.data.number} thành công!`
+            : "Đã tạo phiếu sự cố thành công!",
+        );
         router.push("/facilities/work-orders");
       } else {
-        setErrorMsg(res.error.message);
+        const errorText = res.error.message || "Không thể tạo phiếu sự cố";
+        setErrorMsg(errorText);
+        toast.error(errorText);
       }
     });
   };

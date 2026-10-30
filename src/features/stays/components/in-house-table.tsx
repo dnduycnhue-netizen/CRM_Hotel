@@ -3,6 +3,7 @@
 import {
   AlertCircle,
   Ban,
+  Building2,
   Clock,
   DoorClosed,
   Loader2,
@@ -513,9 +514,25 @@ export function InHouseTable({
                     </TableCell>
 
                     <TableCell>
-                      <Badge variant="outline" className="text-[10px] bg-card">
-                        {s.sourceChannelName}
-                      </Badge>
+                      <div className="flex flex-col gap-1 items-start">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] bg-card"
+                        >
+                          {s.sourceChannelName}
+                        </Badge>
+                        {s.partnerName && (
+                          <span
+                            className="text-[11px] font-medium text-primary flex items-center gap-1"
+                            title={`Đối tác: ${s.partnerName}`}
+                          >
+                            <Building2 className="h-3 w-3 shrink-0 text-muted-foreground" />
+                            <span className="truncate max-w-[140px]">
+                              {s.partnerName}
+                            </span>
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
 
                     <TableCell>

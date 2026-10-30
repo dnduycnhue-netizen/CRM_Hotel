@@ -82,6 +82,11 @@ export function RoomsTable({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingRoom, setDeletingRoom] = useState<RoomItem | null>(null);
 
+  // Dialog xác nhận ngừng kinh doanh
+  const [deactivatingRoom, setDeactivatingRoom] = useState<RoomItem | null>(
+    null,
+  );
+
   const filteredRooms = rooms.filter((r) => {
     const matchBranch =
       selectedBranch === "all" ||
@@ -162,16 +167,10 @@ export function RoomsTable({
   };
 
   const handleToggleActive = (r: RoomItem) => {
-    startTransition(async () => {
-      if (r.isActive !== false) {
-        const res = await deactivateRoomAction(r.id, r.branchId);
-        if (res.ok) {
-          toast.success(`Phòng ${r.number} đã ngừng kinh doanh`);
-          router.refresh();
-        } else {
-          toast.error(res.error.message || "Lỗi khi ngừng kinh doanh phòng");
-        }
-      } else {
+    if (r.isActive !== false) {
+      setDeactivatingRoom(r);
+    } else {
+      startTransition(async () => {
         const res = await reactivateRoomAction(r.id, r.branchId);
         if (res.ok) {
           toast.success(`Phòng ${r.number} đã mở bán lại`);
@@ -179,6 +178,23 @@ export function RoomsTable({
         } else {
           toast.error(res.error.message || "Lỗi khi mở bán lại phòng");
         }
+      });
+    }
+  };
+
+  const handleConfirmDeactivate = () => {
+    if (!deactivatingRoom) return;
+    startTransition(async () => {
+      const res = await deactivateRoomAction(
+        deactivatingRoom.id,
+        deactivatingRoom.branchId,
+      );
+      if (res.ok) {
+        toast.success(`Phòng ${deactivatingRoom.number} đã ngừng kinh doanh`);
+        setDeactivatingRoom(null);
+        router.refresh();
+      } else {
+        toast.error(res.error.message || "Lỗi khi ngừng kinh doanh phòng");
       }
     });
   };
@@ -224,11 +240,16 @@ export function RoomsTable({
                 {isOwner && (
                   <option value="all">Tất cả {branches.length} cơ sở</option>
                 )}
-                {branches.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name} ({b.roomsCount || 0} phòng)
-                  </option>
-                ))}
+                {branches.map((b) => {
+                  const actualCount = rooms.filter(
+                    (r) => r.branchId === b.id,
+                  ).length;
+                  return (
+                    <option key={b.id} value={b.id}>
+                      {b.name} ({actualCount || b.roomsCount || 0} phòng)
+                    </option>
+                  );
+                })}
               </select>
               <input
                 type="text"
@@ -502,6 +523,54 @@ export function RoomsTable({
             >
               {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               <span>{editingRoom ? "Lưu thay đổi" : "Tạo phòng"}</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Xác nhận Ngừng kinh doanh */}
+      <Dialog
+        open={!!deactivatingRoom}
+        onOpenChange={(open) => {
+          if (!open) setDeactivatingRoom(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md border-amber-500/30">
+          <DialogHeader>
+            <div className="flex items-center gap-2 text-amber-600">
+              <AlertTriangle className="h-5 w-5" />
+              <DialogTitle>Xác Nhận Ngừng Kinh Doanh Phòng</DialogTitle>
+            </div>
+            <DialogDescription className="text-xs pt-1">
+              Bạn có chắc chắn muốn ngừng kinh doanh{" "}
+              <strong>Phòng {deactivatingRoom?.number}</strong>?
+            </DialogDescription>
+          </DialogHeader>
+
+          <p className="text-xs text-muted-foreground bg-muted/30 p-2.5 rounded-lg border border-border/50">
+            Khi ngừng kinh doanh, phòng này sẽ bị khóa không cho phép đặt phòng
+            hoặc check-in mới. Lịch sử lưu trú và dữ liệu cũ vẫn được bảo lưu
+            trọn vẹn, và bạn có thể mở bán lại bất kỳ lúc nào.
+          </p>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setDeactivatingRoom(null)}
+            >
+              Hủy
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={isPending}
+              onClick={handleConfirmDeactivate}
+              className="gap-1.5 bg-amber-600 hover:bg-amber-700 text-white"
+            >
+              {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              <span>Xác nhận ngừng kinh doanh</span>
             </Button>
           </DialogFooter>
         </DialogContent>

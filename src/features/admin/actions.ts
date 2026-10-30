@@ -621,7 +621,18 @@ export async function deactivateRoomAction(
     });
 
     if (error) {
-      return fail(error.code || "UNKNOWN", undefined, error.message);
+      if (error.message?.includes("rooms_check")) {
+        return fail(
+          "VALIDATION",
+          undefined,
+          "Ngày ngừng kinh doanh không thể trước ngày mở bán phòng",
+        );
+      }
+      return fail(
+        error.code || "UNKNOWN",
+        undefined,
+        error.message || "Không thể ngừng kinh doanh phòng lúc này",
+      );
     }
 
     revalidatePath("/settings/rooms");
@@ -649,7 +660,18 @@ export async function reactivateRoomAction(
     });
 
     if (error) {
-      return fail(error.code || "UNKNOWN", undefined, error.message);
+      if (error.message?.includes("rooms_check")) {
+        return fail(
+          "VALIDATION",
+          undefined,
+          "Ngày ngừng kinh doanh không thể trước ngày mở bán phòng",
+        );
+      }
+      return fail(
+        error.code || "UNKNOWN",
+        undefined,
+        error.message || "Không thể ngừng kinh doanh phòng lúc này",
+      );
     }
 
     revalidatePath("/settings/rooms");
