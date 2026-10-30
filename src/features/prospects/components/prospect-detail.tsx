@@ -260,7 +260,9 @@ export function ProspectDetailDialog({
         toast.error(res.error.message || "Xóa khách tiềm năng thất bại");
         return;
       }
-      toast.success(`Đã xóa khách tiềm năng "${p.company_name}"`);
+      toast.success(
+        `Đã chuyển khách tiềm năng "${p.company_name}" vào thùng rác`,
+      );
       setConfirmingDelete(false);
       onOpenChange(false);
       onChanged();
@@ -478,28 +480,28 @@ export function ProspectDetailDialog({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    className="text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/10"
                     onClick={() => setConfirmingDelete(true)}
                     disabled={busy}
                   >
                     <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                    Xóa công ty
+                    Chuyển vào thùng rác
                   </Button>
                 )}
               </div>
             )}
 
             {confirmingDelete && (
-              <div className="rounded-lg border border-destructive/40 p-3.5 space-y-2.5 bg-destructive/10">
-                <div className="flex items-center gap-2 text-destructive font-semibold text-sm">
+              <div className="rounded-lg border border-amber-500/40 p-3.5 space-y-2.5 bg-amber-50/50 dark:bg-amber-950/20">
+                <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-semibold text-sm">
                   <AlertTriangle className="h-4 w-4" />
-                  Xác nhận xóa khách hàng tiềm năng
+                  Chuyển khách tiềm năng vào Thùng rác
                 </div>
                 <p className="text-sm text-foreground">
-                  Bạn có chắc muốn xóa vĩnh viễn{" "}
-                  <strong>{p.company_name}</strong> khỏi hệ thống? Toàn bộ nhật
-                  ký chăm sóc liên quan cũng sẽ bị xóa. Thao tác này không thể
-                  hoàn tác.
+                  Bạn có chắc muốn chuyển <strong>{p.company_name}</strong> vào
+                  thùng rác? Hồ sơ sẽ tạm ẩn khỏi danh sách theo dõi nhưng toàn
+                  bộ nhật ký chăm sóc vẫn được bảo toàn và có thể khôi phục lại
+                  bất kỳ lúc nào.
                 </p>
                 <div className="flex gap-2 justify-end">
                   <Button
@@ -512,14 +514,14 @@ export function ProspectDetailDialog({
                   </Button>
                   <Button
                     size="sm"
-                    variant="destructive"
+                    className="bg-amber-600 hover:bg-amber-700 text-white font-semibold"
                     disabled={busy}
                     onClick={() => void submitDelete()}
                   >
                     {busy && (
                       <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
                     )}
-                    Xóa vĩnh viễn
+                    Chuyển vào thùng rác
                   </Button>
                 </div>
               </div>

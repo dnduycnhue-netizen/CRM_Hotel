@@ -552,3 +552,34 @@ vercel --prod --yes
      - **Cơ sở vật chất & CSVC:** Thêm liên kết "Tạo phiếu kiểm tra" (`/facilities/inspections/new`, icon `CheckSquare`, quyền `inspection.perform`).
      - **Báo cáo & Doanh thu:** Thêm liên kết "Báo cáo CSVC & Bảo trì" (`/reports/facilities`, icon `Wrench`, quyền `report.view_branch` / `report.view_chain` / `facility.view`).
      - **Hệ thống & Cài đặt:** Tách bạch "Quản lý cơ sở" (`/settings/branches`, quyền `settings.branches` của Owner) và "Danh mục phòng" (`/settings/rooms`, icon `DoorClosed`, quyền `settings.rooms` của Quản lý chi nhánh & Owner).
+
+
+## 15. Xử lý Báo cáo QA Vòng 21: Xóa mềm Prospect (Thùng rác & Khôi phục), Khóa chi nhánh sự cố, Multi-chunk Excel Export & Cảnh báo xóa khách (Migration 63)
+
+- **Thời gian:** Sáng 30/10/2026.
+- **Nội dung xử lý chi tiết theo quyết định User & QA:**
+  1. **Xóa mềm Prospect (Soft delete, Thùng rác, Khôi phục, Xóa cứng có kiểm soát) — Migration 63:**
+     - Thêm cột `deleted_at timestamptz default null` và `deleted_by uuid` vào `public.tour_prospects`.
+     - Unique index trên `tax_code_norm` và `phone_norm` chỉ áp dụng với `deleted_at is null` để các bản ghi trong thùng rác không làm tắc việc tạo mới.
+     - Hàm kiểm tra trùng `private.find_prospect_duplicates` tự động bỏ qua các bản ghi có `deleted_at is not null`.
+     - **Cấp lại quyền `prospect.delete` cho `sales`** (xóa mềm 1-click trực tiếp vào thùng rác không cần phê duyệt). Lễ tân tiếp tục không có quyền này; quản lý và chủ chuỗi có quyền.
+     - **Tạo quyền mới `prospect.purge`** ('Xóa vĩnh viễn khách tiềm năng trong thùng rác') chỉ cấp cho `branch_manager` và `owner`. Khai báo đồng bộ tại `src/shared/auth/permission-keys.ts` và bảng `public.permissions`.
+     - **RPC `delete_prospect(uuid)`:** Chuyển sang xóa mềm (`deleted_at = now(), deleted_by = auth.uid()`), ghi nhận tương tác hệ thống `prospect_interactions` và audit event `prospect.delete_soft`.
+     - **RPC `restore_prospect(uuid)`:** Khôi phục bản ghi từ thùng rác (`deleted_at = null, deleted_by = null`), ghi nhận tương tác hệ thống và audit event `prospect.restore`.
+     - **RPC `purge_prospect(uuid)`:** Chỉ được phép thực hiện từ trong thùng rác (`deleted_at is not null`) và **chặn tuyệt đối** nếu prospect đã chuyển đổi thành đối tác (`status = 'converted'` hoặc `converted_partner_id is not null`).
+     - **Giao diện `ProspectsHub`:**
+       - Thêm nút chuyển đổi "Thùng rác (X)" trên thanh công cụ.
+       - Khi xem danh sách chính: Nút xóa đổi thành "Chuyển vào thùng rác", Dialog xác nhận ghi rõ "Hồ sơ sẽ tạm thời ẩn khỏi danh sách theo dõi nhưng toàn bộ lịch sử chăm sóc và tương tác vẫn được bảo toàn và có thể khôi phục bất kỳ lúc nào".
+       - Khi xem danh sách Thùng rác: Hiện banner thông tin rõ ràng; mỗi dòng có nút "Khôi phục" (`RotateCcw`, dành cho sales/quản lý) và nút "Xóa vĩnh viễn" (`Trash2`, dành cho quản lý/chủ chuỗi).
+       - Dialog chi tiết prospect (`ProspectDetailDialog`): Nút "Chuyển vào thùng rác" đồng bộ thông điệp.
+  2. **Khóa chi nhánh sự cố tại `/facilities/report` về đúng cơ sở phụ trách:**
+     - Sửa logic lọc dropdown `branches` ở `src/app/(app)/facilities/report/page.tsx`:
+       Đối với nhân viên/kỹ thuật/lễ tân, khóa danh sách cơ sở về đúng `session.branchIds` cố định của tài khoản (kỹ thuật viên Ngô Mây chỉ thấy cơ sở Ngô Mây), tránh tạo nhầm phiếu sang chi nhánh khác mà bản thân không có quyền xem lại. Chủ chuỗi (`isOwner`) vẫn được chọn toàn chuỗi.
+  3. **Xuất Excel danh sách Prospect không giới hạn 1000 dòng (Tự động tách nhiều file):**
+     - Tại Server Action `exportProspectsAction`: Lấy toàn bộ bản ghi theo bộ lọc (`p_limit: 50000`).
+     - Tự động chia nhỏ thành các file $\le 1000$ dòng/file (ví dụ 2347 dòng $\rightarrow$ 3 file: 1000 / 1000 / 347 dòng). Tên file thể hiện rõ phần: `..._phan_1_tren_3.xlsx`, `..._phan_2_tren_3.xlsx`, `..._phan_3_tren_3.xlsx`.
+     - Giao diện tải lần lượt các file (có độ trễ tránh browser chặn popup), toast ghi rõ tổng số khách và số file: "Đã xuất 2347 khách hàng tiềm năng B2B, chia làm 3 file Excel".
+  4. **Cảnh báo trước khi xóa khách hàng (Guest delete):**
+     - Tại `GuestProfileView`: Kiểm tra trước `profile.stays.length > 0` và trạng thái Blacklist (`flags.status === 'approved'`).
+     - Nếu khách đã có lượt ở: Hiển thị callout cảnh báo màu đỏ "Không thể xóa: Khách đã có X lượt lưu trú. Hệ thống bảo vệ toàn vẹn lịch sử lưu trú và doanh thu. Nếu hồ sơ bị trùng lặp, vui lòng sử dụng chức năng Đề xuất gộp hồ sơ" và **vô hiệu hóa** nút "Xác nhận xóa vĩnh viễn".
+     - Nếu khách đang trong Blacklist: Hiển thị callout cảnh báo màu đỏ và vô hiệu hóa nút xóa.

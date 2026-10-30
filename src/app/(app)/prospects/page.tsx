@@ -33,6 +33,7 @@ export default async function ProspectsPage() {
         canImport={session.can("prospect.import")}
         canExport={session.can("prospect.export")}
         canDelete={session.can("prospect.delete")}
+        canPurge={session.can("prospect.purge")}
       />
     </div>
   );

@@ -56,6 +56,7 @@ export const PERMISSIONS = [
   "prospect.import",
   "prospect.export",
   "prospect.delete",
+  "prospect.purge",
   "facility.view",
   "facility.manage",
   "wo.view",

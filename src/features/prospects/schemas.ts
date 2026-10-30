@@ -274,6 +274,7 @@ export const prospectFiltersSchema = z.object({
     .optional(),
   overdue_only: z.boolean().optional(),
   dup_pending: z.boolean().optional(),
+  in_trash: z.boolean().optional(),
 });
 
 // ---- Import ---------------------------------------------------------------

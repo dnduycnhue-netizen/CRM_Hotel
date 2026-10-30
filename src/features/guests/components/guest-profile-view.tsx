@@ -2146,8 +2146,9 @@ export function GuestProfileView({
                 <span>Khu vực thao tác dữ liệu đặc biệt (Danger Zone)</span>
               </div>
               <p className="text-xs text-muted-foreground">
-                Chỉ xóa khách khi hồ sơ nhập sai hoặc là dữ liệu rác/test chưa từng phát sinh lượt lưu trú.
-                Hồ sơ đã có lượt ở hoặc đang bị Blacklist sẽ bị hệ thống chặn xóa.
+                Chỉ xóa khách khi hồ sơ nhập sai hoặc là dữ liệu rác/test chưa
+                từng phát sinh lượt lưu trú. Hồ sơ đã có lượt ở hoặc đang bị
+                Blacklist sẽ bị hệ thống chặn xóa.
               </p>
             </div>
             <Button
@@ -2175,22 +2176,54 @@ export function GuestProfileView({
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground pt-1.5 leading-relaxed">
               Bạn có chắc chắn muốn xóa hồ sơ khách hàng{" "}
-              <strong className="text-foreground">{profile.guest.full_name}</strong>{" "}
+              <strong className="text-foreground">
+                {profile.guest.full_name}
+              </strong>{" "}
               (SĐT: {profile.guest.phone || "Chưa có"}) không?
             </DialogDescription>
           </DialogHeader>
 
-          <div className="rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-950/20 p-3 text-xs text-amber-800 dark:text-amber-300 space-y-1.5 my-2">
-            <p className="font-semibold flex items-center gap-1.5">
-              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-              Điều kiện xóa hồ sơ hợp lệ:
-            </p>
-            <ul className="list-disc list-inside text-[11px] space-y-0.5 text-amber-700 dark:text-amber-400">
-              <li>Khách chưa từng phát sinh bất kỳ lượt lưu trú nào</li>
-              <li>Khách không nằm trong danh sách đen (Blacklist)</li>
-              <li>Toàn bộ ghi chú, thẻ thành viên liên quan sẽ bị xóa vĩnh viễn</li>
-            </ul>
-          </div>
+          {profile.stays && profile.stays.length > 0 ? (
+            <div className="rounded-xl border border-rose-300 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/30 p-3 text-xs text-rose-800 dark:text-rose-300 space-y-1 my-2">
+              <p className="font-semibold flex items-center gap-1.5 text-rose-700 dark:text-rose-400">
+                <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600" />
+                Không thể xóa: Khách đã có {profile.stays.length} lượt lưu trú
+              </p>
+              <p className="text-[11px] text-rose-600 dark:text-rose-400">
+                Hệ thống bảo vệ toàn vẹn lịch sử lưu trú và doanh thu. Nếu hồ sơ
+                bị trùng lặp, vui lòng sử dụng chức năng &quot;Đề xuất gộp hồ
+                sơ&quot;.
+              </p>
+            </div>
+          ) : profile.flags?.some((f) => f.status === "approved") ? (
+            <div className="rounded-xl border border-rose-300 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/30 p-3 text-xs text-rose-800 dark:text-rose-300 space-y-1 my-2">
+              <p className="font-semibold flex items-center gap-1.5 text-rose-700 dark:text-rose-400">
+                <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600" />
+                Không thể xóa: Khách hàng đang trong danh sách đen (Blacklist)
+              </p>
+              <p className="text-[11px] text-rose-600 dark:text-rose-400">
+                Hồ sơ có cờ cảnh báo đã duyệt không thể xóa để đảm bảo an ninh
+                và kiểm soát rủi ro toàn chuỗi.
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-950/20 p-3 text-xs text-amber-800 dark:text-amber-300 space-y-1.5 my-2">
+              <p className="font-semibold flex items-center gap-1.5">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                Điều kiện xóa hồ sơ hợp lệ:
+              </p>
+              <ul className="list-disc list-inside text-[11px] space-y-0.5 text-amber-700 dark:text-amber-400">
+                <li>
+                  Khách chưa từng phát sinh bất kỳ lượt lưu trú nào (Hợp lệ: 0
+                  lượt ở)
+                </li>
+                <li>Khách không nằm trong danh sách đen (Blacklist)</li>
+                <li>
+                  Toàn bộ ghi chú, thẻ thành viên liên quan sẽ bị xóa vĩnh viễn
+                </li>
+              </ul>
+            </div>
+          )}
 
           <DialogFooter className="gap-2 sm:gap-0 pt-2">
             <Button
@@ -2204,9 +2237,13 @@ export function GuestProfileView({
             </Button>
             <Button
               type="button"
-              disabled={isDeletingGuest}
+              disabled={
+                isDeletingGuest ||
+                (profile.stays && profile.stays.length > 0) ||
+                profile.flags?.some((f) => f.status === "approved")
+              }
               onClick={handleDeleteGuest}
-              className="text-xs rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold"
+              className="text-xs rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold disabled:opacity-50"
             >
               {isDeletingGuest ? (
                 <>

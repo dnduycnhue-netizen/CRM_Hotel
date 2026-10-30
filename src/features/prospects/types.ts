@@ -50,6 +50,8 @@ export interface Prospect {
   converted_at: string | null;
   created_at: string;
   updated_at: string;
+  deleted_at?: string | null;
+  deleted_by?: string | null;
   is_overdue: boolean;
   can_edit: boolean;
   /** Chưa có người phụ trách và người xem được phép tự nhận chăm sóc */
@@ -81,6 +83,7 @@ export interface ProspectAssignee {
 
 export interface ProspectsOverview {
   total: number;
+  in_trash?: number;
   by_status: Partial<Record<ProspectStatus, number>>;
   overdue: number;
   dup_pending: number;
@@ -114,6 +117,7 @@ export interface ProspectFilters {
   assigned_to?: string;
   overdue_only?: boolean;
   dup_pending?: boolean;
+  in_trash?: boolean;
 }
 
 export type SaveProspectOutcome =

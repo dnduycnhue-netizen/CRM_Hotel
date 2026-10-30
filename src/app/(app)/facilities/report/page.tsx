@@ -24,10 +24,18 @@ export default async function ReportIssuePage() {
     getFacilityLocations(),
   ]);
 
-  // Chỉ cho phép chọn cơ sở mà người dùng có quyền tạo phiếu sự cố (wo.create)
-  const branches = allBranches.filter((b) => session.can("wo.create", b.id));
+  const isOwner =
+    session.can("settings.branches") ||
+    session.branchIds.length >= allBranches.length;
+
+  // Khóa danh sách cơ sở phát sinh sự cố về đúng chi nhánh cố định của tài khoản (với Chủ chuỗi thì được chọn toàn chuỗi)
+  const branches = isOwner
+    ? allBranches
+    : allBranches.filter((b) => session.branchIds.includes(b.id));
+
   const currentBranchId =
-    session.currentBranchId && session.can("wo.create", session.currentBranchId)
+    session.currentBranchId &&
+    branches.some((b) => b.id === session.currentBranchId)
       ? session.currentBranchId
       : branches[0]?.id || null;
 

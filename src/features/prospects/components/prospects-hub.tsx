@@ -8,6 +8,7 @@ import {
   Handshake,
   Loader2,
   Plus,
+  RotateCcw,
   Search,
   Target,
   Trash2,
@@ -43,6 +44,8 @@ import {
   exportProspectsAction,
   getProspectsOverviewAction,
   listProspectsAction,
+  purgeProspectAction,
+  restoreProspectAction,
   unassignProspectsAction,
 } from "../actions";
 import {
@@ -73,6 +76,7 @@ interface ProspectsHubProps {
   canImport: boolean;
   canExport?: boolean;
   canDelete?: boolean;
+  canPurge?: boolean;
 }
 
 /** Số dòng mỗi trang (danh sách có thể lên tới hàng trăm công ty) */
@@ -95,10 +99,14 @@ export function ProspectsHub({
   canImport,
   canExport = false,
   canDelete = false,
+  canPurge = false,
 }: ProspectsHubProps) {
   const [prospects, setProspects] = useState(initialProspects);
   const [overview, setOverview] = useState(initialOverview);
   const [loading, setLoading] = useState(false);
+
+  // Chế độ xem Thùng rác (soft delete)
+  const [inTrash, setInTrash] = useState(false);
 
   // Bộ lọc: gửi qua Server Action (từ khóa có thể là SĐT) — không đưa lên URL
   const [search, setSearch] = useState("");
@@ -121,6 +129,9 @@ export function ProspectsHub({
     null,
   );
   const [deleting, setDeleting] = useState(false);
+  const [purgingProspect, setPurgingProspect] = useState<Prospect | null>(null);
+  const [purging, setPurging] = useState(false);
+  const [restoringId, setRestoringId] = useState<string | null>(null);
 
   // Chọn nhiều dòng để bỏ gán hàng loạt (chỉ quản lý/owner)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -137,8 +148,18 @@ export function ProspectsHub({
       assigned_to: assignedTo,
       overdue_only: overdueOnly,
       dup_pending: dupPending,
+      in_trash: inTrash,
     }),
-    [search, status, kind, province, assignedTo, overdueOnly, dupPending],
+    [
+      search,
+      status,
+      kind,
+      province,
+      assignedTo,
+      overdueOnly,
+      dupPending,
+      inTrash,
+    ],
   );
   const filtersRef = useRef(filters);
   filtersRef.current = filters;
@@ -259,25 +280,43 @@ export function ProspectsHub({
         toast.error(res.error.message || "Xuất danh sách thất bại");
         return;
       }
-      const { filename, base64, count } = res.data;
-      const byteCharacters = atob(base64);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      const { files, totalCount, fileCount } = res.data;
+      if (!files || files.length === 0) {
+        toast.info("Không có dữ liệu để xuất");
+        return;
       }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+
+      files.forEach((fileItem, idx) => {
+        setTimeout(() => {
+          const byteCharacters = atob(fileItem.base64);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = fileItem.filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, idx * 350);
       });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast.success(`Đã xuất ${count} khách hàng tiềm năng B2B ra file Excel`);
+
+      if (fileCount > 1) {
+        toast.success(
+          `Đã xuất ${totalCount} khách hàng tiềm năng B2B, chia làm ${fileCount} file Excel`,
+        );
+      } else {
+        toast.success(
+          `Đã xuất ${totalCount} khách hàng tiềm năng B2B ra file Excel`,
+        );
+      }
     } catch {
       toast.error("Không thể xuất file lúc này");
     } finally {
@@ -291,18 +330,58 @@ export function ProspectsHub({
     try {
       const res = await deleteProspectAction(deletingProspect.id);
       if (!res.ok) {
-        toast.error(res.error.message || "Xóa khách tiềm năng thất bại");
+        toast.error(res.error.message || "Chuyển vào thùng rác thất bại");
         return;
       }
       toast.success(
-        `Đã xóa khách tiềm năng "${deletingProspect.company_name}"`,
+        `Đã chuyển khách tiềm năng "${deletingProspect.company_name}" vào thùng rác`,
       );
       setDeletingProspect(null);
       await reload();
     } catch {
-      toast.error("Không thể xóa khách tiềm năng lúc này");
+      toast.error("Không thể chuyển vào thùng rác lúc này");
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleRestore = async (p: Prospect) => {
+    setRestoringId(p.id);
+    try {
+      const res = await restoreProspectAction(p.id);
+      if (!res.ok) {
+        toast.error(res.error.message || "Khôi phục khách tiềm năng thất bại");
+        return;
+      }
+      toast.success(
+        `Đã khôi phục khách tiềm năng "${p.company_name}" thành công`,
+      );
+      await reload();
+    } catch {
+      toast.error("Không thể khôi phục lúc này");
+    } finally {
+      setRestoringId(null);
+    }
+  };
+
+  const handlePurge = async () => {
+    if (!purgingProspect) return;
+    setPurging(true);
+    try {
+      const res = await purgeProspectAction(purgingProspect.id);
+      if (!res.ok) {
+        toast.error(res.error.message || "Xóa vĩnh viễn thất bại");
+        return;
+      }
+      toast.success(
+        `Đã xóa vĩnh viễn khách tiềm năng "${purgingProspect.company_name}"`,
+      );
+      setPurgingProspect(null);
+      await reload();
+    } catch {
+      toast.error("Không thể xóa vĩnh viễn lúc này");
+    } finally {
+      setPurging(false);
     }
   };
 
@@ -346,7 +425,26 @@ export function ProspectsHub({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {canExport && (
+          {canDelete && (
+            <Button
+              variant={inTrash ? "default" : "outline"}
+              className={
+                inTrash
+                  ? "bg-amber-600 hover:bg-amber-700 text-white border-amber-600 font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
+              }
+              onClick={() => {
+                setInTrash(!inTrash);
+                setPage(1);
+              }}
+            >
+              <Trash2 className="h-4 w-4 mr-1.5" />
+              {inTrash
+                ? "← Danh sách theo dõi"
+                : `Thùng rác (${overview.in_trash ?? 0})`}
+            </Button>
+          )}
+          {canExport && !inTrash && (
             <Button
               variant="outline"
               onClick={handleExport}
@@ -360,13 +458,13 @@ export function ProspectsHub({
               Xuất Excel
             </Button>
           )}
-          {canImport && (
+          {canImport && !inTrash && (
             <Button variant="outline" onClick={() => setImportOpen(true)}>
               <FileSpreadsheet className="h-4 w-4 mr-1.5" />
               Nhập Excel/CSV
             </Button>
           )}
-          {canManage && (
+          {canManage && !inTrash && (
             <Button
               onClick={() => {
                 setEditing(null);
@@ -379,6 +477,29 @@ export function ProspectsHub({
           )}
         </div>
       </div>
+
+      {inTrash && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs text-amber-900 dark:text-amber-200">
+          <div className="flex items-center gap-2">
+            <Trash2 className="h-4 w-4 text-amber-600 shrink-0" />
+            <span>
+              Đang xem danh sách trong <strong>Thùng rác</strong> (
+              {overview.in_trash ?? prospects.length} hồ sơ). Hồ sơ trong thùng
+              rác có thể bấm <strong>Khôi phục</strong> bất kỳ lúc nào để đưa về
+              danh sách chính, hoặc <strong>Xóa vĩnh viễn</strong> (dành cho
+              Quản lý & Chủ chuỗi).
+            </span>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs border-amber-500/40 shrink-0 font-medium"
+            onClick={() => setInTrash(false)}
+          >
+            Về danh sách chính
+          </Button>
+        </div>
+      )}
 
       {/* Thẻ tổng quan */}
       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
@@ -763,15 +884,49 @@ export function ProspectsHub({
                             )}
                           </Button>
                         )}
-                      {canDelete && p.status !== "converted" && (
+                      {!inTrash && canDelete && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 px-2"
+                          title="Chuyển vào thùng rác"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeletingProspect(p);
+                          }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {inTrash && canDelete && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={restoringId === p.id}
+                          className="h-8 px-2 text-xs text-emerald-700 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 gap-1 font-medium"
+                          title="Khôi phục khách tiềm năng"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void handleRestore(p);
+                          }}
+                        >
+                          {restoringId === p.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <RotateCcw className="h-3 w-3" />
+                          )}
+                          <span>Khôi phục</span>
+                        </Button>
+                      )}
+                      {inTrash && canPurge && p.status !== "converted" && (
                         <Button
                           size="sm"
                           variant="ghost"
                           className="text-destructive hover:bg-destructive/10 hover:text-destructive px-2"
-                          title="Xóa khách tiềm năng"
+                          title="Xóa vĩnh viễn"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setDeletingProspect(p);
+                            setPurgingProspect(p);
                           }}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -880,25 +1035,28 @@ export function ProspectsHub({
         onChanged={() => void reload()}
       />
 
-      {/* Dialog xác nhận xóa nhanh khách tiềm năng B2B */}
+      {/* Dialog xác nhận chuyển vào thùng rác */}
       <Dialog
         open={!!deletingProspect}
         onOpenChange={(open) => !open && setDeletingProspect(null)}
       >
-        <DialogContent>
+        <DialogContent className="border-amber-500/30">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-destructive">
+            <DialogTitle className="flex items-center gap-2 text-amber-600">
               <AlertTriangle className="h-5 w-5" />
-              Xóa khách hàng tiềm năng B2B
+              Chuyển khách tiềm năng vào Thùng rác
             </DialogTitle>
-            <DialogDescription>
-              Bạn có chắc chắn muốn xóa vĩnh viễn{" "}
-              <strong>{deletingProspect?.company_name}</strong> khỏi hệ thống?
-              Toàn bộ lịch sử chăm sóc và tương tác cũng sẽ bị xóa. Thao tác này
-              không thể hoàn tác.
+            <DialogDescription className="pt-1.5">
+              Bạn có chắc chắn muốn chuyển khách tiềm năng{" "}
+              <strong className="text-foreground">
+                {deletingProspect?.company_name}
+              </strong>{" "}
+              vào thùng rác? Hồ sơ sẽ tạm thời ẩn khỏi danh sách theo dõi nhưng
+              toàn bộ lịch sử chăm sóc và tương tác vẫn được bảo toàn và có thể
+              khôi phục bất kỳ lúc nào.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-2 sm:gap-0 pt-2">
             <Button
               variant="outline"
               disabled={deleting}
@@ -907,11 +1065,53 @@ export function ProspectsHub({
               Hủy
             </Button>
             <Button
-              variant="destructive"
+              className="bg-amber-600 hover:bg-amber-700 text-white font-semibold"
               disabled={deleting}
               onClick={() => void handleQuickDelete()}
             >
               {deleting && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
+              Chuyển vào thùng rác
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog xác nhận xóa vĩnh viễn (chỉ trong Thùng rác) */}
+      <Dialog
+        open={!!purgingProspect}
+        onOpenChange={(open) => !open && setPurgingProspect(null)}
+      >
+        <DialogContent className="border-rose-500/30">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              Xác nhận xóa vĩnh viễn khách tiềm năng
+            </DialogTitle>
+            <DialogDescription className="pt-1.5">
+              Hành động này{" "}
+              <strong className="text-destructive">không thể hoàn tác</strong>.
+              Bạn có chắc chắn muốn xóa vĩnh viễn khách tiềm năng{" "}
+              <strong className="text-foreground">
+                {purgingProspect?.company_name}
+              </strong>{" "}
+              khỏi hệ thống? Toàn bộ lịch sử chăm sóc và tương tác liên quan
+              cũng sẽ bị xóa vĩnh viễn.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0 pt-2">
+            <Button
+              variant="outline"
+              disabled={purging}
+              onClick={() => setPurgingProspect(null)}
+            >
+              Hủy
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={purging}
+              onClick={() => void handlePurge()}
+            >
+              {purging && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
               Xóa vĩnh viễn
             </Button>
           </DialogFooter>

@@ -138,6 +138,7 @@ export async function listProspectsAction(
     p_unassigned_only: f.assigned_to === UNASSIGNED_FILTER,
     p_overdue_only: f.overdue_only ?? false,
     p_dup_pending: f.dup_pending ?? false,
+    p_in_trash: f.in_trash ?? false,
   });
   if (error) return failFromRpc(error);
   return ok(data ?? []);
@@ -535,9 +536,15 @@ export async function commitProspectImportAction(
   return ok(report);
 }
 
+export interface ExportProspectsResult {
+  files: Array<{ filename: string; base64: string; count: number }>;
+  totalCount: number;
+  fileCount: number;
+}
+
 export async function exportProspectsAction(
   rawFilters: ProspectFilters = {},
-): Promise<ActionResult<{ filename: string; base64: string; count: number }>> {
+): Promise<ActionResult<ExportProspectsResult>> {
   const parsed = prospectFiltersSchema.safeParse(rawFilters);
   if (!parsed.success) return fail("VALIDATION", toFieldErrors(parsed.error));
   const auth = await requirePermission("prospect.export");
@@ -556,82 +563,108 @@ export async function exportProspectsAction(
     p_unassigned_only: f.assigned_to === UNASSIGNED_FILTER,
     p_overdue_only: f.overdue_only ?? false,
     p_dup_pending: f.dup_pending ?? false,
-    p_limit: 1000,
+    p_limit: 50000,
+    p_in_trash: f.in_trash ?? false,
   });
   if (error) return failFromRpc(error);
 
   const list = data ?? [];
-
   const ExcelJS = (await import("exceljs")).default;
-  const workbook = new ExcelJS.Workbook();
-  workbook.creator = "CRM Chuỗi Khách Sạn";
-  workbook.created = new Date();
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const CHUNK_SIZE = 1000;
+  const chunks: Prospect[][] = [];
 
-  const sheet = workbook.addWorksheet("Khách tiềm năng B2B", {
-    views: [{ showGridLines: true }],
-  });
+  for (let i = 0; i < list.length; i += CHUNK_SIZE) {
+    chunks.push(list.slice(i, i + CHUNK_SIZE));
+  }
+  if (chunks.length === 0) {
+    chunks.push([]);
+  }
 
-  sheet.columns = [
-    { header: "Tên công ty / Doanh nghiệp", key: "company_name", width: 35 },
-    { header: "Phân loại", key: "kind", width: 22 },
-    { header: "Mã số thuế", key: "tax_code", width: 16 },
-    { header: "Người liên hệ", key: "contact_name", width: 24 },
-    { header: "Chức vụ", key: "contact_title", width: 18 },
-    { header: "SĐT Công ty", key: "phone", width: 16 },
-    { header: "SĐT Người liên hệ", key: "contact_phone", width: 18 },
-    { header: "Email", key: "email", width: 25 },
-    { header: "Website", key: "website", width: 25 },
-    { header: "Tỉnh / Thành phố", key: "province", width: 20 },
-    { header: "Địa chỉ", key: "address", width: 35 },
-    { header: "Trạng thái", key: "status", width: 18 },
-    { header: "Mức ưu tiên", key: "priority", width: 15 },
-    { header: "Người phụ trách", key: "assigned", width: 24 },
-    { header: "Ngày hẹn tiếp theo", key: "next_follow_up", width: 20 },
-    { header: "Ngày liên hệ gần nhất", key: "last_contacted", width: 22 },
-    { header: "Ghi chú", key: "note", width: 30 },
-  ];
+  const files: Array<{ filename: string; base64: string; count: number }> = [];
 
-  const headerRow = sheet.getRow(1);
-  headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
-  headerRow.fill = {
-    type: "pattern",
-    pattern: "solid",
-    fgColor: { argb: "FF1E3A8A" }, // Blue-900
-  };
-  headerRow.alignment = { vertical: "middle", horizontal: "center" };
-  headerRow.height = 28;
+  for (let idx = 0; idx < chunks.length; idx++) {
+    const chunk = chunks[idx];
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = "CRM Chuỗi Khách Sạn";
+    workbook.created = new Date();
 
-  for (const item of list) {
-    sheet.addRow({
-      company_name: item.company_name,
-      kind: prospectKindLabels[item.kind] ?? item.kind,
-      tax_code: item.tax_code ?? "—",
-      contact_name: item.contact_name ?? "—",
-      contact_title: item.contact_title ?? "—",
-      phone: item.phone_display ?? "—",
-      contact_phone: item.contact_phone_display ?? "—",
-      email: item.email ?? "—",
-      website: item.website ?? "—",
-      province: item.province ?? "—",
-      address: item.address ?? "—",
-      status: prospectStatusLabels[item.status] ?? item.status,
-      priority: prospectPriorityLabels[item.priority] ?? item.priority,
-      assigned: item.assigned_to_name ?? "Chưa gán",
-      next_follow_up: item.next_follow_up_at ?? "—",
-      last_contacted: item.last_contacted_at ?? "—",
-      note: item.note ?? "—",
+    const sheetName =
+      chunks.length > 1 ? `Khách B2B (P.${idx + 1})` : "Khách tiềm năng B2B";
+    const sheet = workbook.addWorksheet(sheetName, {
+      views: [{ showGridLines: true }],
+    });
+
+    sheet.columns = [
+      { header: "Tên công ty / Doanh nghiệp", key: "company_name", width: 35 },
+      { header: "Phân loại", key: "kind", width: 22 },
+      { header: "Mã số thuế", key: "tax_code", width: 16 },
+      { header: "Người liên hệ", key: "contact_name", width: 24 },
+      { header: "Chức vụ", key: "contact_title", width: 18 },
+      { header: "SĐT Công ty", key: "phone", width: 16 },
+      { header: "SĐT Người liên hệ", key: "contact_phone", width: 18 },
+      { header: "Email", key: "email", width: 25 },
+      { header: "Website", key: "website", width: 25 },
+      { header: "Tỉnh / Thành phố", key: "province", width: 20 },
+      { header: "Địa chỉ", key: "address", width: 35 },
+      { header: "Trạng thái", key: "status", width: 18 },
+      { header: "Mức ưu tiên", key: "priority", width: 15 },
+      { header: "Người phụ trách", key: "assigned", width: 24 },
+      { header: "Ngày hẹn tiếp theo", key: "next_follow_up", width: 20 },
+      { header: "Ngày liên hệ gần nhất", key: "last_contacted", width: 22 },
+      { header: "Ghi chú", key: "note", width: 30 },
+    ];
+
+    const headerRow = sheet.getRow(1);
+    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF1E3A8A" }, // Blue-900
+    };
+    headerRow.alignment = { vertical: "middle", horizontal: "center" };
+    headerRow.height = 28;
+
+    for (const item of chunk) {
+      sheet.addRow({
+        company_name: item.company_name,
+        kind: prospectKindLabels[item.kind] ?? item.kind,
+        tax_code: item.tax_code ?? "—",
+        contact_name: item.contact_name ?? "—",
+        contact_title: item.contact_title ?? "—",
+        phone: item.phone_display ?? "—",
+        contact_phone: item.contact_phone_display ?? "—",
+        email: item.email ?? "—",
+        website: item.website ?? "—",
+        province: item.province ?? "—",
+        address: item.address ?? "—",
+        status: prospectStatusLabels[item.status] ?? item.status,
+        priority: prospectPriorityLabels[item.priority] ?? item.priority,
+        assigned: item.assigned_to_name ?? "Chưa gán",
+        next_follow_up: item.next_follow_up_at ?? "—",
+        last_contacted: item.last_contacted_at ?? "—",
+        note: item.note ?? "—",
+      });
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const base64 = Buffer.from(buffer).toString("base64");
+    const filename =
+      chunks.length > 1
+        ? `Danh_sach_khach_tiem_nang_B2B_${dateStr}_phan_${idx + 1}_tren_${chunks.length}.xlsx`
+        : `Danh_sach_khach_tiem_nang_B2B_${dateStr}.xlsx`;
+
+    files.push({
+      filename,
+      base64,
+      count: chunk.length,
     });
   }
 
-  const buffer = await workbook.xlsx.writeBuffer();
-  const base64 = Buffer.from(buffer).toString("base64");
-  const dateStr = new Date().toISOString().slice(0, 10);
-  const filename = `Danh_sach_khach_tiem_nang_B2B_${dateStr}.xlsx`;
-
   return ok({
-    filename,
-    base64,
-    count: list.length,
+    files,
+    totalCount: list.length,
+    fileCount: files.length,
   });
 }
 
@@ -645,6 +678,38 @@ export async function deleteProspectAction(
   if (!auth.ok) return auth;
 
   const { error } = await rpc("delete_prospect", { p_id: id });
+  if (error) return failFromRpc(error);
+
+  revalidatePath("/prospects");
+  return ok({ id });
+}
+
+export async function restoreProspectAction(
+  id: string,
+): Promise<ActionResult<{ id: string }>> {
+  const parsed = prospectIdSchema.safeParse({ id });
+  if (!parsed.success) return fail("VALIDATION", toFieldErrors(parsed.error));
+
+  const auth = await requirePermission("prospect.delete");
+  if (!auth.ok) return auth;
+
+  const { error } = await rpc("restore_prospect", { p_id: id });
+  if (error) return failFromRpc(error);
+
+  revalidatePath("/prospects");
+  return ok({ id });
+}
+
+export async function purgeProspectAction(
+  id: string,
+): Promise<ActionResult<{ id: string }>> {
+  const parsed = prospectIdSchema.safeParse({ id });
+  if (!parsed.success) return fail("VALIDATION", toFieldErrors(parsed.error));
+
+  const auth = await requirePermission("prospect.purge");
+  if (!auth.ok) return auth;
+
+  const { error } = await rpc("purge_prospect", { p_id: id });
   if (error) return failFromRpc(error);
 
   revalidatePath("/prospects");
