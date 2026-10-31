@@ -137,7 +137,7 @@ export function RoomBlocksTable({
       </div>
 
       {/* Filter toolbar */}
-      <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex items-center justify-between">
+      <div className="p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-xs">
           <span className="text-muted-foreground font-medium">
             Lọc theo cơ sở:

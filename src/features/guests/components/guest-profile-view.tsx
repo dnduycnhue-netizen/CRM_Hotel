@@ -854,7 +854,7 @@ export function GuestProfileView({
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6 text-sm font-semibold flex-wrap">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-4 sm:gap-6 text-sm font-semibold overflow-x-auto whitespace-nowrap pb-1 -mx-2 px-2 sm:mx-0 sm:px-0 scrollbar-none">
         <button
           type="button"
           onClick={() => setActiveTab("stays")}

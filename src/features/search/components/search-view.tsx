@@ -135,7 +135,7 @@ export function SearchView({ canViewChain = true }: SearchViewProps) {
               {results.map((guest) => (
                 <div
                   key={guest.id}
-                  className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:border-indigo-500/40 transition flex items-center justify-between gap-4"
+                  className="p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:border-indigo-500/40 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4"
                 >
                   <div className="flex items-start gap-4">
                     <div className="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
@@ -201,12 +201,12 @@ export function SearchView({ canViewChain = true }: SearchViewProps) {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 shrink-0">
-                    <div className="text-right hidden sm:block">
-                      <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 shrink-0 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
+                    <div className="text-left sm:text-right text-xs">
+                      <div className="font-bold text-slate-800 dark:text-slate-200">
                         {guest.total_stays} lượt ở
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-[11px] text-muted-foreground">
                         {guest.total_nights} đêm lưu trú
                       </div>
                     </div>

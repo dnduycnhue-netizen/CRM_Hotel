@@ -114,16 +114,16 @@ export function NetworkStatusBanner() {
 
       {/* PWA Install Banner (US-20) */}
       {showInstallPrompt && (
-        <div className="bg-card border-b border-border/80 text-foreground px-4 py-2.5 text-xs flex items-center justify-between z-40 shadow-xs">
-          <div className="flex items-center gap-2.5">
-            <span className="p-1 rounded-md bg-primary/10 text-primary">
+        <div className="bg-card border-b border-border/80 text-foreground px-3 sm:px-4 py-2 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 z-40 shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="p-1 rounded-md bg-primary/10 text-primary shrink-0">
               <Download className="w-3.5 h-3.5" />
             </span>
-            <span className="font-medium text-foreground">
-              Cài đặt ứng dụng CRM Chuỗi Khách Sạn lên màn hình chính máy quầy để thao tác nhanh hơn
+            <span className="font-medium text-foreground text-[11px] sm:text-xs">
+              Cài đặt ứng dụng lên màn hình chính để thao tác nhanh hơn
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
             <button
               type="button"
               onClick={handleInstallClick}

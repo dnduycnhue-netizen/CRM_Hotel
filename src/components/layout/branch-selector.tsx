@@ -55,7 +55,9 @@ export function BranchSelector({
         <span className="flex h-5 w-5 items-center justify-center rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold text-[10px] shrink-0">
           {singleBranch.code?.slice(0, 2) || "KS"}
         </span>
-        <span className="truncate max-w-[180px]">{singleBranch.name}</span>
+        <span className="truncate max-w-[110px] xs:max-w-[140px] sm:max-w-[180px]">
+          {singleBranch.name}
+        </span>
         <span className="text-[10px] font-normal text-muted-foreground ml-0.5">
           (Cố định)
         </span>
@@ -78,7 +80,7 @@ export function BranchSelector({
         onValueChange={handleBranchChange}
         disabled={isPending}
       >
-        <SelectTrigger className="w-[200px] h-9 text-xs font-semibold border-border/80 bg-background/90 shadow-sm hover:border-amber-500/50 hover:bg-accent/40 transition-all rounded-lg focus:ring-amber-500/30">
+        <SelectTrigger className="w-[130px] sm:w-[200px] h-9 text-xs font-semibold border-border/80 bg-background/90 shadow-sm hover:border-amber-500/50 hover:bg-accent/40 transition-all rounded-lg focus:ring-amber-500/30">
           <div className="flex items-center gap-2 truncate">
             {isPending ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-500 shrink-0" />

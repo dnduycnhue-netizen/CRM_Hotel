@@ -5,6 +5,7 @@ import {
   Compass,
   KeyRound,
   LogOut,
+  Menu,
   Search,
   Shield,
   User,
@@ -24,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui";
 import { BranchSelector } from "./branch-selector";
+import { useSidebar } from "./sidebar-context";
 
 interface AppHeaderProps {
   branches: Array<{ id: string; code: string; name: string }>;
@@ -46,6 +48,7 @@ export function AppHeader({
   canCreateStay = false,
   canReportFacility = false,
 }: AppHeaderProps) {
+  const { toggle } = useSidebar();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
@@ -114,9 +117,17 @@ export function AppHeader({
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
       />
-      <header className="h-16 border-b border-border/50 bg-background/85 backdrop-blur-xl px-5 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-xs">
-        {/* Left: Branch Selector */}
-        <div className="flex items-center gap-3 shrink-0">
+      <header className="h-14 sm:h-16 border-b border-border/50 bg-background/85 backdrop-blur-xl px-3 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-xs">
+        {/* Left: Mobile Menu Toggle & Branch Selector */}
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0">
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label="Mở menu điều hướng"
+            className="lg:hidden p-2 -ml-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted min-h-[40px] min-w-[40px] flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
           <BranchSelector
             branches={branches}
             currentBranchId={currentBranchId}

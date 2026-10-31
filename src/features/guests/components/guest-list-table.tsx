@@ -121,7 +121,7 @@ export function GuestListTable({
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           {canExport && (
             <Button
               type="button"
@@ -263,7 +263,7 @@ export function GuestListTable({
                     className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition group"
                   >
                     <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-wrap items-center gap-2.5">
                         <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 shrink-0 font-bold text-xs">
                           {g.full_name.slice(0, 2).toUpperCase()}
                         </div>

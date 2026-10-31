@@ -26,11 +26,12 @@ import {
   UserPlus,
   Users,
   Wrench,
+  X,
 } from "lucide-react";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCan } from "@/shared/auth";
+import { useSidebar } from "./sidebar-context";
 
 interface NavItem {
   title: string;
@@ -235,7 +236,6 @@ const NAV_GROUPS: NavGroup[] = [
         icon: Settings,
         perm: "settings.modules",
       },
-
       {
         title: "Nguồn khách & Kênh",
         href: "/settings/sources",
@@ -264,8 +264,6 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-// Mục menu đang mở = mục có đường dẫn KHỚP DÀI NHẤT với URL hiện tại. Nếu chỉ dùng
-// startsWith thì /reports/monthly làm sáng cả "Công suất & Khách" lẫn "Doanh thu".
 const ALL_NAV_HREFS = NAV_GROUPS.flatMap((g) => g.items.map((i) => i.href));
 
 function findActiveHref(pathname: string): string | undefined {
@@ -274,36 +272,48 @@ function findActiveHref(pathname: string): string | undefined {
   ).sort((a, b) => b.length - a.length)[0];
 }
 
-export function AppSidebar() {
+function SidebarNavContent({ onItemClick }: { onItemClick?: () => void }) {
   const pathname = usePathname();
   const can = useCan();
   const activeHref = findActiveHref(pathname);
 
   return (
-    <aside className="w-64 shrink-0 border-r border-border/60 bg-card/90 backdrop-blur-xl flex flex-col h-screen sticky top-0 z-20 shadow-sm transition-all select-none">
+    <>
       {/* Brand Header */}
-      <div className="h-16 flex items-center px-5 border-b border-border/50 gap-3 bg-gradient-to-r from-card to-card/50">
-        <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-white shadow-md shadow-amber-500/20">
-          <Hotel className="h-5 w-5" />
-          <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-          </span>
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
+      <div className="h-16 flex items-center justify-between px-5 border-b border-border/50 gap-3 bg-gradient-to-r from-card to-card/50 shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-white shadow-md shadow-amber-500/20">
+            <Hotel className="h-5 w-5" />
+            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+          </div>
+          <div className="min-w-0 flex-1">
             <span className="font-bold text-sm tracking-tight text-foreground truncate block">
               CRM Khách Sạn
             </span>
+            <span className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold tracking-wider block uppercase truncate">
+              8 Cơ sở · 240 Phòng
+            </span>
           </div>
-          <span className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold tracking-wider block uppercase truncate">
-            8 Cơ sở · 240 Phòng
-          </span>
         </div>
+
+        {/* Mobile close button */}
+        {onItemClick && (
+          <button
+            type="button"
+            onClick={onItemClick}
+            aria-label="Đóng menu"
+            className="lg:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted min-h-[44px] min-w-[44px] flex items-center justify-center"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
       </div>
 
       {/* Nav Menu */}
-      <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-6">
+      <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-6 overscroll-contain">
         {NAV_GROUPS.map((group) => {
           const visibleItems = group.items.filter((item: NavItem) => {
             if (item.perms && Array.isArray(item.perms)) {
@@ -326,7 +336,8 @@ export function AppSidebar() {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`group relative flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                      onClick={onItemClick}
+                      className={`group relative flex items-center justify-between px-3 py-2.5 sm:py-2 rounded-lg text-xs font-medium transition-all min-h-[40px] sm:min-h-0 ${
                         isActive
                           ? "bg-primary text-primary-foreground shadow-sm font-semibold pl-3.5"
                           : "text-muted-foreground hover:bg-accent/60 hover:text-foreground hover:translate-x-0.5"
@@ -366,7 +377,7 @@ export function AppSidebar() {
       </div>
 
       {/* Footer System Status */}
-      <div className="p-3 border-t border-border/50 bg-muted/20">
+      <div className="p-3 border-t border-border/50 bg-muted/20 shrink-0">
         <div className="p-2.5 rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -377,7 +388,8 @@ export function AppSidebar() {
           {can("settings.branches") && (
             <Link
               href="/settings/branches"
-              className="text-[10px] text-muted-foreground hover:text-primary flex items-center gap-0.5 font-medium transition-colors"
+              onClick={onItemClick}
+              className="text-[10px] text-muted-foreground hover:text-primary flex items-center gap-0.5 font-medium transition-colors p-1"
             >
               <span>Quản lý</span>
               <ChevronRight className="h-3 w-3" />
@@ -385,6 +397,51 @@ export function AppSidebar() {
           )}
         </div>
       </div>
-    </aside>
+    </>
+  );
+}
+
+export function AppSidebar() {
+  const { isOpen, close } = useSidebar();
+
+  return (
+    <>
+      {/* Desktop Fixed Sidebar */}
+      <aside className="hidden lg:flex w-64 shrink-0 border-r border-border/60 bg-card/90 backdrop-blur-xl flex-col h-screen sticky top-0 z-20 shadow-sm transition-all select-none">
+        <SidebarNavContent />
+      </aside>
+
+      {/* Mobile Off-canvas Drawer */}
+      <div
+        className={`lg:hidden fixed inset-0 z-50 transition-all duration-300 ${
+          isOpen
+            ? "visible pointer-events-auto"
+            : "invisible pointer-events-none"
+        }`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu chức năng"
+      >
+        {/* Backdrop */}
+        <button
+          type="button"
+          tabIndex={-1}
+          aria-label="Đóng menu"
+          onClick={close}
+          className={`fixed inset-0 w-full h-full bg-black/60 backdrop-blur-xs transition-opacity duration-300 cursor-default ${
+            isOpen ? "opacity-100" : "opacity-0"
+          }`}
+        />
+
+        {/* Drawer Panel */}
+        <aside
+          className={`relative z-10 w-80 max-w-[85vw] h-full bg-card border-r border-border shadow-2xl flex flex-col transition-transform duration-300 ease-out select-none ${
+            isOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <SidebarNavContent onItemClick={close} />
+        </aside>
+      </div>
+    </>
   );
 }

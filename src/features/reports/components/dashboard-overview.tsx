@@ -362,7 +362,7 @@ export function DashboardOverview({
           {/* Chọn khoảng ngày tùy chỉnh */}
           <form
             onSubmit={handleApplyCustomDate}
-            className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl"
+            className="flex flex-wrap items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-full sm:w-auto"
           >
             <div className="flex items-center gap-1 px-1.5">
               <span className="text-slate-500 font-medium">Từ:</span>
