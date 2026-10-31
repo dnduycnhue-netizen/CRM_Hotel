@@ -1207,9 +1207,17 @@ export function ComplianceManager({
                       key={idx}
                       className="flex items-center justify-between p-2 rounded-lg bg-muted/40 border border-border text-xs"
                     >
-                      <span className="truncate max-w-[320px] text-foreground/80">
-                        {path.split("/").pop()}
-                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenSignedFile(path)}
+                        className="truncate max-w-[320px] text-indigo-600 dark:text-indigo-400 hover:underline text-left cursor-pointer flex items-center gap-1.5 font-medium"
+                        title="Bấm để xem tệp đính kèm"
+                      >
+                        <FileText className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">
+                          {path.split("/").pop()}
+                        </span>
+                      </button>
                       <button
                         type="button"
                         onClick={() =>
