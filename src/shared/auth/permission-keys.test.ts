@@ -40,4 +40,21 @@ describe("Permission Keys (AGENTS.md Rule 11)", () => {
       expect(PERMISSIONS).toContain(reqKey);
     }
   });
+
+  it("SYSTEM_PERMISSIONS_CATALOG trong admin roles phải chứa đủ 77 quyền", () => {
+    // Đọc tĩnh để không bị phụ thuộc server-only
+    const fs = require("node:fs");
+    const rolesContent = fs.readFileSync(
+      "src/features/admin/data/roles.ts",
+      "utf8",
+    );
+    const catalogKeys = [...rolesContent.matchAll(/key:\s*"([a-z_.]+)"/g)]
+      .map((m: RegExpMatchArray) => m[1])
+      .filter((k: string) => k.includes("."));
+
+    expect(catalogKeys.length).toBe(77);
+    for (const key of PERMISSIONS) {
+      expect(catalogKeys).toContain(key);
+    }
+  });
 });
