@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  AlertCircle,
   Building2,
   Calendar,
   CheckCircle2,
@@ -12,6 +13,7 @@ import {
   MapPin,
   Phone,
   Printer,
+  RotateCcw,
   User,
   Users,
   X,
@@ -45,22 +47,32 @@ export function RegistrationCardModal({
 }: RegistrationCardModalProps) {
   const [isPending, startTransition] = useTransition();
   const [cardData, setCardData] = useState<RegistrationCardData | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const loadData = () => {
+    if (!stayId) return;
+    setErrorMsg(null);
+    startTransition(async () => {
+      const res = await getRegistrationCardDataAction(stayId);
+      if (res.ok) {
+        setCardData(res.data);
+        if (autoPrint) {
+          setTimeout(() => {
+            window.print();
+          }, 600);
+        }
+      } else {
+        setErrorMsg(res.error?.message || "Không thể tải thông tin phiếu đăng ký");
+      }
+    });
+  };
 
   useEffect(() => {
     if (open && stayId) {
-      startTransition(async () => {
-        const res = await getRegistrationCardDataAction(stayId);
-        if (res.ok) {
-          setCardData(res.data);
-          if (autoPrint) {
-            setTimeout(() => {
-              window.print();
-            }, 600);
-          }
-        }
-      });
+      loadData();
     } else if (!open) {
       setCardData(null);
+      setErrorMsg(null);
     }
   }, [open, stayId, autoPrint]);
 
@@ -136,11 +148,34 @@ export function RegistrationCardModal({
           </div>
         </DialogHeader>
 
-        {/* Loading state */}
-        {isPending || !cardData ? (
+        {/* Loading / Error state */}
+        {isPending ? (
           <div className="py-16 flex flex-col items-center justify-center text-muted-foreground gap-2">
             <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
             <span className="text-xs">Đang tải biểu mẫu đăng ký...</span>
+          </div>
+        ) : errorMsg ? (
+          <div className="py-16 flex flex-col items-center justify-center text-center gap-3">
+            <AlertCircle className="h-8 w-8 text-rose-500" />
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-rose-600">{errorMsg}</p>
+              <p className="text-xs text-muted-foreground">
+                Vui lòng kiểm tra lại lượt ở hoặc nhấn thử lại.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadData}
+              className="gap-1.5 text-xs mt-2"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              <span>Thử lại</span>
+            </Button>
+          </div>
+        ) : !cardData ? (
+          <div className="py-16 flex flex-col items-center justify-center text-muted-foreground gap-2">
+            <span className="text-xs">Không có dữ liệu</span>
           </div>
         ) : (
           /* NỘI DUNG PHIẾU ĐĂNG KÝ IN ẤN (REGISTRATION CARD) */
@@ -464,3 +499,4 @@ export function RegistrationCardModal({
     </Dialog>
   );
 }
+

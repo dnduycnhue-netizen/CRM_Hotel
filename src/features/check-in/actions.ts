@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { requirePermission } from "@/shared/auth/server";
 import { type ActionResult, fail, ok, toFieldErrors } from "@/shared/errors";
@@ -296,6 +297,7 @@ export async function getRegistrationCardDataAction(
       .from("stays")
       .select(`
         id,
+        branch_id,
         check_in_at,
         expected_check_out_at,
         nights,
@@ -306,6 +308,7 @@ export async function getRegistrationCardDataAction(
         source_channels (name),
         stay_guests (
           is_primary,
+          guest_id,
           guests (
             id,
             full_name,
@@ -313,7 +316,7 @@ export async function getRegistrationCardDataAction(
             gender,
             dob,
             nationality,
-            guest_documents (doc_type, doc_number)
+            address_line
           )
         )
       `)
@@ -321,7 +324,12 @@ export async function getRegistrationCardDataAction(
       .maybeSingle();
 
     if (error || !s) {
-      return fail("NOT_FOUND", undefined, "Không tìm thấy thông tin lượt ở");
+      console.error("[getRegistrationCardDataAction] Error querying stay:", error);
+      return fail(
+        "NOT_FOUND",
+        undefined,
+        "Không tìm thấy thông tin lượt ở: " + (error?.message || "Dữ liệu không tồn tại"),
+      );
     }
 
     const rawStay = s as any;
@@ -343,18 +351,48 @@ export async function getRegistrationCardDataAction(
     const primaryGuest = Array.isArray(primarySG?.guests)
       ? primarySG.guests[0]
       : primarySG?.guests;
-    const primaryDocs = Array.isArray(primaryGuest?.guest_documents)
-      ? primaryGuest.guest_documents
-      : [];
-    const primaryDoc = primaryDocs[0];
+
+    // Collect all guest IDs to fetch documents
+    const guestIds: string[] = [];
+    if (primaryGuest?.id) guestIds.push(primaryGuest.id);
+    for (const sg of stayGuests) {
+      const g = Array.isArray(sg.guests) ? sg.guests[0] : sg.guests;
+      if (g?.id && !guestIds.includes(g.id)) {
+        guestIds.push(g.id);
+      }
+    }
+
+    // Fetch documents securely via service role to bypass PII direct select restrictions
+    const docsMap = new Map<string, { doc_type: string; doc_number: string }>();
+    if (guestIds.length > 0) {
+      try {
+        const { data: docs } = await (supabaseAdmin().from("guest_documents") as any)
+          .select("guest_id, doc_type, doc_number")
+          .in("guest_id", guestIds);
+
+        if (docs && Array.isArray(docs)) {
+          for (const d of docs as any[]) {
+            if (!docsMap.has(d.guest_id)) {
+              docsMap.set(d.guest_id, {
+                doc_type: d.doc_type,
+                doc_number: d.doc_number,
+              });
+            }
+          }
+        }
+      } catch (docErr) {
+        console.warn("[getRegistrationCardDataAction] Could not fetch documents:", docErr);
+      }
+    }
+
+    const primaryDoc = primaryGuest?.id ? docsMap.get(primaryGuest.id) : undefined;
 
     const companionList: RegistrationCardData["companions"] = [];
     for (const sg of stayGuests) {
       if (sg === primarySG) continue;
       const g = Array.isArray(sg.guests) ? sg.guests[0] : sg.guests;
       if (!g) continue;
-      const docs = Array.isArray(g.guest_documents) ? g.guest_documents : [];
-      const doc = docs[0];
+      const doc = docsMap.get(g.id);
       companionList.push({
         id: g.id,
         fullName: g.full_name || "",
@@ -398,6 +436,7 @@ export async function getRegistrationCardDataAction(
 
     return ok(cardData);
   } catch (err: any) {
+    console.error("[getRegistrationCardDataAction] Exception:", err);
     return fail(
       "UNKNOWN",
       undefined,

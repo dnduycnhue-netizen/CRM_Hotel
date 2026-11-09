@@ -35,3 +35,4 @@ export interface RegistrationCardData {
     docNumber: string | null;
   }>;
 }
+
