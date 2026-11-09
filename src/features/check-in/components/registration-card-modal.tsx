@@ -39,6 +39,351 @@ interface RegistrationCardModalProps {
   autoPrint?: boolean;
 }
 
+function printRegistrationCard(data: RegistrationCardData) {
+  const iframe = document.createElement("iframe");
+  iframe.style.position = "fixed";
+  iframe.style.right = "0";
+  iframe.style.bottom = "0";
+  iframe.style.width = "0";
+  iframe.style.height = "0";
+  iframe.style.border = "0";
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentWindow?.document;
+  if (!doc) return;
+
+  const companionsHtml =
+    data.companions.length > 0
+      ? `
+      <div class="section-box">
+        <div class="section-title">2. Người đi cùng / Accompanying Guests (${data.companions.length} người)</div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 35px;">STT</th>
+              <th>Họ và tên / Full Name</th>
+              <th>Giới tính / Gender</th>
+              <th>Ngày sinh / DOB</th>
+              <th>Số CCCD/Hộ chiếu / ID No</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.companions
+              .map(
+                (comp, idx) => `
+              <tr>
+                <td style="color: #64748b; font-family: monospace;">${idx + 1}</td>
+                <td style="font-weight: bold; text-transform: uppercase;">${comp.fullName}</td>
+                <td>${comp.gender === "female" ? "Nữ" : "Nam"}</td>
+                <td>${comp.dob || "—"}</td>
+                <td style="font-family: monospace; font-weight: 600;">${comp.docNumber || "—"}</td>
+              </tr>
+            `,
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+    `
+      : "";
+
+  const noteHtml = data.stay.note
+    ? `
+      <div style="background-color: #fefce8; border: 1px solid #fef08a; border-radius: 6px; padding: 7px 10px; margin-bottom: 12px; font-size: 10px;">
+        <strong style="color: #854d0e; text-transform: uppercase;">Ghi chú đặc biệt / Special Request:</strong>
+        <span style="color: #713f12;"> ${data.stay.note}</span>
+      </div>
+    `
+    : "";
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Phiếu Đăng Ký Lưu Trú - ${data.guest.fullName} - P.${data.stay.roomNumber}</title>
+        <meta charset="utf-8" />
+        <style>
+          @page {
+            size: A4 portrait;
+            margin: 10mm 12mm;
+          }
+          * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #0f172a;
+            background: #ffffff;
+            margin: 0;
+            padding: 0;
+            font-size: 11px;
+            line-height: 1.4;
+          }
+          .header-box {
+            border-bottom: 2px solid #0f172a;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+          }
+          .hotel-name {
+            font-size: 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #0f172a;
+            margin: 0 0 3px 0;
+          }
+          .hotel-info {
+            font-size: 10px;
+            color: #475569;
+            margin: 2px 0;
+          }
+          .card-title-box {
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 8px;
+            margin-top: 8px;
+          }
+          .title-vn {
+            font-size: 15px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #0f172a;
+            margin: 0;
+          }
+          .title-en {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #64748b;
+            margin-top: 1px;
+          }
+          .room-badge {
+            font-size: 20px;
+            font-weight: 900;
+            color: #047857;
+            font-family: monospace;
+          }
+          .grid-stay {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-bottom: 12px;
+          }
+          .field-label {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748b;
+            display: block;
+            margin-bottom: 2px;
+          }
+          .field-val {
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 11px;
+          }
+          .section-box {
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-bottom: 12px;
+          }
+          .section-title {
+            font-size: 10.5px;
+            font-weight: 800;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 4px;
+            margin-bottom: 6px;
+            color: #0f172a;
+          }
+          .grid-guest {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 8px;
+          }
+          .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+          }
+          .data-table th {
+            border-bottom: 1px solid #cbd5e1;
+            padding: 4px 6px;
+            text-align: left;
+            font-size: 9px;
+            text-transform: uppercase;
+            color: #64748b;
+          }
+          .data-table td {
+            border-bottom: 1px solid #f1f5f9;
+            padding: 4px 6px;
+          }
+          .policy-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 7px 9px;
+            margin-bottom: 12px;
+            font-size: 9px;
+            line-height: 1.45;
+            color: #475569;
+          }
+          .policy-title {
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #0f172a;
+            margin-bottom: 3px;
+          }
+          .signature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 14px;
+            text-align: center;
+          }
+          .sig-box {
+            border-top: 1px dashed #94a3b8;
+            padding-top: 6px;
+            min-height: 75px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header-box">
+          <div>
+            <h1 class="hotel-name">${data.hotel.name}</h1>
+            ${data.hotel.address ? `<div class="hotel-info">📍 ${data.hotel.address}</div>` : ""}
+            ${data.hotel.phone ? `<div class="hotel-info">📞 Hotline: ${data.hotel.phone}</div>` : ""}
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 9px; font-family: monospace; background: #f1f5f9; border: 1px solid #cbd5e1; padding: 2px 6px; border-radius: 4px; display: inline-block; font-weight: bold;">
+              MÃ: ${data.stayId.slice(0, 8).toUpperCase()}
+            </div>
+            <div class="room-badge">P.${data.stay.roomNumber}</div>
+            <div style="font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: 600;">${data.stay.roomType}</div>
+          </div>
+        </div>
+
+        <div class="card-title-box">
+          <div class="title-vn">PHIẾU ĐĂNG KÝ LƯU TRÚ</div>
+          <div class="title-en">GUEST REGISTRATION CARD</div>
+        </div>
+
+        <div class="grid-stay" style="margin-top: 10px;">
+          <div>
+            <span class="field-label">Số phòng / Room No</span>
+            <span class="field-val" style="font-size: 13px; font-weight: 800;">${data.stay.roomNumber}</span>
+          </div>
+          <div>
+            <span class="field-label">Hạng phòng / Room Type</span>
+            <span class="field-val">${data.stay.roomType}</span>
+          </div>
+          <div>
+            <span class="field-label">Ngày nhận / Arrival</span>
+            <span class="field-val">${formatDateTimeVN(data.stay.checkInAt, "full")}</span>
+          </div>
+          <div>
+            <span class="field-label">Ngày trả / Departure</span>
+            <span class="field-val">${formatDateTimeVN(data.stay.expectedCheckOutAt, "full")}</span>
+          </div>
+          <div>
+            <span class="field-label">Số đêm / Nights</span>
+            <span class="field-val">${data.stay.nights} đêm</span>
+          </div>
+          <div>
+            <span class="field-label">Kênh / Source</span>
+            <span class="field-val">${data.stay.sourceChannelName}</span>
+          </div>
+          <div style="grid-column: span 2;">
+            <span class="field-label">Mã đặt phòng / Booking Ref</span>
+            <span class="field-val" style="font-family: monospace;">${data.stay.externalRef || "Vãng lai tại quầy"}</span>
+          </div>
+        </div>
+
+        <div class="section-box">
+          <div class="section-title">1. Thông tin khách đại diện / Primary Guest</div>
+          <div class="grid-guest">
+            <div>
+              <span class="field-label">Họ và tên / Full Name:</span>
+              <span class="field-val" style="font-size: 13px; font-weight: 900; text-transform: uppercase;">${data.guest.fullName}</span>
+            </div>
+            <div>
+              <span class="field-label">Số điện thoại / Phone:</span>
+              <span class="field-val" style="font-family: monospace;">${data.guest.phone || "—"}</span>
+            </div>
+            <div>
+              <span class="field-label">Quốc tịch / Nationality:</span>
+              <span class="field-val">${data.guest.nationality || "Việt Nam"}</span>
+            </div>
+            <div>
+              <span class="field-label">Loại giấy tờ / Doc Type:</span>
+              <span class="field-val">${data.guest.docType === "passport" ? "Hộ chiếu (Passport)" : "CCCD / CMND"}</span>
+            </div>
+            <div style="grid-column: span 2;">
+              <span class="field-label">Số giấy tờ / ID/Passport No:</span>
+              <span class="field-val" style="font-family: monospace; font-size: 12px; font-weight: 800;">${data.guest.docNumber || "—"}</span>
+            </div>
+          </div>
+        </div>
+
+        ${companionsHtml}
+        ${noteHtml}
+
+        <div class="policy-box">
+          <div class="policy-title">Nội quy & Điều khoản lưu trú / Hotel Regulations & Terms:</div>
+          <div>• <strong>Giờ nhận phòng:</strong> từ 14:00. <strong>Giờ trả phòng:</strong> trước 12:00 trưa. Trả phòng trễ có thể tính thêm phí theo quy định.</div>
+          <div>• Quý khách vui lòng gửi tư trang, tiền bạc tại két an toàn hoặc quầy lễ tân. Khách sạn không chịu trách nhiệm với tài sản quý khách để trong phòng.</div>
+          <div>• Nghiêm cấm mang vũ khí, chất cháy nổ, ma túy, chất kích thích và hàng cấm theo quy định của pháp luật Việt Nam vào khách sạn.</div>
+          <div>• Giữ gìn trật tự chung, không gây ồn ào sau 22:00. Bồi thường thiệt hại đối với các trang thiết bị hỏng hóc hoặc mất mát trong thời gian lưu trú.</div>
+        </div>
+
+        <div class="signature-grid">
+          <div>
+            <div style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 50px;">
+              Chữ ký Lễ tân / Receptionist's Signature
+            </div>
+            <div class="sig-box">
+              <span style="font-size: 8.5px; color: #94a3b8;">(Ký và ghi rõ họ tên)</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 50px;">
+              Chữ ký Khách hàng / Guest's Signature
+            </div>
+            <div class="sig-box">
+              <span style="font-size: 8.5px; color: #94a3b8;">Tôi đồng ý với các điều khoản & nội quy trên</span>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  doc.open();
+  doc.write(html);
+  doc.close();
+
+  iframe.contentWindow?.focus();
+  setTimeout(() => {
+    iframe.contentWindow?.print();
+    setTimeout(() => {
+      iframe.remove();
+    }, 1500);
+  }, 250);
+}
+
 export function RegistrationCardModal({
   stayId,
   open,
@@ -58,8 +403,8 @@ export function RegistrationCardModal({
         setCardData(res.data);
         if (autoPrint) {
           setTimeout(() => {
-            window.print();
-          }, 600);
+            printRegistrationCard(res.data);
+          }, 400);
         }
       } else {
         setErrorMsg(res.error?.message || "Không thể tải thông tin phiếu đăng ký");
@@ -77,44 +422,16 @@ export function RegistrationCardModal({
   }, [open, stayId, autoPrint]);
 
   const handlePrint = () => {
-    window.print();
+    if (cardData) {
+      printRegistrationCard(cardData);
+    }
   };
 
   if (!open) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 print:p-0 print:max-w-none print:max-h-none print:shadow-none print:border-none">
-        {/* Style @media print tối ưu khổ A4 */}
-        <style jsx global>{`
-          @media print {
-            body * {
-              visibility: hidden;
-            }
-            .registration-card-printable,
-            .registration-card-printable * {
-              visibility: visible;
-            }
-            .registration-card-printable {
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-              padding: 0;
-              margin: 0;
-              background: white !important;
-              color: black !important;
-            }
-            .no-print {
-              display: none !important;
-            }
-            @page {
-              size: A4 portrait;
-              margin: 12mm 15mm;
-            }
-          }
-        `}</style>
-
+      <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto p-4 sm:p-6">
         {/* Dialog Header (Ẩn khi in) */}
         <DialogHeader className="no-print pb-3 border-b">
           <div className="flex items-center justify-between">
