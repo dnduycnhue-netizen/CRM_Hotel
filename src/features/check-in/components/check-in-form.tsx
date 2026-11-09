@@ -474,7 +474,8 @@ export function CheckInForm({
         documentNumber:
           docNumber && !docNumber.includes("*") ? docNumber : undefined,
         addressLine: addressLine.trim() || undefined,
-        provinceCode: provinceCode || undefined,
+        provinceCode:
+          nationality === "VN" ? provinceCode || undefined : undefined,
         sourceChannelCode: sourceChannel,
         partnerId:
           sourceChannel === "partner" || sourceChannel === "corporate"
@@ -705,7 +706,12 @@ export function CheckInForm({
                     <CountrySelect
                       id="nationality"
                       value={nationality}
-                      onChange={(val) => setNationality(val)}
+                      onChange={(val) => {
+                        setNationality(val);
+                        if (val !== "VN") {
+                          setProvinceCode("");
+                        }
+                      }}
                     />
                   </div>
                   <div className="sm:col-span-2 space-y-1.5">
@@ -830,7 +836,13 @@ export function CheckInForm({
 
                 {/* 3.1. Địa chỉ chi tiết & Tỉnh/thành cư trú */}
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-                  <div className="sm:col-span-7 space-y-1.5">
+                  <div
+                    className={
+                      nationality === "VN"
+                        ? "sm:col-span-7 space-y-1.5"
+                        : "sm:col-span-12 space-y-1.5"
+                    }
+                  >
                     <Label
                       htmlFor="addressLine"
                       className="text-xs font-semibold text-muted-foreground"
@@ -841,31 +853,39 @@ export function CheckInForm({
                       id="addressLine"
                       value={addressLine}
                       onChange={(e) => setAddressLine(e.target.value)}
-                      placeholder="Số nhà, tên đường, phường/xã..."
+                      placeholder={
+                        nationality === "VN"
+                          ? "Số nhà, tên đường, phường/xã..."
+                          : "Street address, City, State/Province, Postal Code..."
+                      }
                       className="h-9.5 text-xs rounded-xl"
                     />
                   </div>
-                  <div className="sm:col-span-5 space-y-1.5">
-                    <Label
-                      htmlFor="provinceCode"
-                      className="text-xs font-semibold text-muted-foreground"
-                    >
-                      Tỉnh / Thành phố cư trú
-                    </Label>
-                    <select
-                      id="provinceCode"
-                      value={provinceCode}
-                      onChange={(e) => setProvinceCode(e.target.value)}
-                      className="w-full h-9.5 rounded-xl border border-input bg-background px-3 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/30"
-                    >
-                      <option value="">-- Chọn tỉnh/thành (tùy chọn) --</option>
-                      {VIETNAM_PROVINCES.map((p) => (
-                        <option key={p.code} value={p.code}>
-                          {p.name}
+                  {nationality === "VN" && (
+                    <div className="sm:col-span-5 space-y-1.5">
+                      <Label
+                        htmlFor="provinceCode"
+                        className="text-xs font-semibold text-muted-foreground"
+                      >
+                        Tỉnh / Thành phố cư trú
+                      </Label>
+                      <select
+                        id="provinceCode"
+                        value={provinceCode}
+                        onChange={(e) => setProvinceCode(e.target.value)}
+                        className="w-full h-9.5 rounded-xl border border-input bg-background px-3 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+                      >
+                        <option value="">
+                          -- Chọn tỉnh/thành (tùy chọn) --
                         </option>
-                      ))}
-                    </select>
-                  </div>
+                        {VIETNAM_PROVINCES.map((p) => (
+                          <option key={p.code} value={p.code}>
+                            {p.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
 
                 {/* 4. Visual Room Selector (Hot Feature for UX!) */}

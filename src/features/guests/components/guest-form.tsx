@@ -97,6 +97,7 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
         phone: isVn ? formData.phone?.trim() || null : null,
         phone_intl: !isVn ? formData.phone_intl?.trim() || null : null,
         email: formData.email?.trim() || null,
+        province_code: isVn ? formData.province_code || null : null,
         document: formData.document?.number?.trim()
           ? {
               type: formData.document.type,
@@ -259,6 +260,7 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
                   setFormData((prev) => ({
                     ...prev,
                     nationality: val,
+                    province_code: val === "VN" ? prev.province_code : "",
                     document: {
                       ...(prev.document || {
                         type: val === "VN" ? "cccd" : "passport",
@@ -404,7 +406,7 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
               </select>
             </div>
 
-            <div>
+            <div className={isVn ? "" : "sm:col-span-2"}>
               <label
                 htmlFor="address_line"
                 className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1"
@@ -419,35 +421,41 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, address_line: e.target.value })
                 }
-                placeholder="Số nhà, đường phố, phường/xã..."
+                placeholder={
+                  isVn
+                    ? "Số nhà, đường phố, phường/xã..."
+                    : "Street address, City, State/Province, Postal Code..."
+                }
                 className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
               />
             </div>
 
-            <div>
-              <label
-                htmlFor="province_code"
-                className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1"
-              >
-                Tỉnh / Thành phố cư trú
-              </label>
-              <select
-                id="province_code"
-                name="province_code"
-                value={formData.province_code || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, province_code: e.target.value })
-                }
-                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
-              >
-                <option value="">-- Chọn tỉnh/thành (tùy chọn) --</option>
-                {VIETNAM_PROVINCES.map((p) => (
-                  <option key={p.code} value={p.code}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {isVn && (
+              <div>
+                <label
+                  htmlFor="province_code"
+                  className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1"
+                >
+                  Tỉnh / Thành phố cư trú
+                </label>
+                <select
+                  id="province_code"
+                  name="province_code"
+                  value={formData.province_code || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, province_code: e.target.value })
+                  }
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none"
+                >
+                  <option value="">-- Chọn tỉnh/thành (tùy chọn) --</option>
+                  {VIETNAM_PROVINCES.map((p) => (
+                    <option key={p.code} value={p.code}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
         </div>
 

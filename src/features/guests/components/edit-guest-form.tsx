@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import { ArrowLeft, Globe, Loader2, Phone, Save, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -79,7 +80,7 @@ export function EditGuestForm({
         nationality: nationality.trim().toUpperCase() || "VN",
         email: email.trim() || null,
         address_line: addressLine.trim() || null,
-        province_code: provinceCode || null,
+        province_code: isVn ? provinceCode || null : null,
         source_channel_id: sourceChannelId || null,
       };
 
@@ -196,7 +197,12 @@ export function EditGuestForm({
                 <CountrySelect
                   id="nationality"
                   value={nationality}
-                  onChange={(val) => setNationality(val)}
+                  onChange={(val) => {
+                    setNationality(val);
+                    if (val !== "VN") {
+                      setProvinceCode("");
+                    }
+                  }}
                 />
               </div>
 
@@ -313,7 +319,7 @@ export function EditGuestForm({
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
+              <div className={cn("space-y-1.5", !isVn && "sm:col-span-2")}>
                 <Label htmlFor="addressLine" className="text-xs font-semibold">
                   Địa chỉ chi tiết
                 </Label>
@@ -321,29 +327,38 @@ export function EditGuestForm({
                   id="addressLine"
                   value={addressLine}
                   onChange={(e) => setAddressLine(e.target.value)}
-                  placeholder="123 Lê Duẩn, Hải Châu..."
+                  placeholder={
+                    isVn
+                      ? "123 Lê Duẩn, Hải Châu..."
+                      : "Street address, City, State/Province, Postal Code..."
+                  }
                   className="h-9 text-xs"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="provinceCode" className="text-xs font-semibold">
-                  Tỉnh / Thành phố cư trú
-                </Label>
-                <select
-                  id="provinceCode"
-                  value={provinceCode}
-                  onChange={(e) => setProvinceCode(e.target.value)}
-                  className="w-full h-9 rounded-md border border-input bg-background px-3 text-xs outline-none focus:ring-2 focus:ring-amber-500/30"
-                >
-                  <option value="">-- Chọn tỉnh/thành (tùy chọn) --</option>
-                  {VIETNAM_PROVINCES.map((p) => (
-                    <option key={p.code} value={p.code}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {isVn && (
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="provinceCode"
+                    className="text-xs font-semibold"
+                  >
+                    Tỉnh / Thành phố cư trú
+                  </Label>
+                  <select
+                    id="provinceCode"
+                    value={provinceCode}
+                    onChange={(e) => setProvinceCode(e.target.value)}
+                    className="w-full h-9 rounded-md border border-input bg-background px-3 text-xs outline-none focus:ring-2 focus:ring-amber-500/30"
+                  >
+                    <option value="">-- Chọn tỉnh/thành (tùy chọn) --</option>
+                    {VIETNAM_PROVINCES.map((p) => (
+                      <option key={p.code} value={p.code}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             <div className="pt-4 flex items-center justify-end gap-3 border-t border-border/50">
