@@ -59,6 +59,7 @@ begin
                                             'reason', f.reason, 'branch', b.name, 'at', f.proposed_at))
         from public.guest_flags f join public.branches b on b.id = f.branch_id
         where f.guest_id = g.id and f.status in ('proposed', 'approved')), '[]'::jsonb)
+        else '[]'::jsonb end
     )
     from public.guests g where g.id = v_id
   ));
