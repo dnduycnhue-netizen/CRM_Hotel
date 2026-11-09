@@ -273,3 +273,4 @@ begin
     'move_id', v_move_id
   );
 end $$;
+

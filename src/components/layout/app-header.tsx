@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ChangePasswordDialog } from "@/features/auth";
+import { NotificationBell } from "@/features/notifications";
 import { CommandPalette } from "@/features/search";
 import {
   Avatar,
@@ -206,6 +207,9 @@ export function AppHeader({
           >
             <Search className="h-4 w-4" />
           </button>
+
+          {/* Trung tâm Cảnh báo (Notification Bell) */}
+          <NotificationBell currentBranchId={currentBranchId} />
 
           {/* User Menu */}
           <DropdownMenu>
