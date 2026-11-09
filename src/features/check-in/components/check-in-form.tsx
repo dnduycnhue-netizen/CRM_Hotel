@@ -37,6 +37,7 @@ import {
   CardHeader,
   CardTitle,
   Checkbox,
+  CountrySelect,
   Input,
   Label,
   Switch,
@@ -160,7 +161,9 @@ export function CheckInForm({
         fullName: "",
         gender: "male",
         dob: "",
+        nationality: "VN",
         phone: "",
+        phoneIntl: "",
         documentType: "cccd",
         documentNumber: "",
         isChild: false,
@@ -464,7 +467,10 @@ export function CheckInForm({
         phone: phone ? normalizeVnPhone(phone) : undefined,
         phoneIntl: phoneIntl ? phoneIntl.trim() : undefined,
         email: email ? email.trim() : undefined,
-        documentType: detectedKind === "passport" ? "passport" : "cccd",
+        documentType:
+          (nationality && nationality !== "VN") || detectedKind === "passport"
+            ? "passport"
+            : "cccd",
         documentNumber:
           docNumber && !docNumber.includes("*") ? docNumber : undefined,
         addressLine: addressLine.trim() || undefined,
@@ -671,9 +677,9 @@ export function CheckInForm({
                   </div>
                 </div>
 
-                {/* 2. Full Name & Gender & DOB */}
+                {/* 2. Full Name & Nationality & Gender & DOB */}
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-                  <div className="sm:col-span-6 space-y-1.5">
+                  <div className="sm:col-span-5 space-y-1.5">
                     <Label
                       htmlFor="fullName"
                       className="text-xs font-bold text-foreground"
@@ -691,6 +697,19 @@ export function CheckInForm({
                   </div>
                   <div className="sm:col-span-3 space-y-1.5">
                     <Label
+                      htmlFor="nationality"
+                      className="text-xs font-bold text-foreground"
+                    >
+                      Quốc tịch
+                    </Label>
+                    <CountrySelect
+                      id="nationality"
+                      value={nationality}
+                      onChange={(val) => setNationality(val)}
+                    />
+                  </div>
+                  <div className="sm:col-span-2 space-y-1.5">
+                    <Label
                       htmlFor="gender"
                       className="text-xs font-semibold text-muted-foreground"
                     >
@@ -707,7 +726,7 @@ export function CheckInForm({
                       <option value="other">Khác</option>
                     </select>
                   </div>
-                  <div className="sm:col-span-3 space-y-1.5">
+                  <div className="sm:col-span-2 space-y-1.5">
                     <Label
                       htmlFor="dob"
                       className="text-xs font-semibold text-muted-foreground"
@@ -1294,7 +1313,7 @@ export function CheckInForm({
 
                             {/* Form fields */}
                             <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-                              <div className="sm:col-span-5 space-y-1">
+                              <div className="sm:col-span-4 space-y-1">
                                 <Label className="text-[11px] font-semibold">
                                   Họ và tên *
                                 </Label>
@@ -1311,23 +1330,60 @@ export function CheckInForm({
                                 />
                               </div>
 
-                              <div className="sm:col-span-4 space-y-1">
+                              <div className="sm:col-span-3 space-y-1">
                                 <Label className="text-[11px] font-semibold">
-                                  Số điện thoại
+                                  Quốc tịch
                                 </Label>
-                                <Input
-                                  value={c.phone}
-                                  onChange={(e) =>
+                                <CountrySelect
+                                  value={c.nationality || "VN"}
+                                  onChange={(val) => {
                                     handleUpdateCompanion(c.id, {
-                                      phone: e.target.value,
-                                    })
-                                  }
-                                  placeholder="0912345678"
-                                  className="h-8 text-xs font-mono rounded-lg"
+                                      nationality: val,
+                                      ...(val !== "VN" &&
+                                      c.documentType === "cccd"
+                                        ? { documentType: "passport" }
+                                        : {}),
+                                    });
+                                  }}
                                 />
                               </div>
 
                               <div className="sm:col-span-3 space-y-1">
+                                <Label className="text-[11px] font-semibold">
+                                  {c.nationality && c.nationality !== "VN"
+                                    ? "SĐT quốc tế"
+                                    : "Số điện thoại"}
+                                </Label>
+                                <Input
+                                  value={
+                                    c.nationality && c.nationality !== "VN"
+                                      ? c.phoneIntl || ""
+                                      : c.phone
+                                  }
+                                  onChange={(e) => {
+                                    if (
+                                      c.nationality &&
+                                      c.nationality !== "VN"
+                                    ) {
+                                      handleUpdateCompanion(c.id, {
+                                        phoneIntl: e.target.value,
+                                      });
+                                    } else {
+                                      handleUpdateCompanion(c.id, {
+                                        phone: e.target.value,
+                                      });
+                                    }
+                                  }}
+                                  placeholder={
+                                    c.nationality && c.nationality !== "VN"
+                                      ? "+14155550123"
+                                      : "0912345678"
+                                  }
+                                  className="h-8 text-xs font-mono rounded-lg"
+                                />
+                              </div>
+
+                              <div className="sm:col-span-2 space-y-1">
                                 <Label className="text-[11px] font-semibold">
                                   Giới tính
                                 </Label>

@@ -334,7 +334,44 @@ export const COUNTRIES: ReadonlyArray<Country> = [
   { code: "ZW", name: "Zimbabwe", nameEn: "Zimbabwe" },
 ];
 
-export function getCountryName(code: string): string {
-  const found = COUNTRIES.find((c) => c.code === code.toUpperCase());
+export const PINNED_COUNTRY_CODES: ReadonlyArray<string> = [
+  "VN", // Việt Nam
+  "KR", // Hàn Quốc
+  "CN", // Trung Quốc
+  "US", // Hoa Kỳ
+  "JP", // Nhật Bản
+  "TW", // Đài Loan
+  "AU", // Úc
+  "GB", // Vương quốc Anh
+  "FR", // Pháp
+  "DE", // Đức
+  "TH", // Thái Lan
+  "SG", // Singapore
+  "MY", // Malaysia
+  "RU", // Nga
+  "IN", // Ấn Độ
+  "CA", // Canada
+];
+
+export function getCountryFlag(code: string | null | undefined): string {
+  if (!code || code.trim().length !== 2) return "🌐";
+  const upper = code.trim().toUpperCase();
+  const first = upper.charCodeAt(0);
+  const second = upper.charCodeAt(1);
+  if (first < 65 || first > 90 || second < 65 || second > 90) return "🌐";
+  return String.fromCodePoint(127397 + first, 127397 + second);
+}
+
+export function getCountry(
+  code: string | null | undefined,
+): Country | undefined {
+  if (!code) return undefined;
+  const upper = code.trim().toUpperCase();
+  return COUNTRIES.find((c) => c.code === upper);
+}
+
+export function getCountryName(code: string | null | undefined): string {
+  if (!code) return "";
+  const found = getCountry(code);
   return found ? found.name : code;
 }

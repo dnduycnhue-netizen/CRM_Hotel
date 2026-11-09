@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import type { SourceChannelItem } from "@/features/admin/data/sources";
 import { getCountryName } from "@/shared/constants/countries";
 import { VIETNAM_PROVINCES } from "@/shared/constants/provinces";
-import { Button } from "@/shared/ui";
+import { Button, CountrySelect } from "@/shared/ui";
 import { createGuestAction } from "../actions";
 import type { CreateGuestInput } from "../schemas";
 
@@ -249,21 +249,13 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
                 htmlFor="nationality"
                 className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1"
               >
-                Quốc tịch (Mã 2 ký tự: VN, US, KR, JP...)
-                {formData.nationality && formData.nationality.length === 2 && (
-                  <span className="ml-2 font-normal text-indigo-600 dark:text-indigo-400">
-                    ({getCountryName(formData.nationality)})
-                  </span>
-                )}
+                Quốc tịch
               </label>
-              <input
+              <CountrySelect
                 id="nationality"
                 name="nationality"
-                type="text"
                 value={formData.nationality}
-                maxLength={2}
-                onChange={(e) => {
-                  const val = e.target.value.toUpperCase();
+                onChange={(val) => {
                   setFormData((prev) => ({
                     ...prev,
                     nationality: val,
@@ -277,8 +269,6 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
                     },
                   }));
                 }}
-                placeholder="VN"
-                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none uppercase font-semibold"
               />
             </div>
           </div>

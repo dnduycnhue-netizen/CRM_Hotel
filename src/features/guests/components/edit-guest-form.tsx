@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import type { SourceChannelItem } from "@/features/admin/data/sources";
-import { getCountryName } from "@/shared/constants/countries";
 import { VIETNAM_PROVINCES } from "@/shared/constants/provinces";
 import {
   Button,
@@ -15,6 +14,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CountrySelect,
   Input,
   Label,
 } from "@/shared/ui";
@@ -191,20 +191,12 @@ export function EditGuestForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="nationality" className="text-xs font-semibold">
-                  Quốc tịch (Mã 2 ký tự: VN, US, KR...)
-                  {nationality && nationality.length === 2 && (
-                    <span className="ml-2 font-normal text-amber-600 dark:text-amber-400">
-                      ({getCountryName(nationality)})
-                    </span>
-                  )}
+                  Quốc tịch
                 </Label>
-                <Input
+                <CountrySelect
                   id="nationality"
                   value={nationality}
-                  onChange={(e) => setNationality(e.target.value.toUpperCase())}
-                  placeholder="VN"
-                  maxLength={2}
-                  className="h-9 text-xs font-mono uppercase"
+                  onChange={(val) => setNationality(val)}
                 />
               </div>
 
