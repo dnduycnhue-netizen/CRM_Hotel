@@ -1,11 +1,12 @@
 "use client";
 
-import { ArrowLeft, Loader2, Save, User } from "lucide-react";
+import { ArrowLeft, Globe, Loader2, Phone, Save, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import type { SourceChannelItem } from "@/features/admin/data/sources";
+import { getCountryName } from "@/shared/constants/countries";
 import { VIETNAM_PROVINCES } from "@/shared/constants/provinces";
 import {
   Button,
@@ -27,6 +28,7 @@ interface EditGuestFormProps {
     dob?: string | null;
     nationality?: string | null;
     phone?: string | null;
+    phone_intl?: string | null;
     email?: string | null;
     address_line?: string | null;
     province_code?: string | null;
@@ -51,12 +53,15 @@ export function EditGuestForm({
   const [dob, setDob] = useState(guest.dob ? guest.dob.slice(0, 10) : "");
   const [nationality, setNationality] = useState(guest.nationality || "VN");
   const [phone, setPhone] = useState(guest.phone || "");
+  const [phoneIntl, setPhoneIntl] = useState(guest.phone_intl || "");
   const [email, setEmail] = useState(guest.email || "");
   const [addressLine, setAddressLine] = useState(guest.address_line || "");
   const [provinceCode, setProvinceCode] = useState(guest.province_code || "");
   const [sourceChannelId, setSourceChannelId] = useState(
     guest.source_channel_id || "",
   );
+
+  const isVn = nationality.trim().toUpperCase() === "VN";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,19 +72,27 @@ export function EditGuestForm({
     }
 
     startTransition(async () => {
+      const patchPayload: any = {
+        full_name: fullName.trim(),
+        gender,
+        dob: dob || null,
+        nationality: nationality.trim().toUpperCase() || "VN",
+        email: email.trim() || null,
+        address_line: addressLine.trim() || null,
+        province_code: provinceCode || null,
+        source_channel_id: sourceChannelId || null,
+      };
+
+      // TC5: Khi chuyển đổi VN <-> Nước ngoài, giữ nguyên cột còn lại trong DB
+      if (isVn) {
+        patchPayload.phone = phone.trim() || null;
+      } else {
+        patchPayload.phone_intl = phoneIntl.trim() || null;
+      }
+
       const res = await updateGuestAction(
         guest.id,
-        {
-          full_name: fullName.trim(),
-          gender,
-          dob: dob || null,
-          nationality: nationality.trim().toUpperCase() || "VN",
-          phone: phone.trim() || null,
-          email: email.trim() || null,
-          address_line: addressLine.trim() || null,
-          province_code: provinceCode || null,
-          source_channel_id: sourceChannelId || null,
-        },
+        patchPayload,
         guest.updated_at,
       );
 
@@ -177,45 +190,86 @@ export function EditGuestForm({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="phone" className="text-xs font-semibold">
-                    Số điện thoại
-                  </Label>
-                  {phone.includes("*") && (
-                    <span className="text-[10px] text-amber-600 font-medium">
-                      Đang được che bảo mật
+                <Label htmlFor="nationality" className="text-xs font-semibold">
+                  Quốc tịch (Mã 2 ký tự: VN, US, KR...)
+                  {nationality && nationality.length === 2 && (
+                    <span className="ml-2 font-normal text-amber-600 dark:text-amber-400">
+                      ({getCountryName(nationality)})
                     </span>
                   )}
-                </div>
-                <Input
-                  id="phone"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="0905123456"
-                  className="h-9 text-xs"
-                />
-                {phone.includes("*") && (
-                  <p className="text-[10px] text-muted-foreground">
-                    Giữ nguyên nếu không đổi. Để cập nhật số mới, nhập đầy đủ 10
-                    chữ số.
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="nationality" className="text-xs font-semibold">
-                  Quốc tịch (Mã 2 ký tự)
                 </Label>
                 <Input
                   id="nationality"
                   value={nationality}
-                  onChange={(e) => setNationality(e.target.value)}
+                  onChange={(e) => setNationality(e.target.value.toUpperCase())}
                   placeholder="VN"
                   maxLength={2}
                   className="h-9 text-xs font-mono uppercase"
                 />
               </div>
+
+              <div className="space-y-1.5">
+                {isVn ? (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="phone" className="text-xs font-semibold flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5 text-emerald-500" />
+                        Số điện thoại Việt Nam
+                      </Label>
+                      {phone.includes("*") && (
+                        <span className="text-[10px] text-amber-600 font-medium">
+                          Đang được che bảo mật
+                        </span>
+                      )}
+                    </div>
+                    <Input
+                      id="phone"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="0905123456"
+                      className="h-9 text-xs"
+                    />
+                    {phone.includes("*") && (
+                      <p className="text-[10px] text-muted-foreground">
+                        Giữ nguyên nếu không đổi. Để cập nhật số mới, nhập đầy đủ 10 chữ số.
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="phoneIntl" className="text-xs font-semibold flex items-center gap-1.5">
+                        <Globe className="w-3.5 h-3.5 text-indigo-500" />
+                        SĐT quốc tế (WhatsApp)
+                      </Label>
+                      {phoneIntl.includes("*") && (
+                        <span className="text-[10px] text-amber-600 font-medium">
+                          Đang được che bảo mật
+                        </span>
+                      )}
+                    </div>
+                    <Input
+                      id="phoneIntl"
+                      value={phoneIntl}
+                      onChange={(e) => setPhoneIntl(e.target.value)}
+                      placeholder="+14155550123"
+                      className="h-9 text-xs text-indigo-600 dark:text-indigo-400 font-medium"
+                    />
+                    {phoneIntl.includes("*") && (
+                      <p className="text-[10px] text-muted-foreground">
+                        Giữ nguyên nếu không đổi. Để cập nhật số mới, nhập kèm mã quốc gia (VD: +1...).
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
+
+            {!isVn && !phoneIntl.trim() && !email.trim() && (
+              <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 text-amber-700 dark:text-amber-400 text-xs">
+                💡 <strong>Lưu ý:</strong> Khách nước ngoài không có Zalo/SĐT Việt Nam. Khuyến nghị nhập <strong>Số điện thoại quốc tế (WhatsApp)</strong> hoặc <strong>Email</strong> để thuận tiện gửi xác nhận và liên hệ.
+              </div>
+            )}
 
             <div className="space-y-1.5">
               <Label htmlFor="email" className="text-xs font-semibold">

@@ -189,4 +189,31 @@ describe("CheckIn Schemas", () => {
       expect(result.data.provinceCode).toBe("48");
     }
   });
+
+  it("chấp nhận SĐT quốc tế phoneIntl hợp lệ theo chuẩn E.164", () => {
+    const result = checkInSchema.safeParse({
+      branchId: validBranchId,
+      roomId: validRoomId,
+      fullName: "John Smith",
+      nationality: "US",
+      phoneIntl: "+1 415-555-0123",
+      email: "john.smith@gmail.com",
+      sourceChannelCode: "walk_in",
+      expectedCheckOutAt: "2026-10-25T12:00:00+07:00",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("từ chối phoneIntl khi thiếu dấu + hoặc sai định dạng E.164", () => {
+    const result = checkInSchema.safeParse({
+      branchId: validBranchId,
+      roomId: validRoomId,
+      fullName: "John Smith",
+      nationality: "US",
+      phoneIntl: "14155550123", // thiếu +
+      sourceChannelCode: "walk_in",
+      expectedCheckOutAt: "2026-10-25T12:00:00+07:00",
+    });
+    expect(result.success).toBe(false);
+  });
 });

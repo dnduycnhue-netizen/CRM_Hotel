@@ -59,6 +59,25 @@ describe("Guests Schemas", () => {
       });
       expect(result.success).toBe(false);
     });
+
+    it("hợp lệ khi có số điện thoại quốc tế phone_intl chuẩn E.164", () => {
+      const result = createGuestSchema.safeParse({
+        full_name: "David Beckham",
+        nationality: "GB",
+        phone_intl: "+44 20 7946 0991",
+        email: "david@example.com",
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("từ chối phone_intl khi thiếu dấu + hoặc sai định dạng", () => {
+      const result = createGuestSchema.safeParse({
+        full_name: "David Beckham",
+        nationality: "GB",
+        phone_intl: "442079460991", // Thiếu +
+      });
+      expect(result.success).toBe(false);
+    });
   });
 
   describe("addGuestNoteSchema", () => {

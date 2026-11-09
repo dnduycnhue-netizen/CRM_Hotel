@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requirePermission } from "@/shared/auth/server";
 import { type ActionResult, fail, ok, toFieldErrors } from "@/shared/errors";
 import { toVnTimestamptz } from "@/shared/utils/date";
+import { normalizePhoneIntl, normalizePhoneVn } from "@/shared/utils/phone";
 import type { RegistrationCardData } from "./domain/registration-types";
 import { checkInSchema } from "./schemas";
 
@@ -16,6 +17,7 @@ export interface GuestLookupResult {
   dob: string | null;
   nationality: string;
   phone: string | null;
+  phoneIntl: string | null;
   docType: string | null;
   docNumberMasked: string | null;
   totalStays: number;
@@ -32,7 +34,7 @@ export interface GuestLookupResult {
 
 export async function lookupGuestAction(
   branchId: string,
-  kind: "phone" | "cccd" | "passport",
+  kind: "phone" | "phone_intl" | "cccd" | "passport",
   value: string,
 ): Promise<ActionResult<GuestLookupResult | null>> {
   if (!value || value.trim().length < 4) {
@@ -43,11 +45,21 @@ export async function lookupGuestAction(
   if (!auth.ok) return auth;
 
   try {
+    let cleanValue = value.trim();
+    if (kind === "phone") {
+      cleanValue = normalizePhoneVn(cleanValue) || cleanValue;
+    } else if (kind === "phone_intl") {
+      const intlRes = normalizePhoneIntl(cleanValue);
+      if (intlRes.success && intlRes.phone) {
+        cleanValue = intlRes.phone;
+      }
+    }
+
     const supabase = await createClient();
     const { data, error } = await supabase.rpc("lookup_for_checkin", {
       p_branch: branchId,
       p_kind: kind,
-      p_value: value.trim(),
+      p_value: cleanValue,
     });
 
     if (error) {
@@ -74,6 +86,7 @@ export async function lookupGuestAction(
       dob: m.dob || null,
       nationality: m.nationality || "VN",
       phone: m.phone || null,
+      phoneIntl: m.phone_intl || null,
       docType: m.documents?.[0]?.type || null,
       docNumberMasked: m.documents?.[0]?.number || null,
       totalStays: m.stats?.total_stays ?? 0,
@@ -182,7 +195,12 @@ export async function checkInGuestAction(
         gender: data.gender,
         dob: data.dob || null,
         nationality: (data.nationality || "VN").slice(0, 2).toUpperCase(),
-        phone: data.phone || null,
+        phone: normalizePhoneVn(data.phone) || data.phone || null,
+        phone_intl: (() => {
+          if (!data.phoneIntl) return null;
+          const res = normalizePhoneIntl(data.phoneIntl);
+          return res.success ? res.phone : data.phoneIntl;
+        })(),
         email: data.email || null,
         address_line: data.addressLine || null,
         province_code: data.provinceCode || null,
@@ -204,7 +222,12 @@ export async function checkInGuestAction(
           gender: c.gender,
           dob: c.dob || null,
           nationality: (c.nationality || "VN").slice(0, 2).toUpperCase(),
-          phone: c.phone || null,
+          phone: normalizePhoneVn(c.phone) || c.phone || null,
+          phone_intl: (() => {
+            if (!c.phoneIntl) return null;
+            const res = normalizePhoneIntl(c.phoneIntl);
+            return res.success ? res.phone : c.phoneIntl;
+          })(),
           document: hasDoc
             ? {
                 type: c.documentType,
@@ -313,6 +336,7 @@ export async function getRegistrationCardDataAction(
             id,
             full_name,
             phone,
+            phone_intl,
             gender,
             dob,
             nationality,
@@ -424,7 +448,7 @@ export async function getRegistrationCardDataAction(
       guest: {
         id: primaryGuest?.id || "",
         fullName: primaryGuest?.full_name || "Khách lưu trú",
-        phone: primaryGuest?.phone || null,
+        phone: primaryGuest?.phone || primaryGuest?.phone_intl || null,
         gender: primaryGuest?.gender || "male",
         dob: primaryGuest?.dob || null,
         docType: primaryDoc?.doc_type || null,

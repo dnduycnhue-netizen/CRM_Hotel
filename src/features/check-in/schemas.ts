@@ -1,4 +1,20 @@
 import { z } from "zod";
+import { normalizePhoneIntl } from "@/shared/utils/phone";
+
+const phoneIntlZod = z
+  .string()
+  .optional()
+  .or(z.literal(""))
+  .superRefine((val, ctx) => {
+    if (!val || !val.trim()) return;
+    const res = normalizePhoneIntl(val);
+    if (!res.success) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: res.error,
+      });
+    }
+  });
 
 export const companionSchema = z.object({
   guestId: z
@@ -14,6 +30,7 @@ export const companionSchema = z.object({
   dob: z.string().optional().or(z.literal("")),
   nationality: z.string().default("VN"),
   phone: z.string().min(10, "SĐT tối thiểu 10 số").optional().or(z.literal("")),
+  phoneIntl: phoneIntlZod,
   documentType: z.enum(["cccd", "passport"]).default("cccd"),
   documentNumber: z.string().optional().or(z.literal("")),
   isChild: z.boolean().default(false),
@@ -41,6 +58,7 @@ export const checkInSchema = z
       .min(10, "SĐT tối thiểu 10 số")
       .optional()
       .or(z.literal("")),
+    phoneIntl: phoneIntlZod,
     email: z
       .string()
       .email("Email không đúng định dạng")

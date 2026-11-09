@@ -174,6 +174,8 @@ export interface GuestListItem {
   gender: "male" | "female" | "other";
   birth_year: number | null;
   phone: string | null;
+  phone_intl?: string | null;
+  nationality?: string | null;
   doc_masked: string | null;
   email: string | null;
   total_stays: number;

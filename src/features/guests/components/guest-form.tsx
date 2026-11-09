@@ -1,11 +1,12 @@
 "use client";
 
-import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Globe, Loader2, Phone } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import type { SourceChannelItem } from "@/features/admin/data/sources";
+import { getCountryName } from "@/shared/constants/countries";
 import { VIETNAM_PROVINCES } from "@/shared/constants/provinces";
 import { Button } from "@/shared/ui";
 import { createGuestAction } from "../actions";
@@ -26,6 +27,7 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
     gender: "other",
     nationality: "VN",
     phone: "",
+    phone_intl: "",
     email: "",
     address_line: "",
     province_code: "",
@@ -39,6 +41,7 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
   });
 
   const [rawTag, setRawTag] = useState("");
+  const isVn = (formData.nationality || "VN").trim().toUpperCase() === "VN";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,9 +52,16 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
       return;
     }
 
-    if (!formData.phone?.trim() && !formData.document?.number?.trim()) {
-      setErrorMsg("Cần cung cấp ít nhất Số điện thoại hoặc Số giấy tờ");
-      return;
+    if (isVn) {
+      if (!formData.phone?.trim() && !formData.document?.number?.trim()) {
+        setErrorMsg("Cần cung cấp ít nhất Số điện thoại hoặc Số giấy tờ");
+        return;
+      }
+    } else {
+      if (!formData.phone_intl?.trim() && !formData.document?.number?.trim()) {
+        setErrorMsg("Cần cung cấp ít nhất Số điện thoại quốc tế hoặc Số giấy tờ (Hộ chiếu)");
+        return;
+      }
     }
 
     // Extract clean tags and detect any source tag if source_channel_id is not set
@@ -79,20 +89,27 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
     startTransition(async () => {
       const res = await createGuestAction({
         ...formData,
+        nationality: (formData.nationality || "VN").trim().toUpperCase(),
         source_channel_id: activeSourceId,
         tags: cleanTags,
-        phone: formData.phone?.trim() || null,
+        phone: isVn ? formData.phone?.trim() || null : null,
+        phone_intl: !isVn ? formData.phone_intl?.trim() || null : null,
         email: formData.email?.trim() || null,
         document: formData.document?.number?.trim()
           ? {
               type: formData.document.type,
               number: formData.document.number.trim(),
-              country: formData.document.country || "VN",
+              country: !isVn ? (formData.nationality || "US").toUpperCase() : (formData.document.country || "VN"),
             }
           : null,
       });
 
       if (res.ok) {
+        if (res.data.existing) {
+          toast.info("Hồ sơ khách đã tồn tại trong hệ thống (trùng số điện thoại hoặc giấy tờ). Đang chuyển tới trang hồ sơ.");
+        } else {
+          toast.success("Tạo mới hồ sơ khách thành công");
+        }
         router.push(`/guests/${res.data.guest_id}`);
       } else {
         setErrorMsg(res.error.message);
@@ -226,7 +243,12 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
                 htmlFor="nationality"
                 className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1"
               >
-                Quốc tịch (Mã 2 chữ cái)
+                Quốc tịch (Mã 2 ký tự: VN, US, KR, JP...)
+                {formData.nationality && formData.nationality.length === 2 && (
+                  <span className="ml-2 font-normal text-indigo-600 dark:text-indigo-400">
+                    ({getCountryName(formData.nationality)})
+                  </span>
+                )}
               </label>
               <input
                 id="nationality"
@@ -234,12 +256,21 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
                 type="text"
                 value={formData.nationality}
                 maxLength={2}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    nationality: e.target.value.toUpperCase(),
-                  })
-                }
+                onChange={(e) => {
+                  const val = e.target.value.toUpperCase();
+                  setFormData((prev) => ({
+                    ...prev,
+                    nationality: val,
+                    document: {
+                      ...(prev.document || {
+                        type: val === "VN" ? "cccd" : "passport",
+                        number: "",
+                      }),
+                      type: val === "VN" ? "cccd" : "passport",
+                      country: val || "VN",
+                    },
+                  }));
+                }}
                 placeholder="VN"
                 className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none uppercase font-semibold"
               />
@@ -249,30 +280,76 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
 
         {/* Section 2: Liên hệ */}
         <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            2. Thông tin liên hệ
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              2. Thông tin liên hệ
+            </h2>
+            <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+              {isVn ? (
+                <>
+                  <Phone className="w-3 h-3 text-emerald-500" />
+                  Khách Việt Nam
+                </>
+              ) : (
+                <>
+                  <Globe className="w-3 h-3 text-indigo-500" />
+                  Khách quốc tế ({getCountryName(formData.nationality || "US")})
+                </>
+              )}
+            </span>
+          </div>
+
+          {!isVn && !formData.phone_intl?.trim() && !formData.email?.trim() && (
+            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 text-amber-700 dark:text-amber-400 text-xs">
+              💡 <strong>Lưu ý:</strong> Khách nước ngoài không có Zalo/SĐT Việt Nam. Khuyến nghị nhập <strong>Số điện thoại quốc tế (WhatsApp)</strong> hoặc <strong>Email</strong> để khách nhận xác nhận và hỗ trợ trong thời gian lưu trú.
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="phone"
-                className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1"
-              >
-                Số điện thoại
-              </label>
-              <input
-                id="phone"
-                name="phone"
-                type="text"
-                value={formData.phone || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
-                placeholder="0912345678"
-                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none font-medium"
-              />
-            </div>
+            {isVn ? (
+              <div>
+                <label
+                  htmlFor="phone"
+                  className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1"
+                >
+                  Số điện thoại Việt Nam
+                </label>
+                <input
+                  id="phone"
+                  name="phone"
+                  type="text"
+                  value={formData.phone || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
+                  placeholder="0912345678"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none font-medium"
+                />
+              </div>
+            ) : (
+              <div>
+                <label
+                  htmlFor="phone_intl"
+                  className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1"
+                >
+                  Số điện thoại quốc tế (WhatsApp)
+                  <span className="text-[11px] text-muted-foreground font-normal ml-1">
+                    (E.164: +mã vùng, VD: +14155550123)
+                  </span>
+                </label>
+                <input
+                  id="phone_intl"
+                  name="phone_intl"
+                  type="text"
+                  value={formData.phone_intl || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone_intl: e.target.value })
+                  }
+                  placeholder="+14155550123"
+                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 outline-none font-medium text-indigo-600 dark:text-indigo-400"
+                />
+              </div>
+            )}
 
             <div>
               <label

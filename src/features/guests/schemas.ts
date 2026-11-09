@@ -1,4 +1,21 @@
 import { z } from "zod";
+import { normalizePhoneIntl } from "@/shared/utils/phone";
+
+export const phoneIntlSchema = z
+  .string()
+  .optional()
+  .nullable()
+  .or(z.literal(""))
+  .superRefine((val, ctx) => {
+    if (!val || !val.trim()) return;
+    const res = normalizePhoneIntl(val);
+    if (!res.success) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: res.error,
+      });
+    }
+  });
 
 export const createGuestSchema = z.object({
   full_name: z
@@ -10,7 +27,8 @@ export const createGuestSchema = z.object({
     .string()
     .length(2, "Mã quốc gia 2 ký tự (VD: VN)")
     .default("VN"),
-  phone: z.string().optional().nullable(),
+  phone: z.string().optional().nullable().or(z.literal("")),
+  phone_intl: phoneIntlSchema,
   email: z
     .string()
     .email("Email không đúng định dạng")
@@ -41,7 +59,8 @@ export const updateGuestSchema = z.object({
   gender: z.enum(["male", "female", "other"]).optional(),
   dob: z.string().optional().nullable(),
   nationality: z.string().length(2).optional(),
-  phone: z.string().optional().nullable(),
+  phone: z.string().optional().nullable().or(z.literal("")),
+  phone_intl: phoneIntlSchema,
   email: z.string().email().optional().nullable().or(z.literal("")),
   address_line: z.string().optional().nullable(),
   province_code: z.string().optional().nullable(),

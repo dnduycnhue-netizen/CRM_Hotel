@@ -101,7 +101,8 @@ export function GuestListTable({
       const q = searchFilter.toLowerCase().trim();
       const matchName = g.full_name.toLowerCase().includes(q);
       const matchPhone = g.phone ? g.phone.includes(q) : false;
-      if (!matchName && !matchPhone) return false;
+      const matchIntl = g.phone_intl ? g.phone_intl.includes(q) : false;
+      if (!matchName && !matchPhone && !matchIntl) return false;
     }
 
     return true;
@@ -309,36 +310,50 @@ export function GuestListTable({
                     </td>
 
                     <td className="py-3.5 px-4 text-xs text-slate-600 dark:text-slate-400">
-                      {g.phone ? (
-                        g.phone.includes("****") ? (
-                          <div className="flex items-center gap-1.5 font-mono">
-                            <span>{g.phone}</span>
+                      {(() => {
+                        const displayPhone = g.phone || g.phone_intl;
+                        const isIntl = !g.phone && !!g.phone_intl;
+                        if (!displayPhone) return <div>—</div>;
+                        const isMasked = displayPhone.includes("****");
+                        const isMyLead =
+                          currentUserId && g.sales_owner_id === currentUserId;
+
+                        return (
+                          <div className="flex items-center gap-1.5 flex-wrap font-mono">
                             <span
-                              title="Số điện thoại được che mặt nạ theo chính sách bảo mật"
-                              className="inline-flex text-muted-foreground cursor-help"
+                              className={
+                                isMyLead
+                                  ? "font-medium text-emerald-600 dark:text-emerald-400"
+                                  : isIntl
+                                    ? "font-medium text-indigo-600 dark:text-indigo-400"
+                                    : ""
+                              }
                             >
-                              <Lock className="w-3 h-3 text-muted-foreground" />
+                              {displayPhone}
                             </span>
+                            {isIntl && (
+                              <span className="text-[9px] px-1 py-0.2 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 font-sans">
+                                WhatsApp
+                              </span>
+                            )}
+                            {isMasked ? (
+                              <span
+                                title="Số điện thoại được che mặt nạ theo chính sách bảo mật"
+                                className="inline-flex text-muted-foreground cursor-help"
+                              >
+                                <Lock className="w-3 h-3 text-muted-foreground" />
+                              </span>
+                            ) : isMyLead ? (
+                              <span
+                                title="Hiển thị đầy đủ vì bạn là Sales phụ trách lead này"
+                                className="text-[9px] px-1 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-200/50 font-sans"
+                              >
+                                Lead của bạn
+                              </span>
+                            ) : null}
                           </div>
-                        ) : currentUserId &&
-                          g.sales_owner_id === currentUserId ? (
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">
-                              {g.phone}
-                            </span>
-                            <span
-                              title="Hiển thị đầy đủ vì bạn là Sales phụ trách lead này"
-                              className="text-[9px] px-1 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-200/50"
-                            >
-                              Lead của bạn
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="font-mono">{g.phone}</div>
-                        )
-                      ) : (
-                        <div>—</div>
-                      )}
+                        );
+                      })()}
                       {g.doc_masked && (
                         <div className="font-mono text-[11px] text-muted-foreground mt-0.5">
                           {g.doc_masked}

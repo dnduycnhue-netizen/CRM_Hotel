@@ -56,7 +56,9 @@ export interface FormCompanion {
   fullName: string;
   gender: "male" | "female" | "other";
   dob: string;
+  nationality?: string;
   phone: string;
+  phoneIntl?: string;
   documentType: "cccd" | "passport";
   documentNumber: string;
   isChild: boolean;
@@ -109,6 +111,9 @@ export function CheckInForm({
   const [gender, setGender] = useState<"male" | "female" | "other">("male");
   const [dob, setDob] = useState("");
   const [phone, setPhone] = useState("");
+  const [phoneIntl, setPhoneIntl] = useState("");
+  const [email, setEmail] = useState("");
+  const [nationality, setNationality] = useState("VN");
   const [docNumber, setDocNumber] = useState("");
   const [addressLine, setAddressLine] = useState("");
   const [provinceCode, setProvinceCode] = useState("");
@@ -213,7 +218,12 @@ export function CheckInForm({
       return;
     }
     const { kind, cleanValue } = classifyQuery(clean);
-    if (kind !== "phone" && kind !== "cccd" && kind !== "passport") {
+    if (
+      kind !== "phone" &&
+      kind !== "phone_intl" &&
+      kind !== "cccd" &&
+      kind !== "passport"
+    ) {
       toast.error("Vui lòng nhập số điện thoại, CCCD hoặc hộ chiếu hợp lệ");
       return;
     }
@@ -229,6 +239,8 @@ export function CheckInForm({
           gender: (g.gender as any) || "male",
           dob: g.dob || "",
           phone: g.phone || "",
+          phoneIntl: g.phoneIntl || "",
+          nationality: g.nationality || "VN",
           documentType: g.docType === "passport" ? "passport" : "cccd",
           documentNumber: g.docNumberMasked || "",
           isLookingUp: false,
@@ -266,6 +278,8 @@ export function CheckInForm({
         setFullName("");
         setDob("");
         setPhone("");
+        setPhoneIntl("");
+        setEmail("");
         setDocNumber("");
         setGender("male");
       }
@@ -279,7 +293,12 @@ export function CheckInForm({
     const { kind, cleanValue } = classifyQuery(queryValue);
     setDetectedKind(kind);
 
-    if (kind !== "phone" && kind !== "cccd" && kind !== "passport") {
+    if (
+      kind !== "phone" &&
+      kind !== "phone_intl" &&
+      kind !== "cccd" &&
+      kind !== "passport"
+    ) {
       setIsLookingUp(false);
       return;
     }
@@ -300,6 +319,8 @@ export function CheckInForm({
           setGender((g.gender as any) || "male");
           if (g.dob) setDob(g.dob);
           if (g.phone) setPhone(g.phone);
+          if (g.phoneIntl) setPhoneIntl(g.phoneIntl);
+          if (g.nationality) setNationality(g.nationality);
           if (g.docNumberMasked) setDocNumber(g.docNumberMasked);
           if (g.consents) {
             setConsents({
@@ -322,11 +343,23 @@ export function CheckInForm({
           setConsents({ zalo: false, sms: false, email: false, phone: false });
           if (kind === "phone") {
             setPhone(cleanValue);
+            setPhoneIntl("");
+            setDocNumber("");
+          }
+          if (kind === "phone_intl") {
+            setPhoneIntl(cleanValue);
+            setPhone("");
             setDocNumber("");
           }
           if (kind === "cccd") {
             setDocNumber(cleanValue);
             setPhone("");
+            setPhoneIntl("");
+          }
+          if (kind === "passport") {
+            setDocNumber(cleanValue);
+            setPhone("");
+            setPhoneIntl("");
           }
           setGuestData(null);
           setGuestId(null);
@@ -427,7 +460,10 @@ export function CheckInForm({
         fullName: normalizeFullName(fullName),
         gender,
         dob: dob || undefined,
+        nationality: nationality || "VN",
         phone: phone ? normalizeVnPhone(phone) : undefined,
+        phoneIntl: phoneIntl ? phoneIntl.trim() : undefined,
+        email: email ? email.trim() : undefined,
         documentType: detectedKind === "passport" ? "passport" : "cccd",
         documentNumber:
           docNumber && !docNumber.includes("*") ? docNumber : undefined,
@@ -449,8 +485,9 @@ export function CheckInForm({
           fullName: normalizeFullName(c.fullName),
           gender: c.gender,
           dob: c.dob || undefined,
-          nationality: "VN",
+          nationality: c.nationality || "VN",
           phone: c.phone ? normalizeVnPhone(c.phone) : undefined,
+          phoneIntl: c.phoneIntl ? c.phoneIntl.trim() : undefined,
           documentType: c.documentType,
           documentNumber:
             c.documentNumber && !c.documentNumber.includes("*")
@@ -607,12 +644,14 @@ export function CheckInForm({
                       {isLookingUp
                         ? "Đang tìm hồ sơ..."
                         : detectedKind === "phone"
-                          ? "Loại: Số điện thoại"
-                          : detectedKind === "cccd"
-                            ? "Loại: CCCD / CMND"
-                            : detectedKind === "passport"
-                              ? "Loại: Hộ chiếu"
-                              : "Loại: Tự động nhận diện"}
+                          ? "Loại: Số điện thoại VN"
+                          : detectedKind === "phone_intl"
+                            ? "Loại: SĐT quốc tế (WhatsApp)"
+                            : detectedKind === "cccd"
+                              ? "Loại: CCCD / CMND"
+                              : detectedKind === "passport"
+                                ? "Loại: Hộ chiếu"
+                                : "Loại: Tự động nhận diện"}
                     </span>
                   </Label>
                   <div className="relative">
@@ -625,7 +664,7 @@ export function CheckInForm({
                       id="identity"
                       value={queryValue}
                       onChange={(e) => setQueryValue(e.target.value)}
-                      placeholder="Nhập SĐT (VD: 0905123456) hoặc 12 số CCCD để nhận diện tự động..."
+                      placeholder="Nhập SĐT VN (0905...), SĐT quốc tế (+1...), CCCD hoặc Hộ chiếu..."
                       className="pl-10 h-10.5 text-sm font-bold tracking-wide border-amber-500/40 focus:border-amber-500 focus:ring-amber-500/20 rounded-xl bg-background shadow-xs"
                       autoFocus
                     />
@@ -685,14 +724,14 @@ export function CheckInForm({
                   </div>
                 </div>
 
-                {/* 3. Phone & ID Card */}
+                {/* 3. Phone, Intl Phone, Email & ID Card */}
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                   <div className="sm:col-span-6 space-y-1.5">
                     <Label
                       htmlFor="phone"
                       className="text-xs font-bold text-foreground"
                     >
-                      Số điện thoại liên hệ
+                      Số điện thoại Việt Nam
                     </Label>
                     <Input
                       id="phone"
@@ -702,6 +741,27 @@ export function CheckInForm({
                       className="h-9.5 text-xs font-mono font-semibold rounded-xl"
                     />
                   </div>
+                  <div className="sm:col-span-6 space-y-1.5">
+                    <Label
+                      htmlFor="phoneIntl"
+                      className="text-xs font-bold text-foreground flex items-center justify-between"
+                    >
+                      <span>SĐT quốc tế (WhatsApp)</span>
+                      <span className="text-[10px] text-muted-foreground font-normal">
+                        E.164: +mã vùng
+                      </span>
+                    </Label>
+                    <Input
+                      id="phoneIntl"
+                      value={phoneIntl}
+                      onChange={(e) => setPhoneIntl(e.target.value)}
+                      placeholder="+14155550123"
+                      className="h-9.5 text-xs font-mono font-semibold rounded-xl text-indigo-600 dark:text-indigo-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                   <div className="sm:col-span-6 space-y-1.5">
                     <div className="flex items-center justify-between">
                       <Label
@@ -725,10 +785,26 @@ export function CheckInForm({
                     />
                     {guestId && docNumber.includes("*") && (
                       <p className="text-[11px] text-muted-foreground">
-                        Hồ sơ đã lưu CCCD (bảo mật). Nhập số mới chỉ khi khách
-                        đổi giấy tờ.
+                        Hồ sơ đã lưu CCCD (bảo mật). Nhập số mới chỉ khi khách đổi giấy tờ.
                       </p>
                     )}
+                  </div>
+
+                  <div className="sm:col-span-6 space-y-1.5">
+                    <Label
+                      htmlFor="email"
+                      className="text-xs font-bold text-foreground"
+                    >
+                      Email liên hệ
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="khachhang@gmail.com"
+                      className="h-9.5 text-xs rounded-xl"
+                    />
                   </div>
                 </div>
 
@@ -1609,8 +1685,13 @@ export function CheckInForm({
                       <span className="font-extrabold text-base text-foreground">
                         {guestData.fullName}
                       </span>
-                      <span className="font-mono text-muted-foreground text-xs font-semibold">
-                        {guestData.phone}
+                      <span className="font-mono text-muted-foreground text-xs font-semibold flex items-center gap-1">
+                        {guestData.phone || guestData.phoneIntl}
+                        {guestData.phoneIntl && !guestData.phone && (
+                          <span className="text-[9px] px-1 py-0.2 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 font-sans">
+                            WhatsApp
+                          </span>
+                        )}
                       </span>
                     </div>
 

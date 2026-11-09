@@ -1,6 +1,14 @@
 // src/features/check-in/domain/query-classifier.ts
 
-export type QueryKind = "phone" | "cccd" | "passport" | "name" | "unknown";
+import { normalizePhoneIntl } from "@/shared/utils/phone";
+
+export type QueryKind =
+  | "phone"
+  | "phone_intl"
+  | "cccd"
+  | "passport"
+  | "name"
+  | "unknown";
 
 export function classifyQuery(input: string): {
   kind: QueryKind;
@@ -9,7 +17,15 @@ export function classifyQuery(input: string): {
   const trimmed = input.trim();
   const digitsOnly = trimmed.replace(/\D/g, "");
 
-  // 1. Số điện thoại Việt Nam (10 số, bắt đầu bằng 0 hoặc 84)
+  // 1. SĐT Quốc tế: bắt đầu bằng + hoặc 00
+  if (trimmed.startsWith("+") || trimmed.startsWith("00")) {
+    const intl = normalizePhoneIntl(trimmed);
+    if (intl.success && intl.phone) {
+      return { kind: "phone_intl", cleanValue: intl.phone };
+    }
+  }
+
+  // 2. Số điện thoại Việt Nam (10 số, bắt đầu bằng 0 hoặc 84)
   if (/^(0|84)[3|5|7|8|9][0-9]{8}$/.test(digitsOnly)) {
     const phone = digitsOnly.startsWith("84")
       ? `0${digitsOnly.slice(2)}`
@@ -17,18 +33,18 @@ export function classifyQuery(input: string): {
     return { kind: "phone", cleanValue: phone };
   }
 
-  // 2. CCCD Việt Nam (12 chữ số) hoặc CMND cũ (9 chữ số)
+  // 3. CCCD Việt Nam (12 chữ số) hoặc CMND cũ (9 chữ số)
   if (/^[0-9]{9}$|^[0-9]{12}$/.test(digitsOnly)) {
     return { kind: "cccd", cleanValue: digitsOnly };
   }
 
-  // 3. Passport (1 chữ cái hoa + 7 đến 8 chữ số)
+  // 4. Passport (1 chữ cái hoa + 7 đến 8 chữ số)
   const upper = trimmed.toUpperCase().replace(/\s+/g, "");
   if (/^[A-Z][0-9]{7,8}$/.test(upper)) {
     return { kind: "passport", cleanValue: upper };
   }
 
-  // 4. Nếu có chứa chữ cái và có khoảng trắng -> Họ tên
+  // 5. Nếu có chứa chữ cái và có khoảng trắng -> Họ tên
   if (/[a-zA-ZÀ-ỹ]/.test(trimmed)) {
     return { kind: "name", cleanValue: trimmed };
   }

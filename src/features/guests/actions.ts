@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requirePermission } from "@/shared/auth/server";
 import { type ActionResult, fail, ok, toFieldErrors } from "@/shared/errors";
+import { normalizePhoneIntl, normalizePhoneVn } from "@/shared/utils/phone";
 import {
   type AddGuestNoteInput,
   addGuestNoteSchema,
@@ -31,13 +32,21 @@ export async function createGuestAction(
       return hasPerm;
     }
 
+    const intlRes = normalizePhoneIntl(parsed.data.phone_intl);
+    if (!intlRes.success) {
+      return fail("VALIDATION", { phone_intl: [intlRes.error] });
+    }
+
+    const vnPhone = normalizePhoneVn(parsed.data.phone);
+
     const supabase = await createClient();
     const payload = {
       full_name: parsed.data.full_name,
       gender: parsed.data.gender,
       nationality: parsed.data.nationality,
-      phone: parsed.data.phone || null,
-      email: parsed.data.email || null,
+      phone: vnPhone || parsed.data.phone || null,
+      phone_intl: intlRes.phone || null,
+      email: parsed.data.email ? parsed.data.email.trim().toLowerCase() : null,
       address_line: parsed.data.address_line || null,
       province_code: parsed.data.province_code || null,
       source_channel_id: parsed.data.source_channel_id || null,
@@ -86,6 +95,26 @@ export async function updateGuestAction(
     const patch = { ...parsed.data };
     if (patch.phone && patch.phone.includes("*")) {
       delete patch.phone;
+    } else if (patch.phone !== undefined) {
+      patch.phone = normalizePhoneVn(patch.phone) || patch.phone || null;
+    }
+
+    if (patch.phone_intl && patch.phone_intl.includes("*")) {
+      delete patch.phone_intl;
+    } else if (patch.phone_intl !== undefined) {
+      if (patch.phone_intl) {
+        const intlRes = normalizePhoneIntl(patch.phone_intl);
+        if (!intlRes.success) {
+          return fail("VALIDATION", { phone_intl: [intlRes.error] });
+        }
+        patch.phone_intl = intlRes.phone;
+      } else {
+        patch.phone_intl = null;
+      }
+    }
+
+    if (patch.email !== undefined && patch.email !== null) {
+      patch.email = patch.email.trim().toLowerCase() || null;
     }
 
     const { data, error } = await supabase.rpc("update_guest", {
@@ -396,6 +425,7 @@ export async function exportGuestsAction(options?: {
       { header: "Họ và tên", key: "full_name", width: 25 },
       { header: "Giới tính", key: "gender", width: 12 },
       { header: "Số điện thoại / Zalo", key: "phone", width: 18 },
+      { header: "SĐT quốc tế (WhatsApp)", key: "phone_intl", width: 22 },
     ];
 
     if (!consentChannel) {
@@ -441,6 +471,7 @@ export async function exportGuestsAction(options?: {
         full_name: g.full_name,
         gender: genderMap[g.gender] || g.gender || "",
         phone: g.phone || "",
+        phone_intl: g.phone_intl || "",
         email: g.email || "",
         nationality: g.nationality || "VN",
         stays: g.total_stays ?? 0,
@@ -523,6 +554,7 @@ export async function searchCandidateGuestsAction(
       id: string;
       full_name: string;
       phone: string | null;
+      phone_intl?: string | null;
       email: string | null;
       dob: string | null;
       nationality: string;
@@ -540,11 +572,11 @@ export async function searchCandidateGuestsAction(
 
     const supabase = await createClient();
     const { data, error } = await (supabase.from("guests") as any)
-      .select("id, full_name, phone, email, dob, nationality")
+      .select("id, full_name, phone, phone_intl, email, dob, nationality")
       .is("merged_into", null)
       .neq("id", excludeGuestId)
       .or(
-        `phone.ilike.%${trimmed}%,full_name.ilike.%${trimmed}%,email.ilike.%${trimmed}%`,
+        `phone.ilike.%${trimmed}%,phone_intl.ilike.%${trimmed}%,full_name.ilike.%${trimmed}%,email.ilike.%${trimmed}%`,
       )
       .limit(10);
 
@@ -557,6 +589,7 @@ export async function searchCandidateGuestsAction(
         id: string;
         full_name: string;
         phone: string | null;
+        phone_intl?: string | null;
         email: string | null;
         dob: string | null;
         nationality: string;

@@ -62,6 +62,8 @@ export async function getGuestsList(options?: {
         ? new Date(g.dob).getFullYear()
         : null,
     phone: g.phone,
+    phone_intl: g.phone_intl || null,
+    nationality: g.nationality || null,
     doc_masked: g.doc_number || null,
     email: g.email,
     total_stays: g.total_stays || 0,

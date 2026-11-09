@@ -9,6 +9,7 @@ import {
   Compass,
   FileText,
   GitMerge,
+  Globe,
   History,
   Loader2,
   Lock,
@@ -34,6 +35,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { StayCompanionsDialog } from "@/features/stays";
 import { useCan } from "@/shared/auth";
+import { getCountryName } from "@/shared/constants/countries";
 import { getProvinceName } from "@/shared/constants/provinces";
 import {
   Button,
@@ -182,6 +184,7 @@ export function GuestProfileView({
       id: string;
       full_name: string;
       phone: string | null;
+      phone_intl?: string | null;
       email: string | null;
       dob: string | null;
       nationality: string;
@@ -191,6 +194,7 @@ export function GuestProfileView({
     id: string;
     full_name: string;
     phone: string | null;
+    phone_intl?: string | null;
   } | null>(null);
   const [mergeReason, setMergeReason] = useState(
     "Trùng số điện thoại hoặc hồ sơ tạo nhầm",
@@ -548,6 +552,39 @@ export function GuestProfileView({
                   </span>
                 )}
 
+                {guest.phone_intl && (
+                  <span className="flex items-center gap-1 font-medium text-indigo-700 dark:text-indigo-400 font-mono">
+                    <Globe className="w-3.5 h-3.5 text-indigo-500" />
+                    <span>{guest.phone_intl}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 font-sans font-semibold">
+                      WhatsApp
+                    </span>
+                    {guest.phone_intl.includes("****") ? (
+                      <span
+                        title="Số điện thoại quốc tế được che bảo mật"
+                        className="inline-flex text-muted-foreground cursor-help"
+                      >
+                        <Lock className="w-3 h-3 ml-0.5" />
+                      </span>
+                    ) : currentUserId &&
+                      guest.sales_owner?.id === currentUserId ? (
+                      <span
+                        title="Hiển thị đầy đủ vì bạn là Sales phụ trách lead này"
+                        className="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-200/50 ml-1"
+                      >
+                        Lead của bạn
+                      </span>
+                    ) : can.view_full ? (
+                      <span
+                        title="Dữ liệu đầy đủ (đã ghi audit log)"
+                        className="inline-flex text-emerald-600"
+                      >
+                        <Unlock className="w-3 h-3 ml-0.5" />
+                      </span>
+                    ) : null}
+                  </span>
+                )}
+
                 {profile.documents.length > 0 && (
                   <span className="flex items-center gap-1.5">
                     <span className="uppercase text-muted-foreground font-semibold">
@@ -609,6 +646,7 @@ export function GuestProfileView({
                     Quốc tịch:{" "}
                     <strong className="text-slate-700 dark:text-slate-300 uppercase">
                       {guest.nationality}
+                      {guest.nationality !== "VN" && ` (${getCountryName(guest.nationality)})`}
                     </strong>
                   </span>
                 )}
@@ -1853,7 +1891,7 @@ export function GuestProfileView({
                             {c.full_name}
                           </div>
                           <div className="text-[11px] text-muted-foreground mt-0.5">
-                            SĐT: {c.phone || "Chưa có"} • Email:{" "}
+                            SĐT: {c.phone || c.phone_intl || "Chưa có"} • Email:{" "}
                             {c.email || "Chưa có"}
                           </div>
                         </div>
@@ -2179,7 +2217,7 @@ export function GuestProfileView({
               <strong className="text-foreground">
                 {profile.guest.full_name}
               </strong>{" "}
-              (SĐT: {profile.guest.phone || "Chưa có"}) không?
+              (SĐT: {profile.guest.phone || profile.guest.phone_intl || "Chưa có"}) không?
             </DialogDescription>
           </DialogHeader>
 

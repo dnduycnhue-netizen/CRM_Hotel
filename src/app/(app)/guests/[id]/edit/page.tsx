@@ -43,6 +43,7 @@ export default async function EditGuestPage({ params }: PageProps) {
           dob: profile.guest.dob,
           nationality: profile.guest.nationality,
           phone: profile.guest.phone,
+          phone_intl: profile.guest.phone_intl || null,
           email: profile.guest.email,
           address_line: profile.guest.address_line,
           province_code: profile.guest.province_code,
