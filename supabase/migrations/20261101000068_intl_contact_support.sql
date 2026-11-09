@@ -1,5 +1,9 @@
 -- Migration 68: Mở rộng kênh liên hệ quốc tế (phone_intl E.164) cho khách nước ngoài
 -- ---------------------------------------------------------------------------------------------------------
+-- 0. Unique partial index chống race condition khi tạo trùng phone_intl
+create unique index if not exists guests_phone_intl_uq on public.guests(phone_intl)
+where merged_into is null and phone_intl is not null;
+
 -- 1. Cập nhật RPC lookup_for_checkin: Hỗ trợ tra cứu nhanh bằng SĐT quốc tế (phone_intl)
 create or replace function public.lookup_for_checkin(p_branch uuid, p_kind text, p_value text)
 returns jsonb language plpgsql security definer set search_path = '' as $$

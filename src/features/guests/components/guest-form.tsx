@@ -59,7 +59,9 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
       }
     } else {
       if (!formData.phone_intl?.trim() && !formData.document?.number?.trim()) {
-        setErrorMsg("Cần cung cấp ít nhất Số điện thoại quốc tế hoặc Số giấy tờ (Hộ chiếu)");
+        setErrorMsg(
+          "Cần cung cấp ít nhất Số điện thoại quốc tế hoặc Số giấy tờ (Hộ chiếu)",
+        );
         return;
       }
     }
@@ -99,14 +101,18 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
           ? {
               type: formData.document.type,
               number: formData.document.number.trim(),
-              country: !isVn ? (formData.nationality || "US").toUpperCase() : (formData.document.country || "VN"),
+              country: !isVn
+                ? (formData.nationality || "US").toUpperCase()
+                : formData.document.country || "VN",
             }
           : null,
       });
 
       if (res.ok) {
         if (res.data.existing) {
-          toast.info("Hồ sơ khách đã tồn tại trong hệ thống (trùng số điện thoại hoặc giấy tờ). Đang chuyển tới trang hồ sơ.");
+          toast.info(
+            "Hồ sơ khách đã tồn tại trong hệ thống (trùng số điện thoại hoặc giấy tờ). Đang chuyển tới trang hồ sơ.",
+          );
         } else {
           toast.success("Tạo mới hồ sơ khách thành công");
         }
@@ -301,7 +307,11 @@ export function GuestForm({ sourceChannels = [] }: GuestFormProps) {
 
           {!isVn && !formData.phone_intl?.trim() && !formData.email?.trim() && (
             <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 text-amber-700 dark:text-amber-400 text-xs">
-              💡 <strong>Lưu ý:</strong> Khách nước ngoài không có Zalo/SĐT Việt Nam. Khuyến nghị nhập <strong>Số điện thoại quốc tế (WhatsApp)</strong> hoặc <strong>Email</strong> để khách nhận xác nhận và hỗ trợ trong thời gian lưu trú.
+              💡 <strong>Lưu ý:</strong> Khách nước ngoài không có Zalo/SĐT Việt
+              Nam. Khuyến nghị nhập{" "}
+              <strong>Số điện thoại quốc tế (WhatsApp)</strong> hoặc{" "}
+              <strong>Email</strong> để khách nhận xác nhận và hỗ trợ trong thời
+              gian lưu trú.
             </div>
           )}
 

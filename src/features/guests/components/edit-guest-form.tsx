@@ -212,7 +212,10 @@ export function EditGuestForm({
                 {isVn ? (
                   <>
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="phone" className="text-xs font-semibold flex items-center gap-1.5">
+                      <Label
+                        htmlFor="phone"
+                        className="text-xs font-semibold flex items-center gap-1.5"
+                      >
                         <Phone className="w-3.5 h-3.5 text-emerald-500" />
                         Số điện thoại Việt Nam
                       </Label>
@@ -231,14 +234,18 @@ export function EditGuestForm({
                     />
                     {phone.includes("*") && (
                       <p className="text-[10px] text-muted-foreground">
-                        Giữ nguyên nếu không đổi. Để cập nhật số mới, nhập đầy đủ 10 chữ số.
+                        Giữ nguyên nếu không đổi. Để cập nhật số mới, nhập đầy
+                        đủ 10 chữ số.
                       </p>
                     )}
                   </>
                 ) : (
                   <>
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="phoneIntl" className="text-xs font-semibold flex items-center gap-1.5">
+                      <Label
+                        htmlFor="phoneIntl"
+                        className="text-xs font-semibold flex items-center gap-1.5"
+                      >
                         <Globe className="w-3.5 h-3.5 text-indigo-500" />
                         SĐT quốc tế (WhatsApp)
                       </Label>
@@ -257,7 +264,8 @@ export function EditGuestForm({
                     />
                     {phoneIntl.includes("*") && (
                       <p className="text-[10px] text-muted-foreground">
-                        Giữ nguyên nếu không đổi. Để cập nhật số mới, nhập kèm mã quốc gia (VD: +1...).
+                        Giữ nguyên nếu không đổi. Để cập nhật số mới, nhập kèm
+                        mã quốc gia (VD: +1...).
                       </p>
                     )}
                   </>
@@ -267,7 +275,10 @@ export function EditGuestForm({
 
             {!isVn && !phoneIntl.trim() && !email.trim() && (
               <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 text-amber-700 dark:text-amber-400 text-xs">
-                💡 <strong>Lưu ý:</strong> Khách nước ngoài không có Zalo/SĐT Việt Nam. Khuyến nghị nhập <strong>Số điện thoại quốc tế (WhatsApp)</strong> hoặc <strong>Email</strong> để thuận tiện gửi xác nhận và liên hệ.
+                💡 <strong>Lưu ý:</strong> Khách nước ngoài không có Zalo/SĐT
+                Việt Nam. Khuyến nghị nhập{" "}
+                <strong>Số điện thoại quốc tế (WhatsApp)</strong> hoặc{" "}
+                <strong>Email</strong> để thuận tiện gửi xác nhận và liên hệ.
               </div>
             )}
 

@@ -556,9 +556,21 @@ export function GuestProfileView({
                   <span className="flex items-center gap-1 font-medium text-indigo-700 dark:text-indigo-400 font-mono">
                     <Globe className="w-3.5 h-3.5 text-indigo-500" />
                     <span>{guest.phone_intl}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 font-sans font-semibold">
-                      WhatsApp
-                    </span>
+                    {!guest.phone_intl.includes("*") ? (
+                      <a
+                        href={`https://wa.me/${guest.phone_intl.replace(/[^0-9]/g, "")}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        title="Mở chat WhatsApp"
+                        className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 font-sans font-semibold hover:bg-emerald-100 transition-colors inline-flex items-center gap-1 cursor-pointer"
+                      >
+                        WhatsApp ↗
+                      </a>
+                    ) : (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 font-sans font-semibold">
+                        WhatsApp
+                      </span>
+                    )}
                     {guest.phone_intl.includes("****") ? (
                       <span
                         title="Số điện thoại quốc tế được che bảo mật"
@@ -646,7 +658,8 @@ export function GuestProfileView({
                     Quốc tịch:{" "}
                     <strong className="text-slate-700 dark:text-slate-300 uppercase">
                       {guest.nationality}
-                      {guest.nationality !== "VN" && ` (${getCountryName(guest.nationality)})`}
+                      {guest.nationality !== "VN" &&
+                        ` (${getCountryName(guest.nationality)})`}
                     </strong>
                   </span>
                 )}
@@ -2217,7 +2230,9 @@ export function GuestProfileView({
               <strong className="text-foreground">
                 {profile.guest.full_name}
               </strong>{" "}
-              (SĐT: {profile.guest.phone || profile.guest.phone_intl || "Chưa có"}) không?
+              (SĐT:{" "}
+              {profile.guest.phone || profile.guest.phone_intl || "Chưa có"})
+              không?
             </DialogDescription>
           </DialogHeader>
 

@@ -331,11 +331,23 @@ export function GuestListTable({
                             >
                               {displayPhone}
                             </span>
-                            {isIntl && (
-                              <span className="text-[9px] px-1 py-0.2 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 font-sans">
-                                WhatsApp
-                              </span>
-                            )}
+                            {isIntl &&
+                              (!isMasked ? (
+                                <a
+                                  href={`https://wa.me/${displayPhone.replace(/[^0-9]/g, "")}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  title="Mở chat WhatsApp"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="text-[9px] px-1 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 font-sans hover:bg-emerald-100 transition-colors cursor-pointer"
+                                >
+                                  WhatsApp ↗
+                                </a>
+                              ) : (
+                                <span className="text-[9px] px-1 py-0.2 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 font-sans">
+                                  WhatsApp
+                                </span>
+                              ))}
                             {isMasked ? (
                               <span
                                 title="Số điện thoại được che mặt nạ theo chính sách bảo mật"

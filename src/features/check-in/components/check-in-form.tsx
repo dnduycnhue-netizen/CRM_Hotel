@@ -28,7 +28,6 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { confirmRoomCleanedAction } from "@/features/stays";
 import { VIETNAM_PROVINCES } from "@/shared/constants/provinces";
-import { RegistrationCardModal } from "./registration-card-modal";
 import {
   Badge,
   Button,
@@ -49,6 +48,7 @@ import {
 } from "../actions";
 import { normalizeFullName, normalizeVnPhone } from "../domain/normalize";
 import { classifyQuery } from "../domain/query-classifier";
+import { RegistrationCardModal } from "./registration-card-modal";
 
 export interface FormCompanion {
   id: string;
@@ -785,7 +785,8 @@ export function CheckInForm({
                     />
                     {guestId && docNumber.includes("*") && (
                       <p className="text-[11px] text-muted-foreground">
-                        Hồ sơ đã lưu CCCD (bảo mật). Nhập số mới chỉ khi khách đổi giấy tờ.
+                        Hồ sơ đã lưu CCCD (bảo mật). Nhập số mới chỉ khi khách
+                        đổi giấy tờ.
                       </p>
                     )}
                   </div>

@@ -170,6 +170,53 @@ export async function checkInGuestAction(
       !data.documentNumber.includes("*") &&
       data.documentNumber.trim().length >= 6;
 
+    let primaryPhoneIntl: string | null = null;
+    if (data.phoneIntl) {
+      const res = normalizePhoneIntl(data.phoneIntl);
+      if (!res.success) {
+        return fail("VALIDATION_ERROR", undefined, res.error);
+      }
+      primaryPhoneIntl = res.phone;
+    }
+
+    const companionsPayload = [];
+    for (const c of data.companions || []) {
+      let compPhoneIntl: string | null = null;
+      if (c.phoneIntl) {
+        const res = normalizePhoneIntl(c.phoneIntl);
+        if (!res.success) {
+          return fail(
+            "VALIDATION_ERROR",
+            undefined,
+            `Khách đi cùng (${c.fullName}): ${res.error}`,
+          );
+        }
+        compPhoneIntl = res.phone;
+      }
+
+      const hasDoc = Boolean(
+        c.documentNumber && c.documentNumber.trim().length >= 6,
+      );
+      companionsPayload.push({
+        guest_id: c.guestId || null,
+        full_name: c.fullName,
+        gender: c.gender,
+        dob: c.dob || null,
+        nationality: (c.nationality || "VN").slice(0, 2).toUpperCase(),
+        phone: normalizePhoneVn(c.phone) || c.phone || null,
+        phone_intl: compPhoneIntl,
+        document: hasDoc
+          ? {
+              type: c.documentType,
+              number: c.documentNumber?.trim().toUpperCase(),
+              country: (c.nationality || "VN").slice(0, 2).toUpperCase(),
+            }
+          : null,
+        counts_for_loyalty: c.countsForLoyalty,
+        note: c.notes || null,
+      });
+    }
+
     const payload = {
       branch_id: data.branchId,
       room_id: data.roomId,
@@ -196,11 +243,7 @@ export async function checkInGuestAction(
         dob: data.dob || null,
         nationality: (data.nationality || "VN").slice(0, 2).toUpperCase(),
         phone: normalizePhoneVn(data.phone) || data.phone || null,
-        phone_intl: (() => {
-          if (!data.phoneIntl) return null;
-          const res = normalizePhoneIntl(data.phoneIntl);
-          return res.success ? res.phone : data.phoneIntl;
-        })(),
+        phone_intl: primaryPhoneIntl,
         email: data.email || null,
         address_line: data.addressLine || null,
         province_code: data.provinceCode || null,
@@ -212,33 +255,7 @@ export async function checkInGuestAction(
             }
           : null,
       },
-      companions: (data.companions || []).map((c) => {
-        const hasDoc = Boolean(
-          c.documentNumber && c.documentNumber.trim().length >= 6,
-        );
-        return {
-          guest_id: c.guestId || null,
-          full_name: c.fullName,
-          gender: c.gender,
-          dob: c.dob || null,
-          nationality: (c.nationality || "VN").slice(0, 2).toUpperCase(),
-          phone: normalizePhoneVn(c.phone) || c.phone || null,
-          phone_intl: (() => {
-            if (!c.phoneIntl) return null;
-            const res = normalizePhoneIntl(c.phoneIntl);
-            return res.success ? res.phone : c.phoneIntl;
-          })(),
-          document: hasDoc
-            ? {
-                type: c.documentType,
-                number: c.documentNumber?.trim().toUpperCase(),
-                country: (c.nationality || "VN").slice(0, 2).toUpperCase(),
-              }
-            : null,
-          counts_for_loyalty: c.countsForLoyalty,
-          note: c.notes || null,
-        };
-      }),
+      companions: companionsPayload,
       consents: data.consents,
     };
 
@@ -348,11 +365,15 @@ export async function getRegistrationCardDataAction(
       .maybeSingle();
 
     if (error || !s) {
-      console.error("[getRegistrationCardDataAction] Error querying stay:", error);
+      console.error(
+        "[getRegistrationCardDataAction] Error querying stay:",
+        error,
+      );
       return fail(
         "NOT_FOUND",
         undefined,
-        "Không tìm thấy thông tin lượt ở: " + (error?.message || "Dữ liệu không tồn tại"),
+        "Không tìm thấy thông tin lượt ở: " +
+          (error?.message || "Dữ liệu không tồn tại"),
       );
     }
 
@@ -390,7 +411,9 @@ export async function getRegistrationCardDataAction(
     const docsMap = new Map<string, { doc_type: string; doc_number: string }>();
     if (guestIds.length > 0) {
       try {
-        const { data: docs } = await (supabaseAdmin().from("guest_documents") as any)
+        const { data: docs } = await (
+          supabaseAdmin().from("guest_documents") as any
+        )
           .select("guest_id, doc_type, doc_number")
           .in("guest_id", guestIds);
 
@@ -405,11 +428,16 @@ export async function getRegistrationCardDataAction(
           }
         }
       } catch (docErr) {
-        console.warn("[getRegistrationCardDataAction] Could not fetch documents:", docErr);
+        console.warn(
+          "[getRegistrationCardDataAction] Could not fetch documents:",
+          docErr,
+        );
       }
     }
 
-    const primaryDoc = primaryGuest?.id ? docsMap.get(primaryGuest.id) : undefined;
+    const primaryDoc = primaryGuest?.id
+      ? docsMap.get(primaryGuest.id)
+      : undefined;
 
     const companionList: RegistrationCardData["companions"] = [];
     for (const sg of stayGuests) {

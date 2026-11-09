@@ -1,13 +1,8 @@
-// Danh sách quốc gia chuẩn ISO 3166-1 alpha-2 — dùng cho tính năng
-// địa chỉ khách nước ngoài của CRM chuỗi khách sạn.
-// Cách dùng: Antigravity copy file này thành
-// `src/shared/constants/countries.ts` (đổi tên export nếu cần cho khớp
-// style của repo) rồi dùng làm nguồn duy nhất cho combobox quốc gia.
-// Quy tắc: `code` là mã 2 chữ duy nhất để lưu xuống DB (cột
-// `guests.nationality`); `name` là tên tiếng Việt hiển thị; `nameEn`
-// chỉ phục vụ khớp khi nhân viên gõ tên tiếng Anh hoặc mã.
-// Nguồn: chuẩn ISO 3166-1. Các nước/vùng lãnh thổ ít gặp giữ tên gốc
-// hoặc phiên âm quen thuộc thay vì dịch nghĩa.
+// Danh sách 249 quốc gia theo chuẩn ISO 3166-1 alpha-2 — dùng cho tính năng
+// thông tin khách nước ngoài của CRM chuỗi khách sạn.
+// Quy tắc: `code` là mã 2 chữ hoa duy nhất để lưu xuống DB (cột `guests.nationality`);
+// `name` là tên tiếng Việt hiển thị; `nameEn` là tên tiếng Anh tra cứu.
+// Nguồn: chuẩn ISO 3166-1. Các nước/vùng lãnh thổ ít gặp giữ tên gốc hoặc phiên âm quen thuộc.
 
 export interface Country {
   code: string;
@@ -17,7 +12,11 @@ export interface Country {
 
 export const COUNTRIES: ReadonlyArray<Country> = [
   { code: "AD", name: "Andorra", nameEn: "Andorra" },
-  { code: "AE", name: "Các Tiểu vương quốc Ả Rập Thống nhất", nameEn: "United Arab Emirates" },
+  {
+    code: "AE",
+    name: "Các Tiểu vương quốc Ả Rập Thống nhất",
+    nameEn: "United Arab Emirates",
+  },
   { code: "AF", name: "Afghanistan", nameEn: "Afghanistan" },
   { code: "AG", name: "Antigua và Barbuda", nameEn: "Antigua and Barbuda" },
   { code: "AI", name: "Anguilla", nameEn: "Anguilla" },
@@ -32,7 +31,11 @@ export const COUNTRIES: ReadonlyArray<Country> = [
   { code: "AW", name: "Aruba", nameEn: "Aruba" },
   { code: "AX", name: "Quần đảo Åland", nameEn: "Åland Islands" },
   { code: "AZ", name: "Azerbaijan", nameEn: "Azerbaijan" },
-  { code: "BA", name: "Bosnia và Herzegovina", nameEn: "Bosnia and Herzegovina" },
+  {
+    code: "BA",
+    name: "Bosnia và Herzegovina",
+    nameEn: "Bosnia and Herzegovina",
+  },
   { code: "BB", name: "Barbados", nameEn: "Barbados" },
   { code: "BD", name: "Bangladesh", nameEn: "Bangladesh" },
   { code: "BE", name: "Bỉ", nameEn: "Belgium" },
@@ -55,8 +58,16 @@ export const COUNTRIES: ReadonlyArray<Country> = [
   { code: "BZ", name: "Belize", nameEn: "Belize" },
   { code: "CA", name: "Canada", nameEn: "Canada" },
   { code: "CC", name: "Quần đảo Cocos", nameEn: "Cocos (Keeling) Islands" },
-  { code: "CD", name: "Congo (CHDC)", nameEn: "Congo, Democratic Republic of the" },
-  { code: "CF", name: "Cộng hòa Trung Phi", nameEn: "Central African Republic" },
+  {
+    code: "CD",
+    name: "Congo (CHDC)",
+    nameEn: "Congo, Democratic Republic of the",
+  },
+  {
+    code: "CF",
+    name: "Cộng hòa Trung Phi",
+    nameEn: "Central African Republic",
+  },
   { code: "CG", name: "Congo", nameEn: "Congo" },
   { code: "CH", name: "Thụy Sĩ", nameEn: "Switzerland" },
   { code: "CI", name: "Bờ Biển Ngà", nameEn: "Côte d'Ivoire" },
@@ -105,13 +116,21 @@ export const COUNTRIES: ReadonlyArray<Country> = [
   { code: "GP", name: "Guadeloupe", nameEn: "Guadeloupe" },
   { code: "GQ", name: "Guinea Xích Đạo", nameEn: "Equatorial Guinea" },
   { code: "GR", name: "Hy Lạp", nameEn: "Greece" },
-  { code: "GS", name: "Nam Georgia", nameEn: "South Georgia and the South Sandwich Islands" },
+  {
+    code: "GS",
+    name: "Nam Georgia",
+    nameEn: "South Georgia and the South Sandwich Islands",
+  },
   { code: "GT", name: "Guatemala", nameEn: "Guatemala" },
   { code: "GU", name: "Guam", nameEn: "Guam" },
   { code: "GW", name: "Guinea-Bissau", nameEn: "Guinea-Bissau" },
   { code: "GY", name: "Guyana", nameEn: "Guyana" },
   { code: "HK", name: "Hồng Kông", nameEn: "Hong Kong" },
-  { code: "HM", name: "Đảo Heard và McDonald", nameEn: "Heard Island and McDonald Islands" },
+  {
+    code: "HM",
+    name: "Đảo Heard và McDonald",
+    nameEn: "Heard Island and McDonald Islands",
+  },
   { code: "HN", name: "Honduras", nameEn: "Honduras" },
   { code: "HR", name: "Croatia", nameEn: "Croatia" },
   { code: "HT", name: "Haiti", nameEn: "Haiti" },
@@ -121,7 +140,11 @@ export const COUNTRIES: ReadonlyArray<Country> = [
   { code: "IL", name: "Israel", nameEn: "Israel" },
   { code: "IM", name: "Đảo Man", nameEn: "Isle of Man" },
   { code: "IN", name: "Ấn Độ", nameEn: "India" },
-  { code: "IO", name: "Lãnh thổ Ấn Độ Dương thuộc Anh", nameEn: "British Indian Ocean Territory" },
+  {
+    code: "IO",
+    name: "Lãnh thổ Ấn Độ Dương thuộc Anh",
+    nameEn: "British Indian Ocean Territory",
+  },
   { code: "IQ", name: "Iraq", nameEn: "Iraq" },
   { code: "IR", name: "Iran", nameEn: "Iran" },
   { code: "IS", name: "Iceland", nameEn: "Iceland" },
@@ -136,7 +159,11 @@ export const COUNTRIES: ReadonlyArray<Country> = [
   { code: "KI", name: "Kiribati", nameEn: "Kiribati" },
   { code: "KM", name: "Comoros", nameEn: "Comoros" },
   { code: "KN", name: "Saint Kitts và Nevis", nameEn: "Saint Kitts and Nevis" },
-  { code: "KP", name: "Triều Tiên", nameEn: "Korea, Democratic People's Republic of" },
+  {
+    code: "KP",
+    name: "Triều Tiên",
+    nameEn: "Korea, Democratic People's Republic of",
+  },
   { code: "KR", name: "Hàn Quốc", nameEn: "Korea, Republic of" },
   { code: "KW", name: "Kuwait", nameEn: "Kuwait" },
   { code: "KY", name: "Quần đảo Cayman", nameEn: "Cayman Islands" },
@@ -156,7 +183,11 @@ export const COUNTRIES: ReadonlyArray<Country> = [
   { code: "MC", name: "Monaco", nameEn: "Monaco" },
   { code: "MD", name: "Moldova", nameEn: "Moldova" },
   { code: "ME", name: "Montenegro", nameEn: "Montenegro" },
-  { code: "MF", name: "Saint-Martin (thuộc Pháp)", nameEn: "Saint Martin (French part)" },
+  {
+    code: "MF",
+    name: "Saint-Martin (thuộc Pháp)",
+    nameEn: "Saint Martin (French part)",
+  },
   { code: "MG", name: "Madagascar", nameEn: "Madagascar" },
   { code: "MH", name: "Quần đảo Marshall", nameEn: "Marshall Islands" },
   { code: "MK", name: "Bắc Macedonia", nameEn: "North Macedonia" },
@@ -164,7 +195,11 @@ export const COUNTRIES: ReadonlyArray<Country> = [
   { code: "MM", name: "Myanmar", nameEn: "Myanmar" },
   { code: "MN", name: "Mông Cổ", nameEn: "Mongolia" },
   { code: "MO", name: "Ma Cao", nameEn: "Macao" },
-  { code: "MP", name: "Quần đảo Bắc Mariana", nameEn: "Northern Mariana Islands" },
+  {
+    code: "MP",
+    name: "Quần đảo Bắc Mariana",
+    nameEn: "Northern Mariana Islands",
+  },
   { code: "MQ", name: "Martinique", nameEn: "Martinique" },
   { code: "MR", name: "Mauritania", nameEn: "Mauritania" },
   { code: "MS", name: "Montserrat", nameEn: "Montserrat" },
@@ -195,7 +230,11 @@ export const COUNTRIES: ReadonlyArray<Country> = [
   { code: "PH", name: "Philippines", nameEn: "Philippines" },
   { code: "PK", name: "Pakistan", nameEn: "Pakistan" },
   { code: "PL", name: "Ba Lan", nameEn: "Poland" },
-  { code: "PM", name: "Saint-Pierre và Miquelon", nameEn: "Saint Pierre and Miquelon" },
+  {
+    code: "PM",
+    name: "Saint-Pierre và Miquelon",
+    nameEn: "Saint Pierre and Miquelon",
+  },
   { code: "PN", name: "Quần đảo Pitcairn", nameEn: "Pitcairn" },
   { code: "PR", name: "Puerto Rico", nameEn: "Puerto Rico" },
   { code: "PS", name: "Palestine", nameEn: "Palestine, State of" },
@@ -214,7 +253,11 @@ export const COUNTRIES: ReadonlyArray<Country> = [
   { code: "SD", name: "Sudan", nameEn: "Sudan" },
   { code: "SE", name: "Thụy Điển", nameEn: "Sweden" },
   { code: "SG", name: "Singapore", nameEn: "Singapore" },
-  { code: "SH", name: "Saint Helena", nameEn: "Saint Helena, Ascension and Tristan da Cunha" },
+  {
+    code: "SH",
+    name: "Saint Helena",
+    nameEn: "Saint Helena, Ascension and Tristan da Cunha",
+  },
   { code: "SI", name: "Slovenia", nameEn: "Slovenia" },
   { code: "SJ", name: "Svalbard", nameEn: "Svalbard and Jan Mayen" },
   { code: "SK", name: "Slovakia", nameEn: "Slovakia" },
@@ -229,9 +272,17 @@ export const COUNTRIES: ReadonlyArray<Country> = [
   { code: "SX", name: "Sint Maarten", nameEn: "Sint Maarten (Dutch part)" },
   { code: "SY", name: "Syria", nameEn: "Syrian Arab Republic" },
   { code: "SZ", name: "Eswatini", nameEn: "Eswatini" },
-  { code: "TC", name: "Quần đảo Turks và Caicos", nameEn: "Turks and Caicos Islands" },
+  {
+    code: "TC",
+    name: "Quần đảo Turks và Caicos",
+    nameEn: "Turks and Caicos Islands",
+  },
   { code: "TD", name: "Tchad", nameEn: "Chad" },
-  { code: "TF", name: "Vùng đất phía Nam thuộc Pháp", nameEn: "French Southern and Antarctic Lands" },
+  {
+    code: "TF",
+    name: "Vùng đất phía Nam thuộc Pháp",
+    nameEn: "French Southern and Antarctic Lands",
+  },
   { code: "TG", name: "Togo", nameEn: "Togo" },
   { code: "TH", name: "Thái Lan", nameEn: "Thailand" },
   { code: "TJ", name: "Tajikistan", nameEn: "Tajikistan" },
@@ -247,15 +298,31 @@ export const COUNTRIES: ReadonlyArray<Country> = [
   { code: "TZ", name: "Tanzania", nameEn: "Tanzania" },
   { code: "UA", name: "Ukraina", nameEn: "Ukraine" },
   { code: "UG", name: "Uganda", nameEn: "Uganda" },
-  { code: "UM", name: "Quần đảo xa của Mỹ", nameEn: "United States Minor Outlying Islands" },
+  {
+    code: "UM",
+    name: "Quần đảo xa của Mỹ",
+    nameEn: "United States Minor Outlying Islands",
+  },
   { code: "US", name: "Hoa Kỳ", nameEn: "United States" },
   { code: "UY", name: "Uruguay", nameEn: "Uruguay" },
   { code: "UZ", name: "Uzbekistan", nameEn: "Uzbekistan" },
   { code: "VA", name: "Vatican", nameEn: "Holy See" },
-  { code: "VC", name: "Saint Vincent và Grenadines", nameEn: "Saint Vincent and the Grenadines" },
+  {
+    code: "VC",
+    name: "Saint Vincent và Grenadines",
+    nameEn: "Saint Vincent and the Grenadines",
+  },
   { code: "VE", name: "Venezuela", nameEn: "Venezuela" },
-  { code: "VG", name: "Quần đảo Virgin thuộc Anh", nameEn: "Virgin Islands (British)" },
-  { code: "VI", name: "Quần đảo Virgin thuộc Mỹ", nameEn: "Virgin Islands (U.S.)" },
+  {
+    code: "VG",
+    name: "Quần đảo Virgin thuộc Anh",
+    nameEn: "Virgin Islands (British)",
+  },
+  {
+    code: "VI",
+    name: "Quần đảo Virgin thuộc Mỹ",
+    nameEn: "Virgin Islands (U.S.)",
+  },
   { code: "VN", name: "Việt Nam", nameEn: "Viet Nam" },
   { code: "VU", name: "Vanuatu", nameEn: "Vanuatu" },
   { code: "WF", name: "Wallis và Futuna", nameEn: "Wallis and Futuna" },
