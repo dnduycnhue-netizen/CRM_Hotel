@@ -7,8 +7,8 @@ import {
   type ImportField,
   matchImportHeader,
 } from "../domain/import-columns";
-import { MAX_IMPORT_ROWS } from "../schemas";
 import type { ImportRow } from "../schemas";
+import { MAX_IMPORT_ROWS } from "../schemas";
 
 export const MAX_IMPORT_FILE_BYTES = 2 * 1024 * 1024;
 

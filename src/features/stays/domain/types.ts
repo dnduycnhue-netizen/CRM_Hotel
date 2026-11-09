@@ -21,4 +21,35 @@ export interface InHouseStay {
   createdAt?: string;
   checkedOutAt?: string | null;
   cancelReason?: string | null;
+  roomMovesCount?: number;
+  lastMovedFromRoomNumber?: string | null;
+}
+
+export interface StayRoomMove {
+  id: string;
+  stayId: string;
+  branchId: string;
+  fromRoomId: string;
+  fromRoomNumber: string;
+  fromRoomType?: string;
+  toRoomId: string;
+  toRoomNumber: string;
+  toRoomType?: string;
+  movedAt: string;
+  movedByName?: string;
+  reasonCategory:
+    | "maintenance"
+    | "guest_request"
+    | "upgrade"
+    | "operational"
+    | "other";
+  reasonNote: string;
+}
+
+export interface ChangeRoomResult {
+  success: boolean;
+  moveId: string;
+  fromRoomNumber: string;
+  toRoomNumber: string;
+  workOrderNumber?: number | null;
 }

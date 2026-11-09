@@ -47,7 +47,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
       },
       {
         q: "Làm sao đổi phòng cho khách đang ở?",
-        a: "Hệ thống chưa có chức năng đổi phòng riêng. Trả phòng cũ, check-in phòng mới cho cùng khách và ghi chú 'Đổi phòng' ở hồ sơ khách.",
+        a: "Vào mục 'Khách đang ở' (/stays), tìm dòng khách cần đổi và bấm nút 'Đổi phòng'. Chọn phòng trống muốn chuyển đến, chọn lý do (Sự cố CSVC, Yêu cầu của khách, Nâng hạng, Vận hành...) và xác nhận. Nếu là sự cố, bạn có thể tích chọn tự động tạo Phiếu sửa chữa cho phòng cũ.",
       },
       {
         q: "Tôi bấm hủy nhưng nút bị khóa?",

@@ -697,7 +697,8 @@ export const WORKFLOW_DIAGRAMS: WorkflowDiagram[] = [
         title: "Quản lý danh mục phòng",
         role: "Quản lý cơ sở & Chủ chuỗi",
         screen: "/settings/rooms",
-        action: "Thêm mới, sửa thông tin phòng, ngừng/mở lại kinh doanh và xóa phòng.",
+        action:
+          "Thêm mới, sửa thông tin phòng, ngừng/mở lại kinh doanh và xóa phòng.",
         details: [
           "Quản lý cơ sở: thêm phòng mới, sửa số phòng/tầng/loại phòng/giá, tạm ngừng kinh doanh và mở lại bán cho cơ sở mình.",
           "Chủ chuỗi: quản lý danh mục toàn bộ 8 cơ sở, có thêm quyền 'Xóa vĩnh viễn' các phòng trống chưa từng có lịch sử lưu trú.",

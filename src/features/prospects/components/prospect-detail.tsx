@@ -531,9 +531,9 @@ export function ProspectDetailDialog({
                   Xác nhận xóa vĩnh viễn khách tiềm năng
                 </div>
                 <p className="text-sm text-foreground">
-                  Hành động này <strong>không thể hoàn tác</strong>. Toàn bộ thông
-                  tin của <strong>{p.company_name}</strong> và toàn bộ nhật ký
-                  tương tác liên quan sẽ bị xóa vĩnh viễn khỏi hệ thống.
+                  Hành động này <strong>không thể hoàn tác</strong>. Toàn bộ
+                  thông tin của <strong>{p.company_name}</strong> và toàn bộ
+                  nhật ký tương tác liên quan sẽ bị xóa vĩnh viễn khỏi hệ thống.
                 </p>
                 <div className="flex gap-2 justify-end">
                   <Button
@@ -564,7 +564,11 @@ export function ProspectDetailDialog({
               <div className="flex flex-wrap gap-2">
                 {p.can_edit && (
                   <>
-                    <Button size="sm" variant="outline" onClick={() => onEdit(p)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onEdit(p)}
+                    >
                       <Pencil className="h-3.5 w-3.5 mr-1.5" />
                       Sửa thông tin
                     </Button>

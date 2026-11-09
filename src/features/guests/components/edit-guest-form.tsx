@@ -88,7 +88,9 @@ export function EditGuestForm({
         router.push(`/guests/${guest.id}`);
         router.refresh();
       } else {
-        toast.error(`Cập nhật thất bại: ${res.error.message || res.error.code}`);
+        toast.error(
+          `Cập nhật thất bại: ${res.error.message || res.error.code}`,
+        );
       }
     });
   };
@@ -194,7 +196,8 @@ export function EditGuestForm({
                 />
                 {phone.includes("*") && (
                   <p className="text-[10px] text-muted-foreground">
-                    Giữ nguyên nếu không đổi. Để cập nhật số mới, nhập đầy đủ 10 chữ số.
+                    Giữ nguyên nếu không đổi. Để cập nhật số mới, nhập đầy đủ 10
+                    chữ số.
                   </p>
                 )}
               </div>

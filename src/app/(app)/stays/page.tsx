@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getActiveBranches } from "@/features/admin";
+import { getActiveBranches, getRooms } from "@/features/admin";
 import { getInHouseStays, InHouseTable } from "@/features/stays";
 import { getSession } from "@/shared/auth/server";
 
@@ -34,7 +34,13 @@ export default async function StaysPage() {
     branches.find((b) => b.id === currentBranchId) ||
     branches[0] ||
     allBranches[0];
-  const stays = await getInHouseStays(currentBranchId, "all");
+
+  const [stays, rooms] = await Promise.all([
+    getInHouseStays(currentBranchId, "all"),
+    getRooms(currentBranchId),
+  ]);
+
+  const canChangeRoom = session.can("stay.update", currentBranchId);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -43,15 +49,17 @@ export default async function StaysPage() {
           Khách Đang Ở ({currentBranch.name})
         </h1>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Quản lý các phòng có khách, gia hạn thời gian và xử lý thủ tục trả
-          phòng
+          Quản lý các phòng có khách, đổi phòng, gia hạn thời gian và xử lý thủ
+          tục trả phòng
         </p>
       </div>
 
       <InHouseTable
         stays={stays}
+        rooms={rooms}
         currentBranchId={currentBranchId}
         branchName={currentBranch.name}
+        canChangeRoom={canChangeRoom}
       />
     </div>
   );

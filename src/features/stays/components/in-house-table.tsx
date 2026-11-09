@@ -2,10 +2,12 @@
 
 import {
   AlertCircle,
+  ArrowLeftRight,
   Ban,
   Building2,
   Clock,
   DoorClosed,
+  History,
   Loader2,
   LogOut,
   Phone,
@@ -16,6 +18,7 @@ import {
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
+import type { RoomItem } from "@/features/admin/domain/types";
 import {
   Badge,
   Button,
@@ -41,18 +44,24 @@ import {
 import { formatDateTimeVN } from "@/shared/utils/date";
 import { cancelStayAction, checkoutStayAction } from "../actions";
 import type { InHouseStay } from "../domain/types";
+import { ChangeRoomDialog } from "./change-room-dialog";
+import { RoomMoveHistoryDialog } from "./room-move-history-dialog";
 import { StayCompanionsDialog } from "./stay-companions-dialog";
 
 interface InHouseTableProps {
   stays: InHouseStay[];
+  rooms?: RoomItem[];
   currentBranchId: string;
   branchName: string;
+  canChangeRoom?: boolean;
 }
 
 export function InHouseTable({
   stays,
+  rooms = [],
   currentBranchId,
   branchName,
+  canChangeRoom = true,
 }: InHouseTableProps) {
   const [isPending, startTransition] = useTransition();
   const [activeStayList, setActiveStayList] = useState(stays);
@@ -84,6 +93,23 @@ export function InHouseTable({
   const [companionStayTarget, setCompanionStayTarget] = useState<{
     stayId: string;
     roomNumber: string;
+  } | null>(null);
+
+  // Dialog state cho Đổi phòng
+  const [changeRoomTarget, setChangeRoomTarget] = useState<{
+    stayId: string;
+    branchId: string;
+    guestName: string;
+    currentRoomId: string;
+    currentRoomNumber: string;
+    currentRoomType: string;
+  } | null>(null);
+
+  // Dialog state cho Lịch sử đổi phòng
+  const [moveHistoryTarget, setMoveHistoryTarget] = useState<{
+    stayId: string;
+    roomNumber: string;
+    guestName: string;
   } | null>(null);
 
   const filteredStays = useMemo(() => {
@@ -445,6 +471,29 @@ export function InHouseTable({
                       <span className="text-[10px] text-muted-foreground block pl-7">
                         {s.roomType || "Tiêu chuẩn"}
                       </span>
+                      {Boolean(s.roomMovesCount && s.roomMovesCount > 0) && (
+                        <div className="pl-7 mt-1">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setMoveHistoryTarget({
+                                stayId: s.id,
+                                roomNumber: s.roomNumber,
+                                guestName: s.primaryGuestName,
+                              })
+                            }
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20 border border-blue-500/20 transition cursor-pointer"
+                            title="Bấm để xem lịch sử chuyển phòng"
+                          >
+                            <ArrowLeftRight className="h-2.5 w-2.5" />
+                            <span>
+                              {s.lastMovedFromRoomNumber
+                                ? `Đổi từ P.${s.lastMovedFromRoomNumber}`
+                                : `${s.roomMovesCount} lần đổi phòng`}
+                            </span>
+                          </button>
+                        </div>
+                      )}
                     </TableCell>
 
                     <TableCell>
@@ -590,6 +639,30 @@ export function InHouseTable({
                         </span>
                       ) : (
                         <div className="flex items-center justify-end gap-1.5">
+                          {s.status === "in_house" && canChangeRoom && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                setChangeRoomTarget({
+                                  stayId: s.id,
+                                  branchId: s.branchId,
+                                  guestName: s.primaryGuestName,
+                                  currentRoomId: s.roomId,
+                                  currentRoomNumber: s.roomNumber,
+                                  currentRoomType: s.roomType,
+                                })
+                              }
+                              disabled={isPending}
+                              className="h-8 text-xs font-semibold px-2.5 text-blue-700 dark:text-blue-400 border-blue-500/40 hover:bg-blue-500/10 hover:border-blue-500 transition-all rounded-lg"
+                              title="Đổi phòng cho khách"
+                            >
+                              <ArrowLeftRight className="h-3.5 w-3.5 sm:mr-1" />
+                              <span className="hidden sm:inline">
+                                Đổi phòng
+                              </span>
+                            </Button>
+                          )}
                           <Button
                             variant="outline"
                             size="sm"
@@ -791,6 +864,21 @@ export function InHouseTable({
             ),
           );
         }}
+      />
+
+      {/* Dialog Đổi phòng cho khách */}
+      <ChangeRoomDialog
+        open={!!changeRoomTarget}
+        onOpenChange={(open) => !open && setChangeRoomTarget(null)}
+        stay={changeRoomTarget}
+        rooms={rooms}
+      />
+
+      {/* Dialog Xem Lịch sử đổi phòng */}
+      <RoomMoveHistoryDialog
+        open={!!moveHistoryTarget}
+        onOpenChange={(open) => !open && setMoveHistoryTarget(null)}
+        stay={moveHistoryTarget}
       />
     </div>
   );

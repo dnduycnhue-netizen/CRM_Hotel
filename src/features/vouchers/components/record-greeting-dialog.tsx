@@ -21,8 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { recordBirthdayGreetingAction } from "../actions";
 import { formatDateVN } from "@/shared/utils/date";
+import { recordBirthdayGreetingAction } from "../actions";
 import { greetingChannelLabels, greetingChannels } from "../schemas";
 import type { UpcomingBirthdayGuest } from "../types";
 

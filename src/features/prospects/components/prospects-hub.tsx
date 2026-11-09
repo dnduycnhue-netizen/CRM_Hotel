@@ -276,7 +276,9 @@ export function ProspectsHub({
     if (exporting) return;
     setExporting(true);
     const toastId = "export-prospects";
-    toast.loading("Đang chuẩn bị và kết xuất dữ liệu Excel...", { id: toastId });
+    toast.loading("Đang chuẩn bị và kết xuất dữ liệu Excel...", {
+      id: toastId,
+    });
     try {
       const res = await exportProspectsAction(filtersRef.current);
       if (!res.ok) {

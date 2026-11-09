@@ -35,19 +35,27 @@ export async function getRooms(branchId?: string | null): Promise<RoomItem[]> {
       .eq("status", "checked_out")
       .gte("checked_out_at", sixHoursAgo)
       .is("cleaned_at", null);
+    let movesQuery = supabase
+      .from("stay_room_moves")
+      .select("from_room_id")
+      .gte("moved_at", sixHoursAgo)
+      .is("cleaned_at", null);
 
     if (branchId) {
       staysQuery = staysQuery.eq("branch_id", branchId);
       blocksQuery = blocksQuery.eq("branch_id", branchId);
       checkoutsQuery = checkoutsQuery.eq("branch_id", branchId);
+      movesQuery = movesQuery.eq("branch_id", branchId);
     }
 
-    const [roomsRes, staysRes, blocksRes, checkoutsRes] = await Promise.all([
-      query,
-      staysQuery,
-      blocksQuery,
-      checkoutsQuery,
-    ]);
+    const [roomsRes, staysRes, blocksRes, checkoutsRes, movesRes] =
+      await Promise.all([
+        query,
+        staysQuery,
+        blocksQuery,
+        checkoutsQuery,
+        Promise.resolve(movesQuery).catch(() => ({ data: [] })),
+      ]);
 
     const { data, error } = roomsRes;
     const occupiedRoomIds = new Set(
@@ -56,12 +64,19 @@ export async function getRooms(branchId?: string | null): Promise<RoomItem[]> {
     const blockedRoomIds = new Set(
       blocksRes.data?.map((b: any) => b.room_id) || [],
     );
+    const checkoutCleaningIds =
+      checkoutsRes.data?.map((s: any) => s.room_id) || [];
+    const moveCleaningIds =
+      (movesRes as any).data?.map((m: any) => m.from_room_id) || [];
+    const allCleaningCandidateIds = [
+      ...checkoutCleaningIds,
+      ...moveCleaningIds,
+    ];
+
     const cleaningRoomIds = new Set(
-      checkoutsRes.data
-        ?.map((s: any) => s.room_id)
-        ?.filter(
-          (id: string) => !occupiedRoomIds.has(id) && !blockedRoomIds.has(id),
-        ) || [],
+      allCleaningCandidateIds.filter(
+        (id: string) => !occupiedRoomIds.has(id) && !blockedRoomIds.has(id),
+      ),
     );
 
     if (!error && Array.isArray(data) && data.length > 0) {

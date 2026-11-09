@@ -124,7 +124,9 @@ export function MaintenanceHub({
         setPlanName("");
         router.refresh();
       } else {
-        toast.error(`Không thể tạo kế hoạch: ${res.error.message || res.error.code}`);
+        toast.error(
+          `Không thể tạo kế hoạch: ${res.error.message || res.error.code}`,
+        );
       }
     });
   };
@@ -167,7 +169,9 @@ export function MaintenanceHub({
         setEditingPlan(null);
         router.refresh();
       } else {
-        toast.error(`Lỗi: ${res.error.message || res.error.code || "Không thể cập nhật kế hoạch"}`);
+        toast.error(
+          `Lỗi: ${res.error.message || res.error.code || "Không thể cập nhật kế hoạch"}`,
+        );
       }
     });
   };
@@ -188,7 +192,9 @@ export function MaintenanceHub({
         );
         router.refresh();
       } else {
-        toast.error(`Lỗi: ${res.error.message || res.error.code || "Không thể thay đổi trạng thái"}`);
+        toast.error(
+          `Lỗi: ${res.error.message || res.error.code || "Không thể thay đổi trạng thái"}`,
+        );
       }
     });
   };
@@ -212,7 +218,9 @@ export function MaintenanceHub({
         );
         router.refresh();
       } else {
-        toast.error(`Lỗi: ${res.error.message || res.error.code || "Không thể xóa kế hoạch"}`);
+        toast.error(
+          `Lỗi: ${res.error.message || res.error.code || "Không thể xóa kế hoạch"}`,
+        );
       }
     });
   };
@@ -236,7 +244,9 @@ export function MaintenanceHub({
         );
         router.refresh();
       } else {
-        toast.error(`Lỗi: ${res.error.message || res.error.code || "Không thể tạo phiếu bảo trì"}`);
+        toast.error(
+          `Lỗi: ${res.error.message || res.error.code || "Không thể tạo phiếu bảo trì"}`,
+        );
       }
     });
   };

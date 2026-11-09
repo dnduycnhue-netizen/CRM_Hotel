@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   buildImportRow,
-  parsePhoneCell,
-  restoreLeadingZero,
   IMPORT_TEMPLATE_HEADERS,
   mapKindText,
   matchImportHeader,
+  parsePhoneCell,
+  restoreLeadingZero,
 } from "./import-columns";
 
 describe("matchImportHeader", () => {

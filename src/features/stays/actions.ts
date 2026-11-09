@@ -4,7 +4,12 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requirePermission } from "@/shared/auth/server";
 import { type ActionResult, fail, ok } from "@/shared/errors";
-import type { InHouseStay } from "./domain/types";
+import type {
+  ChangeRoomResult,
+  InHouseStay,
+  StayRoomMove,
+} from "./domain/types";
+import { type ChangeRoomInput, changeRoomSchema } from "./schemas";
 
 export async function checkoutStayAction(
   stayId: string,
@@ -396,6 +401,42 @@ export async function getInHouseStays(
 
     if (!error && Array.isArray(data)) {
       const now = new Date().toISOString();
+      const stayIds = data.map((s: any) => s.id);
+      const movesMap = new Map<
+        string,
+        { count: number; lastFromNumber: string }
+      >();
+
+      if (stayIds.length > 0) {
+        try {
+          const { data: movesData } = await supabase
+            .from("stay_room_moves")
+            .select("stay_id, moved_at, from_room:rooms!from_room_id(number)")
+            .in("stay_id", stayIds)
+            .order("moved_at", { ascending: false });
+
+          if (Array.isArray(movesData)) {
+            for (const m of movesData as any[]) {
+              const sid = m.stay_id;
+              const fromRoom = Array.isArray(m.from_room)
+                ? m.from_room[0]
+                : m.from_room;
+              const existing = movesMap.get(sid);
+              if (!existing) {
+                movesMap.set(sid, {
+                  count: 1,
+                  lastFromNumber: fromRoom?.number || "",
+                });
+              } else {
+                existing.count += 1;
+              }
+            }
+          }
+        } catch {
+          // Bỏ qua nếu bảng stay_room_moves chưa có
+        }
+      }
+
       return data.map((s: any) => {
         const primary = s.stay_guests?.find((sg: any) => sg.is_primary)?.guests;
         const branch = Array.isArray(s.branches) ? s.branches[0] : s.branches;
@@ -404,6 +445,8 @@ export async function getInHouseStays(
           ? s.source_channels[0]
           : s.source_channels;
         const partner = Array.isArray(s.partners) ? s.partners[0] : s.partners;
+        const moveInfo = movesMap.get(s.id);
+
         return {
           id: s.id,
           branchId: s.branch_id,
@@ -425,6 +468,8 @@ export async function getInHouseStays(
           sourceChannelName: channel?.name || "Khách vãng lai (Quầy)",
           partnerId: s.partner_id || null,
           partnerName: partner?.name || null,
+          roomMovesCount: moveInfo?.count || 0,
+          lastMovedFromRoomNumber: moveInfo?.lastFromNumber || null,
         };
       });
     }
@@ -433,5 +478,163 @@ export async function getInHouseStays(
   } catch (error) {
     console.error("Lỗi khi lấy danh sách khách đang ở:", error);
     return [];
+  }
+}
+
+export async function changeStayRoomAction(
+  rawInput: ChangeRoomInput,
+): Promise<ActionResult<ChangeRoomResult>> {
+  const parsed = changeRoomSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return fail("VALIDATION", undefined, parsed.error.issues[0]?.message);
+  }
+
+  const {
+    stayId,
+    branchId,
+    toRoomId,
+    reasonCategory,
+    reasonNote,
+    createWorkOrder,
+    workOrderTitle,
+    workOrderPriority,
+  } = parsed.data;
+
+  const auth = await requirePermission("stay.update", branchId);
+  if (!auth.ok) return auth;
+
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("change_stay_room", {
+      p_payload: {
+        stay_id: stayId,
+        to_room_id: toRoomId,
+        reason_category: reasonCategory,
+        reason_note: reasonNote,
+        create_work_order: createWorkOrder,
+        work_order_title: workOrderTitle || null,
+        work_order_priority: workOrderPriority,
+      },
+    });
+
+    if (error) {
+      if (error.message?.includes("stay not found")) {
+        return fail("NOT_FOUND", undefined, "Không tìm thấy thông tin lượt ở");
+      }
+      if (error.message?.includes("only in_house stays")) {
+        return fail(
+          "CONFLICT",
+          undefined,
+          "Chỉ có thể đổi phòng cho lượt ở đang lưu trú (Đang ở)",
+        );
+      }
+      if (error.message?.includes("destination room must be different")) {
+        return fail(
+          "VALIDATION",
+          undefined,
+          "Phòng chuyển đến phải khác phòng hiện tại",
+        );
+      }
+      if (error.message?.includes("destination room is already occupied")) {
+        return fail(
+          "CONFLICT",
+          undefined,
+          "Phòng chuyển đến hiện đã có khách đang ở",
+        );
+      }
+      if (
+        error.message?.includes("destination room is currently blocked") ||
+        error.code === "P0413"
+      ) {
+        return fail(
+          "CONFLICT",
+          undefined,
+          "Phòng chuyển đến đang bị khóa bảo trì (Ngừng KD)",
+        );
+      }
+      if (error.message?.includes("destination room not found")) {
+        return fail(
+          "NOT_FOUND",
+          undefined,
+          "Phòng chuyển đến không tồn tại hoặc không cùng cơ sở",
+        );
+      }
+      return fail(error.code, undefined, error.message);
+    }
+
+    revalidatePath("/stays");
+    revalidatePath("/check-in");
+    revalidatePath("/facilities/work-orders");
+
+    const res = data as any;
+    return ok({
+      success: true,
+      moveId: res?.move_id,
+      fromRoomNumber: res?.from_room_number,
+      toRoomNumber: res?.to_room_number,
+      workOrderNumber: res?.work_order_number ?? null,
+    });
+  } catch (err: any) {
+    return fail(
+      "UNKNOWN",
+      undefined,
+      err?.message || "Lỗi khi đổi phòng cho khách",
+    );
+  }
+}
+
+export async function getStayRoomMovesAction(
+  stayId: string,
+): Promise<ActionResult<StayRoomMove[]>> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("stay_room_moves")
+      .select(`
+        id,
+        stay_id,
+        branch_id,
+        from_room_id,
+        to_room_id,
+        moved_at,
+        reason_category,
+        reason_note,
+        from_room:rooms!from_room_id(number, room_type),
+        to_room:rooms!to_room_id(number, room_type),
+        mover:profiles!moved_by(full_name)
+      `)
+      .eq("stay_id", stayId)
+      .order("moved_at", { ascending: false });
+
+    if (error) {
+      return ok([]);
+    }
+
+    const moves: StayRoomMove[] = (data || []).map((m: any) => {
+      const fromRoom = Array.isArray(m.from_room)
+        ? m.from_room[0]
+        : m.from_room;
+      const toRoom = Array.isArray(m.to_room) ? m.to_room[0] : m.to_room;
+      const mover = Array.isArray(m.mover) ? m.mover[0] : m.mover;
+      return {
+        id: m.id,
+        stayId: m.stay_id,
+        branchId: m.branch_id,
+        fromRoomId: m.from_room_id,
+        fromRoomNumber: fromRoom?.number || "",
+        fromRoomType: fromRoom?.room_type || "Standard",
+        toRoomId: m.to_room_id,
+        toRoomNumber: toRoom?.number || "",
+        toRoomType: toRoom?.room_type || "Standard",
+        movedAt: m.moved_at,
+        movedByName: mover?.full_name || "Nhân viên",
+        reasonCategory: m.reason_category,
+        reasonNote: m.reason_note,
+      };
+    });
+
+    return ok(moves);
+  } catch {
+    return ok([]);
   }
 }

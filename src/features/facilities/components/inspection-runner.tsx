@@ -264,7 +264,9 @@ export function InspectionRunner({
         toast.success("Đã hoàn thành và lưu biên bản kiểm tra!");
         setCompletedResult(res.data);
       } else {
-        toast.error(`Lỗi: ${res.error.message || res.error.code || "Không thể lưu biên bản kiểm tra"}`);
+        toast.error(
+          `Lỗi: ${res.error.message || res.error.code || "Không thể lưu biên bản kiểm tra"}`,
+        );
       }
     });
   };

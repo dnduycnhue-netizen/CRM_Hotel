@@ -268,7 +268,9 @@ export function ChecklistsManager({ templates, canManage }: Props) {
         setIsDialogOpen(false);
         router.refresh();
       } else {
-        toast.error(`Lỗi: ${res.error.message || res.error.code || "Không thể lưu mẫu kiểm tra"}`);
+        toast.error(
+          `Lỗi: ${res.error.message || res.error.code || "Không thể lưu mẫu kiểm tra"}`,
+        );
       }
     });
   };
