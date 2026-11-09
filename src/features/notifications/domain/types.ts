@@ -27,3 +27,4 @@ export interface NotificationSummary {
   infoCount: number;
   items: AppNotification[];
 }
+

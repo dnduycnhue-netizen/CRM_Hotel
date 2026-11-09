@@ -11,6 +11,7 @@ import {
   Loader2,
   LogOut,
   Phone,
+  Printer,
   Search,
   UserCheck,
   Users,
@@ -19,6 +20,7 @@ import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import type { RoomItem } from "@/features/admin/domain/types";
+import { RegistrationCardModal } from "@/features/check-in";
 import {
   Badge,
   Button,
@@ -111,6 +113,11 @@ export function InHouseTable({
     roomNumber: string;
     guestName: string;
   } | null>(null);
+
+  // Dialog state cho In phiếu đăng ký lưu trú (Registration Card)
+  const [registrationStayId, setRegistrationStayId] = useState<string | null>(
+    null,
+  );
 
   const filteredStays = useMemo(() => {
     const todayStr = new Date().toISOString().slice(0, 10);
@@ -639,6 +646,18 @@ export function InHouseTable({
                         </span>
                       ) : (
                         <div className="flex items-center justify-end gap-1.5">
+                          {/* Nút In phiếu đăng ký lưu trú */}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setRegistrationStayId(s.id)}
+                            disabled={isPending}
+                            className="h-8 w-8 p-0 text-slate-600 dark:text-slate-300 hover:text-emerald-600 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all rounded-lg"
+                            title="In Phiếu đăng ký lưu trú (Registration Card) cho khách ký"
+                          >
+                            <Printer className="h-3.5 w-3.5" />
+                          </Button>
+
                           {s.status === "in_house" && canChangeRoom && (
                             <Button
                               variant="outline"
@@ -879,6 +898,13 @@ export function InHouseTable({
         open={!!moveHistoryTarget}
         onOpenChange={(open) => !open && setMoveHistoryTarget(null)}
         stay={moveHistoryTarget}
+      />
+
+      {/* Modal In phiếu đăng ký lưu trú (Registration Card) */}
+      <RegistrationCardModal
+        stayId={registrationStayId}
+        open={!!registrationStayId}
+        onOpenChange={(open) => !open && setRegistrationStayId(null)}
       />
     </div>
   );

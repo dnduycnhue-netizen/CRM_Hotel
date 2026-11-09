@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requirePermission } from "@/shared/auth/server";
 import { type ActionResult, fail, ok, toFieldErrors } from "@/shared/errors";
 import { toVnTimestamptz } from "@/shared/utils/date";
+import type { RegistrationCardData } from "./domain/registration-types";
 import { checkInSchema } from "./schemas";
 
 export interface GuestLookupResult {
@@ -279,6 +280,128 @@ export async function checkInGuestAction(
       "UNKNOWN",
       undefined,
       err?.message || "Đã có lỗi xảy ra khi thực hiện nhận phòng",
+    );
+  }
+}
+
+export async function getRegistrationCardDataAction(
+  stayId: string,
+): Promise<ActionResult<RegistrationCardData>> {
+  const auth = await requirePermission("stay.view");
+  if (!auth.ok) return auth;
+
+  try {
+    const supabase = await createClient();
+    const { data: s, error } = await supabase
+      .from("stays")
+      .select(`
+        id,
+        check_in_at,
+        expected_check_out_at,
+        nights,
+        note,
+        external_ref,
+        branches (name, code, address, phone),
+        rooms (number, room_type),
+        source_channels (name),
+        stay_guests (
+          is_primary,
+          guests (
+            id,
+            full_name,
+            phone,
+            gender,
+            dob,
+            nationality,
+            guest_documents (doc_type, doc_number)
+          )
+        )
+      `)
+      .eq("id", stayId)
+      .maybeSingle();
+
+    if (error || !s) {
+      return fail("NOT_FOUND", undefined, "Không tìm thấy thông tin lượt ở");
+    }
+
+    const rawStay = s as any;
+    const branch = Array.isArray(rawStay.branches)
+      ? rawStay.branches[0]
+      : rawStay.branches;
+    const room = Array.isArray(rawStay.rooms)
+      ? rawStay.rooms[0]
+      : rawStay.rooms;
+    const channel = Array.isArray(rawStay.source_channels)
+      ? rawStay.source_channels[0]
+      : rawStay.source_channels;
+
+    const stayGuests = Array.isArray(rawStay.stay_guests)
+      ? rawStay.stay_guests
+      : [];
+    const primarySG =
+      stayGuests.find((sg: any) => sg.is_primary) || stayGuests[0];
+    const primaryGuest = Array.isArray(primarySG?.guests)
+      ? primarySG.guests[0]
+      : primarySG?.guests;
+    const primaryDocs = Array.isArray(primaryGuest?.guest_documents)
+      ? primaryGuest.guest_documents
+      : [];
+    const primaryDoc = primaryDocs[0];
+
+    const companionList: RegistrationCardData["companions"] = [];
+    for (const sg of stayGuests) {
+      if (sg === primarySG) continue;
+      const g = Array.isArray(sg.guests) ? sg.guests[0] : sg.guests;
+      if (!g) continue;
+      const docs = Array.isArray(g.guest_documents) ? g.guest_documents : [];
+      const doc = docs[0];
+      companionList.push({
+        id: g.id,
+        fullName: g.full_name || "",
+        gender: g.gender || "male",
+        dob: g.dob || null,
+        docType: doc?.doc_type || null,
+        docNumber: doc?.doc_number || null,
+      });
+    }
+
+    const cardData: RegistrationCardData = {
+      stayId: rawStay.id,
+      hotel: {
+        name: branch?.name || "Khách sạn",
+        code: branch?.code || "",
+        address: branch?.address || null,
+        phone: branch?.phone || null,
+      },
+      stay: {
+        roomNumber: room?.number || "",
+        roomType: room?.room_type || "Standard",
+        checkInAt: rawStay.check_in_at,
+        expectedCheckOutAt: rawStay.expected_check_out_at,
+        nights: rawStay.nights || 1,
+        sourceChannelName: channel?.name || "Khách trực tiếp",
+        externalRef: rawStay.external_ref || null,
+        note: rawStay.note || null,
+      },
+      guest: {
+        id: primaryGuest?.id || "",
+        fullName: primaryGuest?.full_name || "Khách lưu trú",
+        phone: primaryGuest?.phone || null,
+        gender: primaryGuest?.gender || "male",
+        dob: primaryGuest?.dob || null,
+        docType: primaryDoc?.doc_type || null,
+        docNumber: primaryDoc?.doc_number || null,
+        nationality: primaryGuest?.nationality || "Việt Nam",
+      },
+      companions: companionList,
+    };
+
+    return ok(cardData);
+  } catch (err: any) {
+    return fail(
+      "UNKNOWN",
+      undefined,
+      err?.message || "Lỗi khi lấy thông tin phiếu đăng ký",
     );
   }
 }

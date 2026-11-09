@@ -40,3 +40,4 @@ describe("Notification domain types", () => {
     expect(categories.length).toBe(5);
   });
 });
+

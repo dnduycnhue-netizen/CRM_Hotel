@@ -28,6 +28,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { confirmRoomCleanedAction } from "@/features/stays";
 import { VIETNAM_PROVINCES } from "@/shared/constants/provinces";
+import { RegistrationCardModal } from "./registration-card-modal";
 import {
   Badge,
   Button,
@@ -134,6 +135,10 @@ export function CheckInForm({
     email: false,
     phone: false,
   });
+
+  // State in Phiếu đăng ký lưu trú (Registration Card) sau check-in
+  const [createdStayId, setCreatedStayId] = useState<string | null>(null);
+  const [isRegModalOpen, setIsRegModalOpen] = useState(false);
 
   // Companions
   const [companions, setCompanions] = useState<FormCompanion[]>([]);
@@ -460,7 +465,16 @@ export function CheckInForm({
       });
 
       if (res.ok) {
-        toast.success(`Check-in thành công cho khách ${fullName}!`);
+        const newStayId = (res.data as any)?.stayId;
+        if (newStayId) {
+          setCreatedStayId(newStayId);
+          setIsRegModalOpen(true);
+        }
+        toast.success(`Check-in thành công cho khách ${fullName}!`, {
+          description:
+            "Mở Phiếu đăng ký lưu trú (Registration Card) để in cho khách ký.",
+          duration: 6000,
+        });
         try {
           localStorage.removeItem(`crm_checkin_draft_${currentBranchId}`);
         } catch {
@@ -1712,6 +1726,13 @@ export function CheckInForm({
           </Card>
         </div>
       </div>
+
+      {/* Modal Phiếu đăng ký lưu trú (Registration Card) để in cho khách ký */}
+      <RegistrationCardModal
+        stayId={createdStayId}
+        open={isRegModalOpen}
+        onOpenChange={setIsRegModalOpen}
+      />
     </div>
   );
 }

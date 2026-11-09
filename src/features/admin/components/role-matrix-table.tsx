@@ -10,12 +10,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
 } from "@/shared/ui";
 import { updateRolePermissionsAction } from "../actions";
 import type { SystemPermission, SystemRole } from "../domain/types";
@@ -165,50 +159,50 @@ export function RoleMatrixTable({ roles, permissions }: RoleMatrixTableProps) {
           </div>
         </CardHeader>
 
-        <div className="overflow-x-auto max-h-[650px] overflow-y-auto">
-          <Table>
-            <TableHeader className="sticky top-0 bg-background z-20 shadow-xs">
-              <TableRow className="text-xs bg-muted/40">
-                <TableHead className="w-[320px] font-bold">
+        <div className="relative w-full max-h-[700px] overflow-auto border-t border-border/50">
+          <table className="w-full text-sm border-separate border-spacing-0">
+            <thead className="sticky top-0 z-30 bg-muted/95 backdrop-blur-xs shadow-xs">
+              <tr className="border-b border-border/70 text-xs">
+                <th className="sticky top-0 left-0 z-40 bg-muted/95 backdrop-blur-xs p-3.5 text-left font-bold text-foreground w-[320px] min-w-[280px] border-b border-r border-border/70">
                   Quyền hạn hệ thống
-                </TableHead>
+                </th>
                 {roles.map((r) => (
-                  <TableHead
+                  <th
                     key={r.id}
-                    className="text-center font-bold min-w-[120px]"
+                    className="sticky top-0 z-30 bg-muted/95 backdrop-blur-xs p-3.5 text-center font-bold min-w-[130px] border-b border-r border-border/70 last:border-r-0"
                   >
                     <div className="space-y-0.5">
-                      <span className="block text-foreground font-bold">
+                      <span className="block text-foreground font-bold text-xs">
                         {r.name}
                       </span>
                       <span className="text-[10px] font-medium text-muted-foreground block font-mono">
                         ({r.key})
                       </span>
                     </div>
-                  </TableHead>
+                  </th>
                 ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/40">
               {Object.entries(groupedPermissions).map(([group, groupPerms]) => (
                 <React.Fragment key={group}>
                   {/* Group Header Row */}
-                  <TableRow className="bg-muted/30 font-bold text-xs border-y border-border/50">
-                    <TableCell
+                  <tr className="bg-muted/70 font-bold text-xs border-y border-border/60">
+                    <td
                       colSpan={roles.length + 1}
-                      className="py-2.5 text-primary font-bold"
+                      className="sticky left-0 py-2.5 px-4 text-primary font-bold bg-muted/80 z-20 border-y border-border/60"
                     >
                       {group} ({groupPerms.length} quyền)
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
 
                   {/* Permission Rows */}
                   {groupPerms.map((p) => (
-                    <TableRow
+                    <tr
                       key={p.key}
-                      className="text-xs hover:bg-muted/40 transition-colors"
+                      className="text-xs hover:bg-muted/30 transition-colors"
                     >
-                      <TableCell className="py-2">
+                      <td className="sticky left-0 z-10 bg-background/95 backdrop-blur-xs p-3 border-r border-b border-border/40">
                         <div className="space-y-0.5">
                           <span className="font-semibold text-foreground text-xs block">
                             {p.label}
@@ -220,7 +214,7 @@ export function RoleMatrixTable({ roles, permissions }: RoleMatrixTableProps) {
                             {p.key}
                           </span>
                         </div>
-                      </TableCell>
+                      </td>
 
                       {roles.map((r) => {
                         const isOwner = r.key === "owner";
@@ -229,7 +223,10 @@ export function RoleMatrixTable({ roles, permissions }: RoleMatrixTableProps) {
                           : rolePerms[r.id]?.has(p.key) || false;
 
                         return (
-                          <TableCell key={r.id} className="text-center py-2">
+                          <td
+                            key={r.id}
+                            className="text-center p-3 border-r border-b border-border/30 last:border-r-0"
+                          >
                             <div className="flex items-center justify-center">
                               {isOwner ? (
                                 <span className="h-5 w-5 rounded bg-amber-500/15 text-amber-600 flex items-center justify-center font-bold text-xs">
@@ -246,15 +243,15 @@ export function RoleMatrixTable({ roles, permissions }: RoleMatrixTableProps) {
                                 />
                               )}
                             </div>
-                          </TableCell>
+                          </td>
                         );
                       })}
-                    </TableRow>
+                    </tr>
                   ))}
                 </React.Fragment>
               ))}
-            </TableBody>
-          </Table>
+            </tbody>
+          </table>
         </div>
       </Card>
 
