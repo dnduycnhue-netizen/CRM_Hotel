@@ -223,3 +223,89 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ==========================================================================
+   PRINT MEDIA STYLES - Cho Phiếu đăng ký lưu trú & Biểu mẫu in ấn chuẩn A4
+   ========================================================================== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
+  }
+
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    color-scheme: light !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Ẩn các thành phần không thuộc tài liệu in */
+  header,
+  nav,
+  aside,
+  footer,
+  button,
+  .no-print,
+  [data-slot="dialog-overlay"],
+  [data-slot="dialog-close"] {
+    display: none !important;
+  }
+
+  /* Khi in phiếu đăng ký: Ẩn toàn bộ nội dung nền web bên ngoài portal */
+  body:has([data-slot="dialog-content"]) > *:not([data-slot="dialog-portal"]),
+  body:has(.registration-card-printable) > *:not([data-slot="dialog-portal"]),
+  body.printing-registration-card > *:not([data-slot="dialog-portal"]) {
+    display: none !important;
+  }
+
+  /* Chuyển đổi Dialog Portal và Dialog Content thành khối in thông thường */
+  [data-slot="dialog-portal"] {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  [data-slot="dialog-content"] {
+    position: static !important;
+    transform: none !important;
+    top: auto !important;
+    left: auto !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    overflow: visible !important;
+    outline: none !important;
+  }
+
+  /* Định dạng khối Phiếu đăng ký lưu trú */
+  .registration-card-printable {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    background: #ffffff !important;
+  }
+}

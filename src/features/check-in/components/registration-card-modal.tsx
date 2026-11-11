@@ -2,25 +2,15 @@
 
 import {
   AlertCircle,
-  Building2,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  DoorOpen,
   FileText,
   Loader2,
-  Mail,
   MapPin,
   Phone,
   Printer,
   RotateCcw,
-  User,
-  Users,
-  X,
 } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import {
-  Badge,
   Button,
   Dialog,
   DialogContent,
@@ -40,18 +30,6 @@ interface RegistrationCardModalProps {
 }
 
 function printRegistrationCard(data: RegistrationCardData) {
-  const iframe = document.createElement("iframe");
-  iframe.style.position = "fixed";
-  iframe.style.right = "0";
-  iframe.style.bottom = "0";
-  iframe.style.width = "0";
-  iframe.style.height = "0";
-  iframe.style.border = "0";
-  document.body.appendChild(iframe);
-
-  const doc = iframe.contentWindow?.document;
-  if (!doc) return;
-
   const companionsHtml =
     data.companions.length > 0
       ? `
@@ -259,6 +237,11 @@ function printRegistrationCard(data: RegistrationCardData) {
             min-height: 75px;
           }
         </style>
+        <script>
+          window.addEventListener('afterprint', function() {
+            window.close();
+          });
+        </script>
       </head>
       <body>
         <div class="header-box">
@@ -371,17 +354,46 @@ function printRegistrationCard(data: RegistrationCardData) {
     </html>
   `;
 
-  doc.open();
-  doc.write(html);
-  doc.close();
+  // 1. Thử mở popup in riêng biệt (độc lập, không bị focus-trap hay styles đè bởi modal)
+  try {
+    const printWindow = window.open(
+      "",
+      "_blank",
+      "width=850,height=950,menubar=no,toolbar=no,location=no,status=no",
+    );
+    if (printWindow) {
+      printWindow.document.open();
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        try {
+          printWindow.focus();
+          printWindow.print();
+        } catch {
+          // Bỏ qua nếu cửa sổ đã bị đóng
+        }
+      }, 300);
+      return;
+    }
+  } catch (e) {
+    console.warn(
+      "Popup blocked or not supported, falling back to window.print():",
+      e,
+    );
+  }
 
-  iframe.contentWindow?.focus();
+  // 2. Fallback: In trực tiếp qua @media print của cửa sổ hiện tại
+  const originalTitle = document.title;
+  document.title = `Phieu-Dang-Ky-${data.guest.fullName}-P${data.stay.roomNumber}`;
+  document.body.classList.add("printing-registration-card");
+
+  window.print();
+
   setTimeout(() => {
-    iframe.contentWindow?.print();
-    setTimeout(() => {
-      iframe.remove();
-    }, 1500);
-  }, 250);
+    document.title = originalTitle;
+    document.body.classList.remove("printing-registration-card");
+  }, 1000);
 }
 
 export function RegistrationCardModal({
@@ -394,7 +406,7 @@ export function RegistrationCardModal({
   const [cardData, setCardData] = useState<RegistrationCardData | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     if (!stayId) return;
     setErrorMsg(null);
     startTransition(async () => {
@@ -407,10 +419,12 @@ export function RegistrationCardModal({
           }, 400);
         }
       } else {
-        setErrorMsg(res.error?.message || "Không thể tải thông tin phiếu đăng ký");
+        setErrorMsg(
+          res.error?.message || "Không thể tải thông tin phiếu đăng ký",
+        );
       }
     });
-  };
+  }, [stayId, autoPrint]);
 
   useEffect(() => {
     if (open && stayId) {
@@ -419,7 +433,7 @@ export function RegistrationCardModal({
       setCardData(null);
       setErrorMsg(null);
     }
-  }, [open, stayId, autoPrint]);
+  }, [open, stayId, loadData]);
 
   const handlePrint = () => {
     if (cardData) {
@@ -444,8 +458,8 @@ export function RegistrationCardModal({
                   Phiếu Đăng Ký Lưu Trú (Registration Card)
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground">
-                  Mẫu phiếu xác nhận nhận phòng chuẩn để đưa khách kiểm tra và ký
-                  tên
+                  Mẫu phiếu xác nhận nhận phòng chuẩn để đưa khách kiểm tra và
+                  ký tên
                 </p>
               </div>
             </div>
@@ -729,20 +743,20 @@ export function RegistrationCardModal({
               <ul className="list-disc pl-4 space-y-0.5">
                 <li>
                   Giờ trả phòng tiêu chuẩn là <strong>12:00 trưa</strong>. Trả
-                  phòng trễ có thể phát sinh phụ phí theo quy định của khách sạn.
-                  (Check-out time is before 12:00 PM).
+                  phòng trễ có thể phát sinh phụ phí theo quy định của khách
+                  sạn. (Check-out time is before 12:00 PM).
                 </li>
                 <li>
-                  Nghiêm cấm hút thuốc trong phòng; không mang theo chất cháy nổ,
-                  vũ khí, chất cấm hoặc vật nuôi vào phòng.
+                  Nghiêm cấm hút thuốc trong phòng; không mang theo chất cháy
+                  nổ, vũ khí, chất cấm hoặc vật nuôi vào phòng.
                 </li>
                 <li>
-                  Quý khách vui lòng gửi tiền mặt, đồ trang sức và tài sản quý giá
-                  trong két sắt an toàn hoặc tại quầy Lễ tân.
+                  Quý khách vui lòng gửi tiền mặt, đồ trang sức và tài sản quý
+                  giá trong két sắt an toàn hoặc tại quầy Lễ tân.
                 </li>
                 <li>
-                  Tôi cam đoan các thông tin đã khai báo ở trên là hoàn toàn chính
-                  xác và đồng ý tuân thủ toàn bộ nội quy của khách sạn. (I
+                  Tôi cam đoan các thông tin đã khai báo ở trên là hoàn toàn
+                  chính xác và đồng ý tuân thủ toàn bộ nội quy của khách sạn. (I
                   confirm that the above information is correct and agree to
                   comply with the hotel rules).
                 </li>
@@ -816,4 +830,3 @@ export function RegistrationCardModal({
     </Dialog>
   );
 }
-

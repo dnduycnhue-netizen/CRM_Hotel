@@ -35,6 +35,9 @@
       "a11y": {
         "noLabelWithoutControl": "off"
       },
+      "complexity": {
+        "noImportantStyles": "off"
+      },
       "style": {
         "noNonNullAssertion": "warn"
       },
