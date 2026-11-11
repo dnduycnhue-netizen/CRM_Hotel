@@ -180,7 +180,8 @@ export async function checkInGuestAction(
     }
 
     const companionsPayload = [];
-    for (const c of data.companions || []) {
+    for (let idx = 0; idx < (data.companions || []).length; idx++) {
+      const c = data.companions[idx];
       let compPhoneIntl: string | null = null;
       if (c.phoneIntl) {
         const res = normalizePhoneIntl(c.phoneIntl);
@@ -194,9 +195,17 @@ export async function checkInGuestAction(
         compPhoneIntl = res.phone;
       }
 
-      const hasDoc = Boolean(
-        c.documentNumber && c.documentNumber.trim().length >= 6,
-      );
+      // Tự sinh mã định danh tạm thời cho trẻ em chưa có CCCD để RPC private.upsert_guest không bị chặn
+      let cleanDocNumber = c.documentNumber?.trim().toUpperCase();
+      if (!cleanDocNumber || cleanDocNumber.length < 6) {
+        if (c.isChild) {
+          cleanDocNumber = `TE-${data.roomId.slice(0, 4).toUpperCase()}-${Date.now().toString().slice(-4)}-${idx + 1}`;
+        } else {
+          cleanDocNumber = undefined;
+        }
+      }
+
+      const hasDoc = Boolean(cleanDocNumber && cleanDocNumber.length >= 6);
       companionsPayload.push({
         guest_id: c.guestId || null,
         full_name: c.fullName,
@@ -208,7 +217,7 @@ export async function checkInGuestAction(
         document: hasDoc
           ? {
               type: c.documentType,
-              number: c.documentNumber?.trim().toUpperCase(),
+              number: cleanDocNumber,
               country: (c.nationality || "VN").slice(0, 2).toUpperCase(),
             }
           : null,
@@ -269,10 +278,31 @@ export async function checkInGuestAction(
 
       if (error.message?.includes("room is occupied")) {
         code = "ROOM_OCCUPIED";
-        customMsg = "Phòng đang có khách lưu trú";
+        customMsg = "Phòng đang có khách lưu trú, không thể nhận phòng";
       } else if (error.message?.includes("room is out of order")) {
         code = "ROOM_OUT_OF_ORDER";
         customMsg = "Phòng đang khóa ngừng bán (sự cố / bảo trì)";
+      } else if (error.message?.includes("invalid room")) {
+        code = "VALIDATION";
+        customMsg = "Phòng đã chọn không hợp lệ hoặc đang không hoạt động";
+      } else if (error.message?.includes("partner required for this channel")) {
+        code = "VALIDATION";
+        customMsg =
+          "Kênh nguồn này bắt buộc phải chọn đối tác tour / doanh nghiệp";
+      } else if (error.message?.includes("duplicate guest in one stay")) {
+        code = "VALIDATION";
+        customMsg =
+          "Trùng lặp khách trong cùng phòng (khách chính và người đi cùng có cùng SĐT hoặc CCCD)";
+      } else if (error.message?.includes("companion needs a document")) {
+        code = "VALIDATION";
+        customMsg =
+          "Người đi cùng (mới) bắt buộc phải nhập số CCCD hoặc Hộ chiếu";
+      } else if (error.message?.includes("guest already in stay")) {
+        code = "VALIDATION";
+        customMsg = "Khách này đã có tên trong phòng lưu trú";
+      } else if (error.message?.includes("maximum 10 companions")) {
+        code = "VALIDATION";
+        customMsg = "Mỗi lượt ở chỉ được thêm tối đa 10 người đi cùng";
       } else if (error.message?.includes("phone belongs to another guest")) {
         code = "DUPLICATE_PHONE";
         customMsg =
@@ -305,7 +335,13 @@ export async function checkInGuestAction(
         customMsg = "Vui lòng chọn nguồn khách hợp lệ";
       } else if (error.message?.includes("phone required for primary guest")) {
         code = "VALIDATION";
-        customMsg = "Khách Việt Nam bắt buộc phải có số điện thoại liên hệ";
+        customMsg =
+          "Khách chính bắt buộc phải có số điện thoại liên hệ (VN hoặc Quốc tế)";
+      } else if (error.message?.includes("expected_check_out_at")) {
+        code = "VALIDATION";
+        customMsg = "Thời gian trả phòng dự kiến phải sau thời gian nhận phòng";
+      } else {
+        customMsg = error.message;
       }
 
       return fail(code, undefined, customMsg);

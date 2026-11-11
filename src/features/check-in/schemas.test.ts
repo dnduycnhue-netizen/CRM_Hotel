@@ -216,4 +216,48 @@ describe("CheckIn Schemas", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("từ chối khách chính Việt Nam khi thiếu số điện thoại", () => {
+    const result = checkInSchema.safeParse({
+      branchId: validBranchId,
+      roomId: validRoomId,
+      fullName: "Trần Văn Bình",
+      nationality: "VN",
+      phone: "",
+      sourceChannelCode: "walk_in",
+      expectedCheckOutAt: "2026-10-25T12:00:00+07:00",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.message).toContain(
+        "Khách chính (Việt Nam) bắt buộc phải có số điện thoại",
+      );
+    }
+  });
+
+  it("từ chối người đi cùng người lớn mới khi thiếu số giấy tờ", () => {
+    const result = checkInSchema.safeParse({
+      branchId: validBranchId,
+      roomId: validRoomId,
+      fullName: "Trần Văn Bình",
+      nationality: "VN",
+      phone: "0901234567",
+      sourceChannelCode: "walk_in",
+      expectedCheckOutAt: "2026-10-25T12:00:00+07:00",
+      companions: [
+        {
+          fullName: "Lê Thị Lan",
+          gender: "female",
+          isChild: false,
+          documentNumber: "", // thiếu giấy tờ
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.message).toContain(
+        "bắt buộc phải có Số giấy tờ",
+      );
+    }
+  });
 });

@@ -103,6 +103,7 @@ export function CheckInForm({
   const [isPending, startTransition] = useTransition();
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [cleaningRoomId, setCleaningRoomId] = useState<string | null>(null);
+  const [formErrors, setFormErrors] = useState<Record<string, string[]>>({});
 
   // Form Fields
   const [queryValue, setQueryValue] = useState("");
@@ -456,6 +457,26 @@ export function CheckInForm({
     }
 
     startTransition(async () => {
+      setFormErrors({});
+
+      // Tự động phân luồng SĐT nếu khách quốc tế hoặc có tiền tố +
+      let finalPhone = phone.trim();
+      let finalPhoneIntl = phoneIntl.trim();
+
+      if (nationality !== "VN") {
+        if (!finalPhoneIntl && finalPhone) {
+          if (finalPhone.startsWith("+") || finalPhone.startsWith("00")) {
+            finalPhoneIntl = finalPhone;
+            finalPhone = "";
+          }
+        }
+      }
+
+      const cleanDocNumber =
+        docNumber && !docNumber.includes("*")
+          ? docNumber.trim().toUpperCase()
+          : undefined;
+
       const res = await checkInGuestAction({
         branchId: currentBranchId,
         roomId: selectedRoomId,
@@ -464,15 +485,14 @@ export function CheckInForm({
         gender,
         dob: dob || undefined,
         nationality: nationality || "VN",
-        phone: phone ? normalizeVnPhone(phone) : undefined,
-        phoneIntl: phoneIntl ? phoneIntl.trim() : undefined,
-        email: email ? email.trim() : undefined,
+        phone: finalPhone ? normalizeVnPhone(finalPhone) : undefined,
+        phoneIntl: finalPhoneIntl || undefined,
+        email: email ? email.trim().toLowerCase() : undefined,
         documentType:
           (nationality && nationality !== "VN") || detectedKind === "passport"
             ? "passport"
             : "cccd",
-        documentNumber:
-          docNumber && !docNumber.includes("*") ? docNumber : undefined,
+        documentNumber: cleanDocNumber,
         addressLine: addressLine.trim() || undefined,
         provinceCode:
           nationality === "VN" ? provinceCode || undefined : undefined,
@@ -487,28 +507,41 @@ export function CheckInForm({
         actualCheckOutAt: actualCheckOut || undefined,
         blacklistAck,
         consents,
-        companions: companions.map((c) => ({
-          guestId: c.guestId || undefined,
-          fullName: normalizeFullName(c.fullName),
-          gender: c.gender,
-          dob: c.dob || undefined,
-          nationality: c.nationality || "VN",
-          phone: c.phone ? normalizeVnPhone(c.phone) : undefined,
-          phoneIntl: c.phoneIntl ? c.phoneIntl.trim() : undefined,
-          documentType: c.documentType,
-          documentNumber:
+        companions: companions.map((c) => {
+          let cPhone = c.phone?.trim() || "";
+          let cPhoneIntl = c.phoneIntl?.trim() || "";
+          if (c.nationality !== "VN" && !cPhoneIntl && cPhone) {
+            if (cPhone.startsWith("+") || cPhone.startsWith("00")) {
+              cPhoneIntl = cPhone;
+              cPhone = "";
+            }
+          }
+          const cDocNumber =
             c.documentNumber && !c.documentNumber.includes("*")
-              ? c.documentNumber
-              : undefined,
-          isChild: c.isChild,
-          countsForLoyalty: c.countsForLoyalty,
-          notes: c.notes || undefined,
-        })),
+              ? c.documentNumber.trim().toUpperCase()
+              : undefined;
+
+          return {
+            guestId: c.guestId || undefined,
+            fullName: normalizeFullName(c.fullName),
+            gender: c.gender,
+            dob: c.dob || undefined,
+            nationality: c.nationality || "VN",
+            phone: cPhone ? normalizeVnPhone(cPhone) : undefined,
+            phoneIntl: cPhoneIntl || undefined,
+            documentType: c.documentType,
+            documentNumber: cDocNumber,
+            isChild: c.isChild,
+            countsForLoyalty: c.countsForLoyalty,
+            notes: c.notes?.trim() || undefined,
+          };
+        }),
         roomPrice: Number(roomPrice || 0),
         depositAmount: Number(depositAmount || 0),
       });
 
       if (res.ok) {
+        setFormErrors({});
         const newStayId = (res.data as any)?.stayId;
         if (newStayId) {
           setCreatedStayId(newStayId);
@@ -541,7 +574,42 @@ export function CheckInForm({
         setPartnerId("");
         setConsents({ zalo: false, sms: false, email: false, phone: false });
       } else {
-        toast.error(res.error.message || "Lỗi khi thực hiện check-in");
+        if (
+          res.error.fieldErrors &&
+          Object.keys(res.error.fieldErrors).length > 0
+        ) {
+          setFormErrors(res.error.fieldErrors);
+          const fieldLabels: Record<string, string> = {
+            fullName: "Họ và tên",
+            phone: "Số điện thoại",
+            phoneIntl: "SĐT quốc tế",
+            documentNumber: "Số giấy tờ",
+            email: "Email",
+            roomId: "Phòng",
+            sourceChannelCode: "Nguồn khách",
+            partnerId: "Đối tác",
+            expectedCheckOutAt: "Thời gian trả phòng",
+          };
+
+          const errorList = Object.entries(res.error.fieldErrors).flatMap(
+            ([field, errs]) => {
+              const label = fieldLabels[field] || field;
+              return errs.map((e) =>
+                fieldLabels[field] ? `${label}: ${e}` : e,
+              );
+            },
+          );
+
+          toast.error(res.error.message || "Dữ liệu không hợp lệ", {
+            description: errorList.join(" • "),
+            duration: 8000,
+          });
+        } else {
+          setFormErrors({});
+          toast.error(res.error.message || "Lỗi khi thực hiện check-in", {
+            duration: 7000,
+          });
+        }
       }
     });
   };
@@ -690,11 +758,29 @@ export function CheckInForm({
                     <Input
                       id="fullName"
                       value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
+                      onChange={(e) => {
+                        setFullName(e.target.value);
+                        if (formErrors.fullName) {
+                          setFormErrors((prev) => {
+                            const next = { ...prev };
+                            delete next.fullName;
+                            return next;
+                          });
+                        }
+                      }}
                       placeholder="Ví dụ: NGUYỄN VĂN AN"
-                      className="h-9.5 text-xs uppercase font-bold rounded-xl"
+                      className={`h-9.5 text-xs uppercase font-bold rounded-xl ${
+                        formErrors.fullName
+                          ? "border-rose-500 ring-1 ring-rose-500/30"
+                          : ""
+                      }`}
                       required
                     />
+                    {formErrors.fullName && (
+                      <p className="text-[11px] text-rose-500 font-semibold">
+                        {formErrors.fullName[0]}
+                      </p>
+                    )}
                   </div>
                   <div className="sm:col-span-3 space-y-1.5">
                     <Label
@@ -761,10 +847,28 @@ export function CheckInForm({
                     <Input
                       id="phone"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => {
+                        setPhone(e.target.value);
+                        if (formErrors.phone) {
+                          setFormErrors((prev) => {
+                            const next = { ...prev };
+                            delete next.phone;
+                            return next;
+                          });
+                        }
+                      }}
                       placeholder="0905xxxxxx"
-                      className="h-9.5 text-xs font-mono font-semibold rounded-xl"
+                      className={`h-9.5 text-xs font-mono font-semibold rounded-xl ${
+                        formErrors.phone
+                          ? "border-rose-500 ring-1 ring-rose-500/30"
+                          : ""
+                      }`}
                     />
+                    {formErrors.phone && (
+                      <p className="text-[11px] text-rose-500 font-semibold">
+                        {formErrors.phone[0]}
+                      </p>
+                    )}
                   </div>
                   <div className="sm:col-span-6 space-y-1.5">
                     <Label
@@ -779,10 +883,28 @@ export function CheckInForm({
                     <Input
                       id="phoneIntl"
                       value={phoneIntl}
-                      onChange={(e) => setPhoneIntl(e.target.value)}
+                      onChange={(e) => {
+                        setPhoneIntl(e.target.value);
+                        if (formErrors.phoneIntl) {
+                          setFormErrors((prev) => {
+                            const next = { ...prev };
+                            delete next.phoneIntl;
+                            return next;
+                          });
+                        }
+                      }}
                       placeholder="+14155550123"
-                      className="h-9.5 text-xs font-mono font-semibold rounded-xl text-indigo-600 dark:text-indigo-400"
+                      className={`h-9.5 text-xs font-mono font-semibold rounded-xl text-indigo-600 dark:text-indigo-400 ${
+                        formErrors.phoneIntl
+                          ? "border-rose-500 ring-1 ring-rose-500/30"
+                          : ""
+                      }`}
                     />
+                    {formErrors.phoneIntl && (
+                      <p className="text-[11px] text-rose-500 font-semibold">
+                        {formErrors.phoneIntl[0]}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -804,10 +926,28 @@ export function CheckInForm({
                     <Input
                       id="docNumber"
                       value={docNumber}
-                      onChange={(e) => setDocNumber(e.target.value)}
+                      onChange={(e) => {
+                        setDocNumber(e.target.value);
+                        if (formErrors.documentNumber) {
+                          setFormErrors((prev) => {
+                            const next = { ...prev };
+                            delete next.documentNumber;
+                            return next;
+                          });
+                        }
+                      }}
                       placeholder="12 số CCCD hoặc mã Passport"
-                      className="h-9.5 text-xs font-mono font-semibold rounded-xl"
+                      className={`h-9.5 text-xs font-mono font-semibold rounded-xl ${
+                        formErrors.documentNumber
+                          ? "border-rose-500 ring-1 ring-rose-500/30"
+                          : ""
+                      }`}
                     />
+                    {formErrors.documentNumber && (
+                      <p className="text-[11px] text-rose-500 font-semibold">
+                        {formErrors.documentNumber[0]}
+                      </p>
+                    )}
                     {guestId && docNumber.includes("*") && (
                       <p className="text-[11px] text-muted-foreground">
                         Hồ sơ đã lưu CCCD (bảo mật). Nhập số mới chỉ khi khách
@@ -1158,8 +1298,21 @@ export function CheckInForm({
                       <select
                         id="partnerSelect"
                         value={partnerId}
-                        onChange={(e) => setPartnerId(e.target.value)}
-                        className="w-full h-9.5 rounded-xl border border-amber-500/40 bg-background px-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+                        onChange={(e) => {
+                          setPartnerId(e.target.value);
+                          if (formErrors.partnerId) {
+                            setFormErrors((prev) => {
+                              const next = { ...prev };
+                              delete next.partnerId;
+                              return next;
+                            });
+                          }
+                        }}
+                        className={`w-full h-9.5 rounded-xl border bg-background px-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500/30 ${
+                          formErrors.partnerId
+                            ? "border-rose-500 ring-1 ring-rose-500/30"
+                            : "border-amber-500/40"
+                        }`}
                         required
                       >
                         <option value="">
@@ -1173,6 +1326,11 @@ export function CheckInForm({
                           </option>
                         ))}
                       </select>
+                      {formErrors.partnerId && (
+                        <p className="text-[11px] text-rose-500 font-semibold">
+                          {formErrors.partnerId[0]}
+                        </p>
+                      )}
                       {filteredPartners.length === 0 && (
                         <p className="text-[11px] text-amber-700 dark:text-amber-400">
                           Chưa có đối tác nào thuộc nhóm này đang hoạt động.
@@ -1456,9 +1614,26 @@ export function CheckInForm({
                                       ? "Không bắt buộc đối với trẻ em"
                                       : "Nhập 12 số CCCD / Hộ chiếu"
                                   }
-                                  className="h-8 text-xs font-mono rounded-lg"
+                                  className={`h-8 text-xs font-mono rounded-lg ${
+                                    formErrors[
+                                      `companions.${idx}.documentNumber`
+                                    ]
+                                      ? "border-rose-500 ring-1 ring-rose-500/30"
+                                      : ""
+                                  }`}
                                   required={!c.isChild}
                                 />
+                                {formErrors[
+                                  `companions.${idx}.documentNumber`
+                                ] && (
+                                  <p className="text-[10px] text-rose-500 font-semibold">
+                                    {
+                                      formErrors[
+                                        `companions.${idx}.documentNumber`
+                                      ][0]
+                                    }
+                                  </p>
+                                )}
                               </div>
 
                               <div className="sm:col-span-4 space-y-1">

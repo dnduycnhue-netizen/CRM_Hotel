@@ -134,6 +134,16 @@ export const checkInSchema = z
     notes: z.string().optional(),
   })
   .superRefine((val, ctx) => {
+    // Khách chính Việt Nam bắt buộc phải có SĐT di động
+    if (val.nationality === "VN" && (!val.phone || val.phone.trim() === "")) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Khách chính (Việt Nam) bắt buộc phải có số điện thoại liên hệ",
+        path: ["phone"],
+      });
+    }
+
     // Validate partner when source channel requires partner/corporate
     if (
       val.sourceChannelCode === "partner" ||
@@ -151,7 +161,7 @@ export const checkInSchema = z
       }
     }
 
-    // Validate duplicate documents
+    // Validate duplicate documents & companions requirement
     const seenDocs = new Set<string>();
     const cleanPrimaryDoc = val.documentNumber?.trim().toUpperCase();
     if (cleanPrimaryDoc) {
@@ -160,10 +170,17 @@ export const checkInSchema = z
 
     val.companions.forEach((c, idx) => {
       const cleanDoc = c.documentNumber?.trim().toUpperCase();
-      if (!c.isChild && cleanDoc && cleanDoc.length < 6) {
+      // Nếu là người đi cùng mới (không có guestId) và không phải trẻ em: bắt buộc phải có số giấy tờ
+      if (!c.guestId && !c.isChild && (!cleanDoc || cleanDoc.length < 6)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Số giấy tờ người đi cùng tối thiểu 6 ký tự",
+          message: `Người đi cùng #${idx + 1} (${c.fullName || "chưa nhập tên"}) bắt buộc phải có Số giấy tờ (CCCD / Hộ chiếu) tối thiểu 6 ký tự`,
+          path: ["companions", idx, "documentNumber"],
+        });
+      } else if (cleanDoc && cleanDoc.length < 6 && !c.isChild) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Số giấy tờ người đi cùng #${idx + 1} tối thiểu 6 ký tự`,
           path: ["companions", idx, "documentNumber"],
         });
       }
