@@ -18,6 +18,13 @@ const csp = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  turbopack: {
+    rules: {
+      "*.css": {
+        loaders: ["@tailwindcss/turbopack"],
+      },
+    },
+  },
   async headers() {
     return [
       {
